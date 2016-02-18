@@ -26,10 +26,8 @@ import java.nio.ByteBuffer;
  * Publishes a fixed size message on a fixed channel and stream. Upon completion
  * of message send, it lingers for 5 seconds before exiting.
  */
-public class SimplePublisher
-{
-    public static void main(final String[] args) throws Exception
-    {
+public class SimplePublisher {
+    public static void main(final String[] args) throws Exception {
         // Allocate enough buffer size to hold maximum message length
         // The UnsafeBuffer class is part of the Agrona library and is used for efficient buffer management
         final UnsafeBuffer buffer = new UnsafeBuffer(ByteBuffer.allocateDirect(512));
@@ -51,8 +49,7 @@ public class SimplePublisher
         // media driver, and create a Publication.  The Aeron and Publication classes implement
         // AutoCloseable, and will automatically clean up resources when this try block is finished.
         try (final Aeron aeron = Aeron.connect(ctx);
-             final Publication publication = aeron.addPublication(channel, streamId))
-        {
+             final Publication publication = aeron.addPublication(channel, streamId)) {
             final String message = "Hello World! ";
             final byte[] messageBytes = message.getBytes();
             buffer.putBytes(0, messageBytes);
@@ -61,31 +58,19 @@ public class SimplePublisher
             // If it returns less than 0, the message was not sent, and the offer should be retried.
             final long result = publication.offer(buffer, 0, messageBytes.length);
 
-            if (result < 0L)
-            {
-                if (result == Publication.BACK_PRESSURED)
-                {
+            if (result < 0L) {
+                if (result == Publication.BACK_PRESSURED) {
                     System.out.println(" Offer failed due to back pressure");
-                }
-                else if (result == Publication.NOT_CONNECTED)
-                {
+                } else if (result == Publication.NOT_CONNECTED) {
                     System.out.println(" Offer failed because publisher is not yet connected to subscriber");
-                }
-                else if (result == Publication.ADMIN_ACTION)
-                {
+                } else if (result == Publication.ADMIN_ACTION) {
                     System.out.println("Offer failed because of an administration action in the system");
-                }
-                else if (result == Publication.CLOSED)
-                {
+                } else if (result == Publication.CLOSED) {
                     System.out.println("Offer failed publication is closed");
-                }
-                else
-                {
+                } else {
                     System.out.println(" Offer failed due to unknown reason");
                 }
-            }
-            else
-            {
+            } else {
                 System.out.println(" yay !!");
             }
 

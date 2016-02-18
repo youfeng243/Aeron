@@ -43,8 +43,7 @@ import static uk.co.real_logic.agrona.BitUtil.align;
  * A message of type {@link FrameDescriptor#PADDING_FRAME_TYPE} is appended at the end of the buffer if claimed
  * space is not sufficiently large to accommodate the message about to be written.
  */
-public class TermAppender
-{
+public class TermAppender {
     /**
      * The append operation tripped the end of the buffer and needs to rotate.
      */
@@ -64,8 +63,7 @@ public class TermAppender
      * @param termBuffer     for where messages are stored.
      * @param metaDataBuffer for where the state of writers is stored manage concurrency.
      */
-    public TermAppender(final UnsafeBuffer termBuffer, final UnsafeBuffer metaDataBuffer)
-    {
+    public TermAppender(final UnsafeBuffer termBuffer, final UnsafeBuffer metaDataBuffer) {
         this.termBuffer = termBuffer;
         this.metaDataBuffer = metaDataBuffer;
     }
@@ -75,8 +73,7 @@ public class TermAppender
      *
      * @return the log of messages for a term.
      */
-    public UnsafeBuffer termBuffer()
-    {
+    public UnsafeBuffer termBuffer() {
         return termBuffer;
     }
 
@@ -85,8 +82,7 @@ public class TermAppender
      *
      * @return the meta data describing the term.
      */
-    public UnsafeBuffer metaDataBuffer()
-    {
+    public UnsafeBuffer metaDataBuffer() {
         return metaDataBuffer;
     }
 
@@ -95,8 +91,7 @@ public class TermAppender
      *
      * @return the current tail value.
      */
-    public long rawTailVolatile()
-    {
+    public long rawTailVolatile() {
         return metaDataBuffer.getLongVolatile(TERM_TAIL_COUNTER_OFFSET);
     }
 
@@ -105,9 +100,8 @@ public class TermAppender
      *
      * @param termId for the tail counter
      */
-    public void tailTermId(final int termId)
-    {
-        metaDataBuffer.putLong(TERM_TAIL_COUNTER_OFFSET, ((long)termId) << 32);
+    public void tailTermId(final int termId) {
+        metaDataBuffer.putLong(TERM_TAIL_COUNTER_OFFSET, ((long) termId) << 32);
     }
 
     /**
@@ -115,8 +109,7 @@ public class TermAppender
      *
      * @param status to be set for the log buffer.
      */
-    public void statusOrdered(final int status)
-    {
+    public void statusOrdered(final int status) {
         metaDataBuffer.putIntOrdered(TERM_STATUS_OFFSET, status);
     }
 
@@ -129,8 +122,7 @@ public class TermAppender
      * @return the resulting offset of the term after the append on success otherwise {@link #TRIPPED} or {@link #FAILED}
      * packed with the termId if a padding record was inserted at the end.
      */
-    public long claim(final HeaderWriter header, final int length, final BufferClaim bufferClaim)
-    {
+    public long claim(final HeaderWriter header, final int length, final BufferClaim bufferClaim) {
         final int frameLength = length + HEADER_LENGTH;
         final int alignedLength = align(frameLength, FRAME_ALIGNMENT);
         final long rawTail = getAndAddRawTail(alignedLength);
@@ -140,13 +132,10 @@ public class TermAppender
         final int termLength = termBuffer.capacity();
 
         long resultingOffset = termOffset + alignedLength;
-        if (resultingOffset > (termLength - HEADER_LENGTH))
-        {
+        if (resultingOffset > (termLength - HEADER_LENGTH)) {
             resultingOffset = handleEndOfLogCondition(termBuffer, termOffset, header, termLength, termId(rawTail));
-        }
-        else
-        {
-            final int offset = (int)termOffset;
+        } else {
+            final int offset = (int) termOffset;
             header.write(termBuffer, offset, frameLength, termId(rawTail));
             bufferClaim.wrap(termBuffer, offset, frameLength);
         }
@@ -165,8 +154,7 @@ public class TermAppender
      * packed with the termId if a padding record was inserted at the end.
      */
     public long appendUnfragmentedMessage(
-        final HeaderWriter header, final DirectBuffer srcBuffer, final int srcOffset, final int length)
-    {
+            final HeaderWriter header, final DirectBuffer srcBuffer, final int srcOffset, final int length) {
         final int frameLength = length + HEADER_LENGTH;
         final int alignedLength = align(frameLength, FRAME_ALIGNMENT);
         final long rawTail = getAndAddRawTail(alignedLength);
@@ -176,13 +164,10 @@ public class TermAppender
         final int termLength = termBuffer.capacity();
 
         long resultingOffset = termOffset + alignedLength;
-        if (resultingOffset > (termLength - HEADER_LENGTH))
-        {
+        if (resultingOffset > (termLength - HEADER_LENGTH)) {
             resultingOffset = handleEndOfLogCondition(termBuffer, termOffset, header, termLength, termId(rawTail));
-        }
-        else
-        {
-            final int offset = (int)termOffset;
+        } else {
+            final int offset = (int) termOffset;
             header.write(termBuffer, offset, frameLength, termId(rawTail));
             termBuffer.putBytes(offset + HEADER_LENGTH, srcBuffer, srcOffset, length);
             frameLengthOrdered(termBuffer, offset, frameLength);
@@ -204,12 +189,11 @@ public class TermAppender
      * packed with the termId if a padding record was inserted at the end.
      */
     public long appendFragmentedMessage(
-        final HeaderWriter header,
-        final DirectBuffer srcBuffer,
-        final int srcOffset,
-        final int length,
-        final int maxPayloadLength)
-    {
+            final HeaderWriter header,
+            final DirectBuffer srcBuffer,
+            final int srcOffset,
+            final int length,
+            final int maxPayloadLength) {
         final int numMaxPayloads = length / maxPayloadLength;
         final int remainingPayload = length % maxPayloadLength;
         final int lastFrameLength = remainingPayload > 0 ? align(remainingPayload + HEADER_LENGTH, FRAME_ALIGNMENT) : 0;
@@ -222,30 +206,25 @@ public class TermAppender
         final int termLength = termBuffer.capacity();
 
         long resultingOffset = termOffset + requiredLength;
-        if (resultingOffset > (termLength - HEADER_LENGTH))
-        {
+        if (resultingOffset > (termLength - HEADER_LENGTH)) {
             resultingOffset = handleEndOfLogCondition(termBuffer, termOffset, header, termLength, termId);
-        }
-        else
-        {
-            int offset = (int)termOffset;
+        } else {
+            int offset = (int) termOffset;
             byte flags = BEGIN_FRAG_FLAG;
             int remaining = length;
-            do
-            {
+            do {
                 final int bytesToWrite = Math.min(remaining, maxPayloadLength);
                 final int frameLength = bytesToWrite + HEADER_LENGTH;
                 final int alignedLength = align(frameLength, FRAME_ALIGNMENT);
 
                 header.write(termBuffer, offset, frameLength, termId);
                 termBuffer.putBytes(
-                    offset + HEADER_LENGTH,
-                    srcBuffer,
-                    srcOffset + (length - remaining),
-                    bytesToWrite);
+                        offset + HEADER_LENGTH,
+                        srcBuffer,
+                        srcOffset + (length - remaining),
+                        bytesToWrite);
 
-                if (remaining <= maxPayloadLength)
-                {
+                if (remaining <= maxPayloadLength) {
                     flags |= END_FRAG_FLAG;
                 }
 
@@ -270,9 +249,8 @@ public class TermAppender
      * @param termOffset value to be packed.
      * @return a long with both ints packed into it.
      */
-    public static long pack(final int termId, final int termOffset)
-    {
-        return ((long)termId << 32) | (termOffset & 0xFFFF_FFFFL);
+    public static long pack(final int termId, final int termOffset) {
+        return ((long) termId << 32) | (termOffset & 0xFFFF_FFFFL);
     }
 
     /**
@@ -281,9 +259,8 @@ public class TermAppender
      * @param result into which the termOffset value has been packed.
      * @return the termOffset after the append
      */
-    public static int termOffset(final long result)
-    {
-        return (int)result;
+    public static int termOffset(final long result) {
+        return (int) result;
     }
 
     /**
@@ -292,23 +269,20 @@ public class TermAppender
      * @param result into which the termId value has been packed.
      * @return the termId in which the append operation took place.
      */
-    public static int termId(final long result)
-    {
-        return (int)(result >>> 32);
+    public static int termId(final long result) {
+        return (int) (result >>> 32);
     }
 
     private long handleEndOfLogCondition(
-        final UnsafeBuffer termBuffer,
-        final long termOffset,
-        final HeaderWriter header,
-        final int termLength,
-        final int termId)
-    {
+            final UnsafeBuffer termBuffer,
+            final long termOffset,
+            final HeaderWriter header,
+            final int termLength,
+            final int termId) {
         int resultingOffset = FAILED;
 
-        if (termOffset <= (termLength - HEADER_LENGTH))
-        {
-            final int offset = (int)termOffset;
+        if (termOffset <= (termLength - HEADER_LENGTH)) {
+            final int offset = (int) termOffset;
             final int paddingLength = termLength - offset;
             header.write(termBuffer, offset, paddingLength, termId);
             frameType(termBuffer, offset, PADDING_FRAME_TYPE);
@@ -320,8 +294,7 @@ public class TermAppender
         return pack(termId, resultingOffset);
     }
 
-    private long getAndAddRawTail(final int alignedLength)
-    {
+    private long getAndAddRawTail(final int alignedLength) {
         return metaDataBuffer.getAndAddLong(TERM_TAIL_COUNTER_OFFSET, alignedLength);
     }
 }

@@ -19,8 +19,7 @@ package uk.co.real_logic.aeron.driver;
  * Handler for sending a retransmit
  */
 @FunctionalInterface
-public interface RetransmitSender
-{
+public interface RetransmitSender {
     /**
      * Called when a retransmit should be sent
      *

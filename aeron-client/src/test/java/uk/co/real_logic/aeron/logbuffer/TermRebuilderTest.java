@@ -28,21 +28,18 @@ import static java.nio.ByteOrder.LITTLE_ENDIAN;
 import static org.mockito.Mockito.*;
 import static uk.co.real_logic.aeron.logbuffer.FrameDescriptor.*;
 
-public class TermRebuilderTest
-{
+public class TermRebuilderTest {
     private static final int TERM_BUFFER_CAPACITY = LogBufferDescriptor.TERM_MIN_LENGTH;
 
     private final UnsafeBuffer termBuffer = mock(UnsafeBuffer.class);
 
     @Before
-    public void setUp()
-    {
+    public void setUp() {
         when(valueOf(termBuffer.capacity())).thenReturn(valueOf(TERM_BUFFER_CAPACITY));
     }
 
     @Test
-    public void shouldInsertIntoEmptyBuffer()
-    {
+    public void shouldInsertIntoEmptyBuffer() {
         final UnsafeBuffer packet = new UnsafeBuffer(ByteBuffer.allocateDirect(256));
         final int termOffset = 0;
         final int srcOffset = 0;
@@ -58,18 +55,17 @@ public class TermRebuilderTest
     }
 
     @Test
-    public void shouldInsertLastFrameIntoBuffer()
-    {
+    public void shouldInsertLastFrameIntoBuffer() {
         final int frameLength = BitUtil.align(256, FRAME_ALIGNMENT);
         final int srcOffset = 0;
         final int tail = TERM_BUFFER_CAPACITY - frameLength;
         final int termOffset = tail;
         final UnsafeBuffer packet = new UnsafeBuffer(ByteBuffer.allocateDirect(frameLength));
-        packet.putShort(typeOffset(srcOffset), (short)PADDING_FRAME_TYPE, LITTLE_ENDIAN);
+        packet.putShort(typeOffset(srcOffset), (short) PADDING_FRAME_TYPE, LITTLE_ENDIAN);
         packet.putInt(srcOffset, frameLength, LITTLE_ENDIAN);
 
         when(termBuffer.getInt(tail, LITTLE_ENDIAN)).thenReturn(frameLength);
-        when(termBuffer.getShort(typeOffset(tail), LITTLE_ENDIAN)).thenReturn((short)PADDING_FRAME_TYPE);
+        when(termBuffer.getShort(typeOffset(tail), LITTLE_ENDIAN)).thenReturn((short) PADDING_FRAME_TYPE);
 
         TermRebuilder.insert(termBuffer, termOffset, packet, frameLength);
 
@@ -77,8 +73,7 @@ public class TermRebuilderTest
     }
 
     @Test
-    public void shouldFillSingleGap()
-    {
+    public void shouldFillSingleGap() {
         final int frameLength = 50;
         final int alignedFrameLength = BitUtil.align(frameLength, FRAME_ALIGNMENT);
         final int srcOffset = 0;
@@ -96,8 +91,7 @@ public class TermRebuilderTest
     }
 
     @Test
-    public void shouldFillAfterAGap()
-    {
+    public void shouldFillAfterAGap() {
         final int frameLength = 50;
         final int alignedFrameLength = BitUtil.align(frameLength, FRAME_ALIGNMENT);
         final int srcOffset = 0;
@@ -113,8 +107,7 @@ public class TermRebuilderTest
     }
 
     @Test
-    public void shouldFillGapButNotMoveTailOrHwm()
-    {
+    public void shouldFillGapButNotMoveTailOrHwm() {
         final int frameLength = 50;
         final int alignedFrameLength = BitUtil.align(frameLength, FRAME_ALIGNMENT);
         final int srcOffset = 0;

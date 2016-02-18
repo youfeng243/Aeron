@@ -24,48 +24,40 @@ import java.util.function.Consumer;
 
 import static java.util.stream.Collectors.toList;
 
-class ActiveSubscriptions
-{
+class ActiveSubscriptions {
     private final Int2ObjectHashMap<List<Subscription>> subscriptionsByStreamIdMap = new Int2ObjectHashMap<>();
 
-    public void forEach(final int streamId, final Consumer<Subscription> handler)
-    {
+    public void forEach(final int streamId, final Consumer<Subscription> handler) {
         final List<Subscription> subscriptions = subscriptionsByStreamIdMap.get(streamId);
-        if (null != subscriptions)
-        {
+        if (null != subscriptions) {
             subscriptions.forEach(handler);
         }
     }
 
-    public void add(final Subscription subscription)
-    {
+    public void add(final Subscription subscription) {
         final List<Subscription> subscriptions = subscriptionsByStreamIdMap.computeIfAbsent(
-            subscription.streamId(), (ignore) -> new ArrayList<>());
+                subscription.streamId(), (ignore) -> new ArrayList<>());
 
         subscriptions.add(subscription);
     }
 
-    public void remove(final Subscription subscription)
-    {
+    public void remove(final Subscription subscription) {
         final int streamId = subscription.streamId();
         final List<Subscription> subscriptions = subscriptionsByStreamIdMap.get(streamId);
-        if (subscriptions.remove(subscription) && subscriptions.isEmpty())
-        {
+        if (subscriptions.remove(subscription) && subscriptions.isEmpty()) {
             subscriptionsByStreamIdMap.remove(streamId);
-            if (subscriptionsByStreamIdMap.isEmpty())
-            {
+            if (subscriptionsByStreamIdMap.isEmpty()) {
                 subscriptionsByStreamIdMap.remove(streamId);
             }
         }
     }
 
-    public void close()
-    {
+    public void close() {
         subscriptionsByStreamIdMap
-            .values()
-            .stream()
-            .flatMap(Collection::stream)
-            .collect(toList())
-            .forEach(Subscription::close);
+                .values()
+                .stream()
+                .flatMap(Collection::stream)
+                .collect(toList())
+                .forEach(Subscription::close);
     }
 }

@@ -18,32 +18,32 @@ package uk.co.real_logic.aeron.driver;
 /**
  * Delay generator that simply returns a constant value (such as 0)
  */
-public class StaticDelayGenerator implements FeedbackDelayGenerator
-{
+public class StaticDelayGenerator implements FeedbackDelayGenerator {
     private final long delayInNs;
     private final boolean immediateFeedback;
 
     /**
      * Create a delayInNs generator that uses the specified delayInNs.
      *
-     * @param delayInNs to return
+     * @param delayInNs         to return
      * @param immediateFeedback or not
      */
-    public StaticDelayGenerator(final long delayInNs, final boolean immediateFeedback)
-    {
+    public StaticDelayGenerator(final long delayInNs, final boolean immediateFeedback) {
         this.delayInNs = delayInNs;
         this.immediateFeedback = immediateFeedback;
     }
 
-    /** {@inheritDoc} */
-    public long generateDelay()
-    {
+    /**
+     * {@inheritDoc}
+     */
+    public long generateDelay() {
         return delayInNs;
     }
 
-    /** {@inheritDoc} */
-    public boolean shouldFeedbackImmediately()
-    {
+    /**
+     * {@inheritDoc}
+     */
+    public boolean shouldFeedbackImmediately() {
         return immediateFeedback;
     }
 }

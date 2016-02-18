@@ -21,8 +21,7 @@ import uk.co.real_logic.agrona.concurrent.UnsafeBuffer;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertThat;
 
-public class EventEncoderTest
-{
+public class EventEncoderTest {
     private static final String MESSAGE = "End of the world!";
     private static final String DECLARING_CLASS = EventEncoderTest.class.getName();
     private static final String METHOD = "someMethod";
@@ -34,8 +33,7 @@ public class EventEncoderTest
     private UnsafeBuffer buffer = new UnsafeBuffer(new byte[BUFFER_LENGTH]);
 
     @Test
-    public void dissectAsExceptionShouldContainTheValuesEncoded()
-    {
+    public void dissectAsExceptionShouldContainTheValuesEncoded() {
         final Exception ex = new Exception(MESSAGE);
         ex.fillInStackTrace();
 
@@ -51,8 +49,7 @@ public class EventEncoderTest
     }
 
     @Test
-    public void dissectAsInvocationShouldContainTheValuesEncoded()
-    {
+    public void dissectAsInvocationShouldContainTheValuesEncoded() {
         final StackTraceElement element = new StackTraceElement(DECLARING_CLASS, METHOD, FILE, LINE_NUMBER);
 
         EventEncoder.encode(buffer, element);

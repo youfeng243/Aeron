@@ -25,53 +25,45 @@ import static uk.co.real_logic.agrona.collections.CollectionUtil.getOrDefault;
 /**
  * Map for navigating to active {@link Publication}s.
  */
-public class ActivePublications
-{
+public class ActivePublications {
     private final Map<String, Int2ObjectHashMap<Publication>> publicationsByChannelMap = new HashMap<>();
 
-    public Publication get(final String channel, final int streamId)
-    {
+    public Publication get(final String channel, final int streamId) {
         final Int2ObjectHashMap<Publication> publicationByStreamIdMap = publicationsByChannelMap.get(channel);
-        if (null == publicationByStreamIdMap)
-        {
+        if (null == publicationByStreamIdMap) {
             return null;
         }
 
         return publicationByStreamIdMap.get(streamId);
     }
 
-    public Publication put(final String channel, final int streamId, final Publication publication)
-    {
+    public Publication put(final String channel, final int streamId, final Publication publication) {
         final Int2ObjectHashMap<Publication> publicationByStreamIdMap =
-            getOrDefault(publicationsByChannelMap, channel, (ignore) -> new Int2ObjectHashMap<>());
+                getOrDefault(publicationsByChannelMap, channel, (ignore) -> new Int2ObjectHashMap<>());
 
         return publicationByStreamIdMap.put(streamId, publication);
     }
 
-    public Publication remove(final String channel, final int streamId)
-    {
+    public Publication remove(final String channel, final int streamId) {
         final Int2ObjectHashMap<Publication> publicationByStreamIdMap = publicationsByChannelMap.get(channel);
-        if (null == publicationByStreamIdMap)
-        {
+        if (null == publicationByStreamIdMap) {
             return null;
         }
 
         final Publication publication = publicationByStreamIdMap.remove(streamId);
-        if (publicationByStreamIdMap.isEmpty())
-        {
+        if (publicationByStreamIdMap.isEmpty()) {
             publicationsByChannelMap.remove(channel);
         }
 
         return publication;
     }
 
-    public void close()
-    {
+    public void close() {
         publicationsByChannelMap
-            .values()
-            .stream()
-            .flatMap((publicationByStreamIdMap) -> publicationByStreamIdMap.values().stream())
-            .collect(toList())
-            .forEach(Publication::release);
+                .values()
+                .stream()
+                .flatMap((publicationByStreamIdMap) -> publicationByStreamIdMap.values().stream())
+                .collect(toList())
+                .forEach(Publication::release);
     }
 }

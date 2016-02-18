@@ -31,21 +31,19 @@ import static uk.co.real_logic.aeron.logbuffer.LogBufferDescriptor.TERM_MIN_LENG
 import static uk.co.real_logic.aeron.logbuffer.LogBufferDescriptor.computePosition;
 import static uk.co.real_logic.agrona.BitUtil.align;
 
-public class LossDetectorTest
-{
+public class LossDetectorTest {
     private static final int TERM_BUFFER_LENGTH = TERM_MIN_LENGTH;
     private static final int POSITION_BITS_TO_SHIFT = Integer.numberOfTrailingZeros(TERM_BUFFER_LENGTH);
     private static final int MASK = TERM_BUFFER_LENGTH - 1;
 
     private static final byte[] DATA = new byte[36];
 
-    static
-    {
-        for (int i = 0; i < DATA.length; i++)
-        {
-            DATA[i] = (byte)i;
+    static {
+        for (int i = 0; i < DATA.length; i++) {
+            DATA[i] = (byte) i;
         }
     }
+
     private static final int MESSAGE_LENGTH = DataHeaderFlyweight.HEADER_LENGTH + DATA.length;
     private static final int ALIGNED_FRAME_LENGTH = align(MESSAGE_LENGTH, FrameDescriptor.FRAME_ALIGNMENT);
     private static final int SESSION_ID = 0x5E55101D;
@@ -54,10 +52,10 @@ public class LossDetectorTest
     private static final long ACTIVE_TERM_POSITION = computePosition(TERM_ID, 0, POSITION_BITS_TO_SHIFT, TERM_ID);
 
     private static final StaticDelayGenerator DELAY_GENERATOR = new StaticDelayGenerator(
-        TimeUnit.MILLISECONDS.toNanos(20), false);
+            TimeUnit.MILLISECONDS.toNanos(20), false);
 
     private static final StaticDelayGenerator DELAY_GENERATOR_WITH_IMMEDIATE = new StaticDelayGenerator(
-        TimeUnit.MILLISECONDS.toNanos(20), true);
+            TimeUnit.MILLISECONDS.toNanos(20), true);
 
     private final UnsafeBuffer termBuffer = new UnsafeBuffer(ByteBuffer.allocateDirect(TERM_BUFFER_LENGTH));
 
@@ -68,8 +66,7 @@ public class LossDetectorTest
     private NakMessageSender nakMessageSender;
     private long currentTime = 0;
 
-    public LossDetectorTest()
-    {
+    public LossDetectorTest() {
         nakMessageSender = mock(NakMessageSender.class);
 
         handler = new LossDetector(DELAY_GENERATOR, nakMessageSender);
@@ -77,8 +74,7 @@ public class LossDetectorTest
     }
 
     @Test
-    public void shouldNotSendNakWhenBufferIsEmpty()
-    {
+    public void shouldNotSendNakWhenBufferIsEmpty() {
         final long rebuildPosition = ACTIVE_TERM_POSITION;
         final long hwmPosition = ACTIVE_TERM_POSITION;
 
@@ -90,8 +86,7 @@ public class LossDetectorTest
     }
 
     @Test
-    public void shouldNotNakIfNoMissingData()
-    {
+    public void shouldNotNakIfNoMissingData() {
         final long rebuildPosition = ACTIVE_TERM_POSITION;
         final long hwmPosition = ACTIVE_TERM_POSITION + (ALIGNED_FRAME_LENGTH * 3);
 
@@ -107,8 +102,7 @@ public class LossDetectorTest
     }
 
     @Test
-    public void shouldNakMissingData()
-    {
+    public void shouldNakMissingData() {
         final long rebuildPosition = ACTIVE_TERM_POSITION;
         final long hwmPosition = ACTIVE_TERM_POSITION + (ALIGNED_FRAME_LENGTH * 3);
 
@@ -123,8 +117,7 @@ public class LossDetectorTest
     }
 
     @Test
-    public void shouldRetransmitNakForMissingData()
-    {
+    public void shouldRetransmitNakForMissingData() {
         final long rebuildPosition = ACTIVE_TERM_POSITION;
         final long hwmPosition = ACTIVE_TERM_POSITION + (ALIGNED_FRAME_LENGTH * 3);
 
@@ -141,8 +134,7 @@ public class LossDetectorTest
     }
 
     @Test
-    public void shouldSuppressNakOnReceivingNak()
-    {
+    public void shouldSuppressNakOnReceivingNak() {
         final long rebuildPosition = ACTIVE_TERM_POSITION;
         final long hwmPosition = ACTIVE_TERM_POSITION + (ALIGNED_FRAME_LENGTH * 3);
 
@@ -159,8 +151,7 @@ public class LossDetectorTest
     }
 
     @Test
-    public void shouldStopNakOnReceivingData()
-    {
+    public void shouldStopNakOnReceivingData() {
         long rebuildPosition = ACTIVE_TERM_POSITION;
         final long hwmPosition = ACTIVE_TERM_POSITION + (ALIGNED_FRAME_LENGTH * 3);
 
@@ -179,8 +170,7 @@ public class LossDetectorTest
     }
 
     @Test
-    public void shouldHandleMoreThan2Gaps()
-    {
+    public void shouldHandleMoreThan2Gaps() {
         long rebuildPosition = ACTIVE_TERM_POSITION;
         final long hwmPosition = ACTIVE_TERM_POSITION + (ALIGNED_FRAME_LENGTH * 7);
 
@@ -205,8 +195,7 @@ public class LossDetectorTest
     }
 
     @Test
-    public void shouldReplaceOldNakWithNewNak()
-    {
+    public void shouldReplaceOldNakWithNewNak() {
         long rebuildPosition = ACTIVE_TERM_POSITION;
         long hwmPosition = ACTIVE_TERM_POSITION + (ALIGNED_FRAME_LENGTH * 3);
 
@@ -230,8 +219,7 @@ public class LossDetectorTest
     }
 
     @Test
-    public void shouldHandleImmediateNak()
-    {
+    public void shouldHandleImmediateNak() {
         handler = getLossHandlerWithImmediate();
 
         final long rebuildPosition = ACTIVE_TERM_POSITION;
@@ -246,8 +234,7 @@ public class LossDetectorTest
     }
 
     @Test
-    public void shouldNotNakImmediatelyByDefault()
-    {
+    public void shouldNotNakImmediatelyByDefault() {
         final long rebuildPosition = ACTIVE_TERM_POSITION;
         final long hwmPosition = ACTIVE_TERM_POSITION + (ALIGNED_FRAME_LENGTH * 3);
 
@@ -260,8 +247,7 @@ public class LossDetectorTest
     }
 
     @Test
-    public void shouldOnlySendNaksOnceOnMultipleScans()
-    {
+    public void shouldOnlySendNaksOnceOnMultipleScans() {
         handler = getLossHandlerWithImmediate();
 
         final long rebuildPosition = ACTIVE_TERM_POSITION;
@@ -277,8 +263,7 @@ public class LossDetectorTest
     }
 
     @Test
-    public void shouldHandleHwmGreaterThanCompletedBuffer()
-    {
+    public void shouldHandleHwmGreaterThanCompletedBuffer() {
         handler = getLossHandlerWithImmediate();
 
         long rebuildPosition = ACTIVE_TERM_POSITION;
@@ -293,8 +278,7 @@ public class LossDetectorTest
     }
 
     @Test
-    public void shouldHandleNonZeroInitialTermOffset()
-    {
+    public void shouldHandleNonZeroInitialTermOffset() {
         handler = getLossHandlerWithImmediate();
 
         final long rebuildPosition = ACTIVE_TERM_POSITION + (ALIGNED_FRAME_LENGTH * 3);
@@ -309,39 +293,34 @@ public class LossDetectorTest
         verifyNoMoreInteractions(nakMessageSender);
     }
 
-    private LossDetector getLossHandlerWithImmediate()
-    {
+    private LossDetector getLossHandlerWithImmediate() {
         return new LossDetector(DELAY_GENERATOR_WITH_IMMEDIATE, nakMessageSender);
     }
 
-    private void insertDataFrame(final int offset)
-    {
+    private void insertDataFrame(final int offset) {
         insertDataFrame(offset, DATA);
     }
 
-    private void insertDataFrame(final int offset, final byte[] payload)
-    {
+    private void insertDataFrame(final int offset, final byte[] payload) {
         dataHeader.termId(TERM_ID)
-                  .streamId(STREAM_ID)
-                  .sessionId(SESSION_ID)
-                  .termOffset(offset)
-                  .frameLength(payload.length + DataHeaderFlyweight.HEADER_LENGTH)
-                  .headerType(HeaderFlyweight.HDR_TYPE_DATA)
-                  .flags(DataHeaderFlyweight.BEGIN_AND_END_FLAGS)
-                  .version(HeaderFlyweight.CURRENT_VERSION);
+                .streamId(STREAM_ID)
+                .sessionId(SESSION_ID)
+                .termOffset(offset)
+                .frameLength(payload.length + DataHeaderFlyweight.HEADER_LENGTH)
+                .headerType(HeaderFlyweight.HDR_TYPE_DATA)
+                .flags(DataHeaderFlyweight.BEGIN_AND_END_FLAGS)
+                .version(HeaderFlyweight.CURRENT_VERSION);
 
         rcvBuffer.putBytes(dataHeader.dataOffset(), payload);
 
         TermRebuilder.insert(termBuffer, offset, rcvBuffer, payload.length + DataHeaderFlyweight.HEADER_LENGTH);
     }
 
-    private int offsetOfMessage(final int index)
-    {
+    private int offsetOfMessage(final int index) {
         return index * ALIGNED_FRAME_LENGTH;
     }
 
-    private int gapLength()
-    {
+    private int gapLength() {
         return ALIGNED_FRAME_LENGTH;
     }
 }

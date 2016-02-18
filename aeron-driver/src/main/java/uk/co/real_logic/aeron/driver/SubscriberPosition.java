@@ -20,29 +20,24 @@ import uk.co.real_logic.agrona.concurrent.status.Position;
 /**
  * Consumption position a subscriber has got to within a {@link SubscriptionLink}.
  */
-public final class SubscriberPosition
-{
+public final class SubscriberPosition {
     private final SubscriptionLink subscription;
     private final Position position;
 
-    public SubscriberPosition(final SubscriptionLink subscription, final Position position)
-    {
+    public SubscriberPosition(final SubscriptionLink subscription, final Position position) {
         this.subscription = subscription;
         this.position = position;
     }
 
-    public Position position()
-    {
+    public Position position() {
         return position;
     }
 
-    public int positionCounterId()
-    {
+    public int positionCounterId() {
         return position().id();
     }
 
-    public SubscriptionLink subscription()
-    {
+    public SubscriptionLink subscription() {
         return subscription;
     }
 }

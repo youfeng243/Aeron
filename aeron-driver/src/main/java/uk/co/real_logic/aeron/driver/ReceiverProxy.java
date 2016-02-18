@@ -26,112 +26,81 @@ import static uk.co.real_logic.aeron.driver.ThreadingMode.SHARED;
 /**
  * Proxy for offering into the {@link Receiver} Thread's command queue.
  */
-public class ReceiverProxy
-{
+public class ReceiverProxy {
     private final ThreadingMode threadingMode;
     private final Queue<ReceiverCmd> commandQueue;
     private final AtomicCounter failCount;
 
     private Receiver receiver;
 
-    public ReceiverProxy(final ThreadingMode threadingMode, final Queue<ReceiverCmd> commandQueue, final AtomicCounter failCount)
-    {
+    public ReceiverProxy(final ThreadingMode threadingMode, final Queue<ReceiverCmd> commandQueue, final AtomicCounter failCount) {
         this.threadingMode = threadingMode;
         this.commandQueue = commandQueue;
         this.failCount = failCount;
     }
 
-    public void receiver(final Receiver receiver)
-    {
+    public void receiver(final Receiver receiver) {
         this.receiver = receiver;
     }
 
-    public Receiver receiver()
-    {
+    public Receiver receiver() {
         return receiver;
     }
 
-    public void addSubscription(final ReceiveChannelEndpoint mediaEndpoint, final int streamId)
-    {
-        if (isSharedThread())
-        {
+    public void addSubscription(final ReceiveChannelEndpoint mediaEndpoint, final int streamId) {
+        if (isSharedThread()) {
             receiver.onAddSubscription(mediaEndpoint, streamId);
-        }
-        else
-        {
+        } else {
             offer(new AddSubscriptionCmd(mediaEndpoint, streamId));
         }
     }
 
-    public void removeSubscription(final ReceiveChannelEndpoint mediaEndpoint, final int streamId)
-    {
-        if (isSharedThread())
-        {
+    public void removeSubscription(final ReceiveChannelEndpoint mediaEndpoint, final int streamId) {
+        if (isSharedThread()) {
             receiver.onRemoveSubscription(mediaEndpoint, streamId);
-        }
-        else
-        {
+        } else {
             offer(new RemoveSubscriptionCmd(mediaEndpoint, streamId));
         }
     }
 
-    public void newPublicationImage(final ReceiveChannelEndpoint channelEndpoint, final PublicationImage image)
-    {
-        if (isSharedThread())
-        {
+    public void newPublicationImage(final ReceiveChannelEndpoint channelEndpoint, final PublicationImage image) {
+        if (isSharedThread()) {
             receiver.onNewPublicationImage(channelEndpoint, image);
-        }
-        else
-        {
+        } else {
             offer(new NewPublicationImageCmd(channelEndpoint, image));
         }
     }
 
-    public void registerReceiveChannelEndpoint(final ReceiveChannelEndpoint channelEndpoint)
-    {
-        if (isSharedThread())
-        {
+    public void registerReceiveChannelEndpoint(final ReceiveChannelEndpoint channelEndpoint) {
+        if (isSharedThread()) {
             receiver.onRegisterReceiveChannelEndpoint(channelEndpoint);
-        }
-        else
-        {
+        } else {
             offer(new RegisterReceiveChannelEndpointCmd(channelEndpoint));
         }
     }
 
-    public void closeReceiveChannelEndpoint(final ReceiveChannelEndpoint channelEndpoint)
-    {
-        if (isSharedThread())
-        {
+    public void closeReceiveChannelEndpoint(final ReceiveChannelEndpoint channelEndpoint) {
+        if (isSharedThread()) {
             receiver.onCloseReceiveChannelEndpoint(channelEndpoint);
-        }
-        else
-        {
+        } else {
             offer(new CloseReceiveChannelEndpointCmd(channelEndpoint));
         }
     }
 
-    public void removeCoolDown(final ReceiveChannelEndpoint channelEndpoint, final int sessionId, final int streamId)
-    {
-        if (isSharedThread())
-        {
+    public void removeCoolDown(final ReceiveChannelEndpoint channelEndpoint, final int sessionId, final int streamId) {
+        if (isSharedThread()) {
             receiver.onRemoveCoolDown(channelEndpoint, sessionId, streamId);
-        }
-        else
-        {
+        } else {
             offer(new RemoveCoolDownCmd(channelEndpoint, sessionId, streamId));
         }
     }
 
-    private boolean isSharedThread()
-    {
+    private boolean isSharedThread() {
         return threadingMode == SHARED;
     }
 
-    private void offer(final ReceiverCmd cmd)
-    {
-        while (!commandQueue.offer(cmd))
-        {
+    private void offer(final ReceiverCmd cmd) {
+        while (!commandQueue.offer(cmd)) {
             failCount.orderedIncrement();
             Thread.yield();
         }

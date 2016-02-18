@@ -34,25 +34,20 @@ import static uk.co.real_logic.aeron.protocol.HeaderFlyweight.VERSION_FIELD_OFFS
  * This class is designed to be thread safe to be used across multiple producers and makes the header
  * visible in the correct order for consumers.
  */
-public class HeaderWriter
-{
+public class HeaderWriter {
     private final long versionFlagsType;
     private final long sessionId;
     private final long streamId;
 
-    public HeaderWriter(final UnsafeBuffer defaultHeader)
-    {
-        if (ByteOrder.nativeOrder() == LITTLE_ENDIAN)
-        {
-            versionFlagsType = ((long)defaultHeader.getInt(VERSION_FIELD_OFFSET)) << 32;
-            sessionId = ((long)defaultHeader.getInt(SESSION_ID_FIELD_OFFSET)) << 32;
+    public HeaderWriter(final UnsafeBuffer defaultHeader) {
+        if (ByteOrder.nativeOrder() == LITTLE_ENDIAN) {
+            versionFlagsType = ((long) defaultHeader.getInt(VERSION_FIELD_OFFSET)) << 32;
+            sessionId = ((long) defaultHeader.getInt(SESSION_ID_FIELD_OFFSET)) << 32;
             streamId = defaultHeader.getInt(STREAM_ID_FIELD_OFFSET) & 0xFFFF_FFFFL;
-        }
-        else
-        {
+        } else {
             versionFlagsType = defaultHeader.getInt(VERSION_FIELD_OFFSET) & 0xFFFF_FFFFL;
             sessionId = defaultHeader.getInt(SESSION_ID_FIELD_OFFSET) & 0xFFFF_FFFFL;
-            streamId = ((long)defaultHeader.getInt(STREAM_ID_FIELD_OFFSET)) << 32;
+            streamId = ((long) defaultHeader.getInt(STREAM_ID_FIELD_OFFSET)) << 32;
         }
     }
 
@@ -64,22 +59,18 @@ public class HeaderWriter
      * @param length     of the fragment including the header.
      * @param termId     of the current term buffer.
      */
-    public void write(final UnsafeBuffer termBuffer, final int offset, final int length, final int termId)
-    {
+    public void write(final UnsafeBuffer termBuffer, final int offset, final int length, final int termId) {
         final long lengthVersionFlagsType;
         final long termOffsetSessionId;
         final long streamAndTermIds;
 
-        if (ByteOrder.nativeOrder() == LITTLE_ENDIAN)
-        {
+        if (ByteOrder.nativeOrder() == LITTLE_ENDIAN) {
             lengthVersionFlagsType = versionFlagsType | ((-length) & 0xFFFF_FFFFL);
             termOffsetSessionId = sessionId | offset;
-            streamAndTermIds = streamId | (((long)termId) << 32);
-        }
-        else
-        {
-            lengthVersionFlagsType = versionFlagsType | ((((long)reverseBytes(-length))) << 32);
-            termOffsetSessionId = sessionId | ((((long)reverseBytes(offset))) << 32);
+            streamAndTermIds = streamId | (((long) termId) << 32);
+        } else {
+            lengthVersionFlagsType = versionFlagsType | ((((long) reverseBytes(-length))) << 32);
+            termOffsetSessionId = sessionId | ((((long) reverseBytes(offset))) << 32);
             streamAndTermIds = streamId | (reverseBytes(termId) & 0xFFFF_FFFFL);
         }
 

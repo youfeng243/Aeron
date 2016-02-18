@@ -57,17 +57,16 @@ import static uk.co.real_logic.agrona.IoUtil.mapNewFile;
 
 /**
  * Main class for JVM-based media driver
- * <p>
+ *
  * Usage:
  * <code>
  * $ java -jar aeron-driver.jar
  * $ java -Doption=value -jar aeron-driver.jar
  * </code>
- * <p>
+ *
  * {@link Configuration}
  */
-public final class MediaDriver implements AutoCloseable
-{
+public final class MediaDriver implements AutoCloseable {
     /**
      * Attempt to delete directories on start if they exist
      */
@@ -78,37 +77,27 @@ public final class MediaDriver implements AutoCloseable
 
     /**
      * Load system properties from a given filename or url.
-     * <p>
+     *
      * File is first searched in resources, then file system, then URL. All are loaded if multiples found.
      *
      * @param filenameOrUrl that holds properties
      */
-    public static void loadPropertiesFile(final String filenameOrUrl)
-    {
+    public static void loadPropertiesFile(final String filenameOrUrl) {
         final Properties properties = new Properties(System.getProperties());
 
-        try (final InputStream inputStream = MediaDriver.class.getClassLoader().getResourceAsStream(filenameOrUrl))
-        {
+        try (final InputStream inputStream = MediaDriver.class.getClassLoader().getResourceAsStream(filenameOrUrl)) {
             properties.load(inputStream);
-        }
-        catch (final Exception ignore)
-        {
+        } catch (final Exception ignore) {
         }
 
-        try (final FileInputStream inputStream = new FileInputStream(filenameOrUrl))
-        {
+        try (final FileInputStream inputStream = new FileInputStream(filenameOrUrl)) {
             properties.load(inputStream);
-        }
-        catch (final Exception ignore)
-        {
+        } catch (final Exception ignore) {
         }
 
-        try (final InputStream inputStream = new URL(filenameOrUrl).openStream())
-        {
+        try (final InputStream inputStream = new URL(filenameOrUrl).openStream()) {
             properties.load(inputStream);
-        }
-        catch (final Exception ignore)
-        {
+        } catch (final Exception ignore) {
         }
 
         System.setProperties(properties);
@@ -120,15 +109,12 @@ public final class MediaDriver implements AutoCloseable
      * @param args command line arguments
      * @throws Exception if an error occurs
      */
-    public static void main(final String[] args) throws Exception
-    {
-        if (1 == args.length)
-        {
+    public static void main(final String[] args) throws Exception {
+        if (1 == args.length) {
             loadPropertiesFile(args[0]);
         }
 
-        try (final MediaDriver ignored = MediaDriver.launch())
-        {
+        try (final MediaDriver ignored = MediaDriver.launch()) {
             new SigIntBarrier().await();
 
             System.out.println("Shutdown Driver...");
@@ -140,8 +126,7 @@ public final class MediaDriver implements AutoCloseable
      *
      * @param context for the media driver parameters
      */
-    private MediaDriver(final Context context)
-    {
+    private MediaDriver(final Context context) {
         this.ctx = context;
 
         ensureDirectoryIsRecreated(context);
@@ -149,11 +134,11 @@ public final class MediaDriver implements AutoCloseable
         validateSufficientSocketBufferLengths(context);
 
         context
-            .toConductorFromReceiverCommandQueue(new OneToOneConcurrentArrayQueue<>(CMD_QUEUE_CAPACITY))
-            .toConductorFromSenderCommandQueue(new OneToOneConcurrentArrayQueue<>(CMD_QUEUE_CAPACITY))
-            .receiverCommandQueue(new OneToOneConcurrentArrayQueue<>(CMD_QUEUE_CAPACITY))
-            .senderCommandQueue(new OneToOneConcurrentArrayQueue<>(CMD_QUEUE_CAPACITY))
-            .conclude();
+                .toConductorFromReceiverCommandQueue(new OneToOneConcurrentArrayQueue<>(CMD_QUEUE_CAPACITY))
+                .toConductorFromSenderCommandQueue(new OneToOneConcurrentArrayQueue<>(CMD_QUEUE_CAPACITY))
+                .receiverCommandQueue(new OneToOneConcurrentArrayQueue<>(CMD_QUEUE_CAPACITY))
+                .senderCommandQueue(new OneToOneConcurrentArrayQueue<>(CMD_QUEUE_CAPACITY))
+                .conclude();
 
         final Receiver receiver = new Receiver(context);
         final Sender sender = new Sender(context);
@@ -168,35 +153,34 @@ public final class MediaDriver implements AutoCloseable
         final AtomicCounter errorCounter = context.systemCounters().errors();
         final ErrorHandler errorHandler = context.errorHandler();
 
-        switch (context.threadingMode)
-        {
+        switch (context.threadingMode) {
             case SHARED:
                 runners = Collections.singletonList(
-                    new AgentRunner(
-                        context.sharedIdleStrategy,
-                        errorHandler,
-                        errorCounter,
-                        new CompositeAgent(sender, receiver, conductor))
+                        new AgentRunner(
+                                context.sharedIdleStrategy,
+                                errorHandler,
+                                errorCounter,
+                                new CompositeAgent(sender, receiver, conductor))
                 );
                 break;
 
             case SHARED_NETWORK:
                 runners = Arrays.asList(
-                    new AgentRunner(
-                        context.sharedNetworkIdleStrategy,
-                        errorHandler,
-                        errorCounter,
-                        new CompositeAgent(sender, receiver)),
-                    new AgentRunner(context.conductorIdleStrategy, errorHandler, errorCounter, conductor)
+                        new AgentRunner(
+                                context.sharedNetworkIdleStrategy,
+                                errorHandler,
+                                errorCounter,
+                                new CompositeAgent(sender, receiver)),
+                        new AgentRunner(context.conductorIdleStrategy, errorHandler, errorCounter, conductor)
                 );
                 break;
 
             default:
             case DEDICATED:
                 runners = Arrays.asList(
-                    new AgentRunner(context.senderIdleStrategy, errorHandler, errorCounter, sender),
-                    new AgentRunner(context.receiverIdleStrategy, errorHandler, errorCounter, receiver),
-                    new AgentRunner(context.conductorIdleStrategy, errorHandler, errorCounter, conductor)
+                        new AgentRunner(context.senderIdleStrategy, errorHandler, errorCounter, sender),
+                        new AgentRunner(context.receiverIdleStrategy, errorHandler, errorCounter, receiver),
+                        new AgentRunner(context.conductorIdleStrategy, errorHandler, errorCounter, conductor)
                 );
         }
     }
@@ -207,8 +191,7 @@ public final class MediaDriver implements AutoCloseable
      *
      * @return the newly started MediaDriver.
      */
-    public static MediaDriver launchEmbedded()
-    {
+    public static MediaDriver launchEmbedded() {
         return launchEmbedded(new Context());
     }
 
@@ -221,10 +204,8 @@ public final class MediaDriver implements AutoCloseable
      * @param context containing the configuration options.
      * @return the newly started MediaDriver.
      */
-    public static MediaDriver launchEmbedded(final Context context)
-    {
-        if (CommonContext.AERON_DIR_PROP_DEFAULT.equals(context.aeronDirectoryName()))
-        {
+    public static MediaDriver launchEmbedded(final Context context) {
+        if (CommonContext.AERON_DIR_PROP_DEFAULT.equals(context.aeronDirectoryName())) {
             context.aeronDirectoryName(CommonContext.generateRandomDirName());
         }
 
@@ -236,8 +217,7 @@ public final class MediaDriver implements AutoCloseable
      *
      * @return the newly started MediaDriver.
      */
-    public static MediaDriver launch()
-    {
+    public static MediaDriver launch() {
         return launch(new Context());
     }
 
@@ -247,25 +227,20 @@ public final class MediaDriver implements AutoCloseable
      * @param context containing the configuration options.
      * @return the newly created MediaDriver.
      */
-    public static MediaDriver launch(final Context context)
-    {
+    public static MediaDriver launch(final Context context) {
         return new MediaDriver(context).start();
     }
 
     /**
      * Shutdown the media driver by stopping all threads and freeing resources.
      */
-    public void close()
-    {
-        try
-        {
+    public void close() {
+        try {
             runners.forEach(AgentRunner::close);
 
             freeSocketsForReuseOnWindows();
             ctx.close();
-        }
-        catch (final Exception ex)
-        {
+        } catch (final Exception ex) {
             LangUtil.rethrowUnchecked(ex);
         }
     }
@@ -276,105 +251,87 @@ public final class MediaDriver implements AutoCloseable
      *
      * @return the context aeronDirectoryName
      */
-    public String aeronDirectoryName()
-    {
+    public String aeronDirectoryName() {
         return ctx.aeronDirectoryName();
     }
 
-    private void freeSocketsForReuseOnWindows()
-    {
+    private void freeSocketsForReuseOnWindows() {
         ctx.receiverTransportPoller().selectNowWithoutProcessing();
         ctx.senderTransportPoller().selectNowWithoutProcessing();
     }
 
-    private MediaDriver start()
-    {
+    private MediaDriver start() {
         runners.forEach(
-            (runner) ->
-            {
-                final Thread thread = new Thread(runner);
-                thread.setName(runner.agent().roleName());
-                thread.start();
-            });
+                (runner) ->
+                {
+                    final Thread thread = new Thread(runner);
+                    thread.setName(runner.agent().roleName());
+                    thread.start();
+                });
 
         return this;
     }
 
-    private static void validateSufficientSocketBufferLengths(final Context ctx)
-    {
-        try (final DatagramChannel probe = DatagramChannel.open())
-        {
+    private static void validateSufficientSocketBufferLengths(final Context ctx) {
+        try (final DatagramChannel probe = DatagramChannel.open()) {
             final int defaultSoSndBuf = probe.getOption(StandardSocketOptions.SO_SNDBUF);
 
             probe.setOption(StandardSocketOptions.SO_SNDBUF, Integer.MAX_VALUE);
             final int maxSoSndBuf = probe.getOption(StandardSocketOptions.SO_SNDBUF);
 
-            if (maxSoSndBuf < Configuration.SOCKET_SNDBUF_LENGTH)
-            {
+            if (maxSoSndBuf < Configuration.SOCKET_SNDBUF_LENGTH) {
                 System.err.format(
-                    "WARNING: Could not get desired SO_SNDBUF, adjust OS buffer to match %s: attempted=%d, actual=%d\n",
-                    Configuration.SOCKET_SNDBUF_LENGTH_PROP_NAME,
-                    Configuration.SOCKET_SNDBUF_LENGTH,
-                    maxSoSndBuf);
+                        "WARNING: Could not get desired SO_SNDBUF, adjust OS buffer to match %s: attempted=%d, actual=%d\n",
+                        Configuration.SOCKET_SNDBUF_LENGTH_PROP_NAME,
+                        Configuration.SOCKET_SNDBUF_LENGTH,
+                        maxSoSndBuf);
             }
 
             probe.setOption(StandardSocketOptions.SO_RCVBUF, Integer.MAX_VALUE);
             final int maxSoRcvBuf = probe.getOption(StandardSocketOptions.SO_RCVBUF);
 
-            if (maxSoRcvBuf < Configuration.SOCKET_RCVBUF_LENGTH)
-            {
+            if (maxSoRcvBuf < Configuration.SOCKET_RCVBUF_LENGTH) {
                 System.err.format(
-                    "WARNING: Could not get desired SO_RCVBUF, adjust OS buffer to match %s: attempted=%d, actual=%d\n",
-                    Configuration.SOCKET_RCVBUF_LENGTH_PROP_NAME,
-                    Configuration.SOCKET_RCVBUF_LENGTH,
-                    maxSoRcvBuf);
+                        "WARNING: Could not get desired SO_RCVBUF, adjust OS buffer to match %s: attempted=%d, actual=%d\n",
+                        Configuration.SOCKET_RCVBUF_LENGTH_PROP_NAME,
+                        Configuration.SOCKET_RCVBUF_LENGTH,
+                        maxSoRcvBuf);
             }
 
             final int soSndBuf =
-                0 == Configuration.SOCKET_SNDBUF_LENGTH ? defaultSoSndBuf : Configuration.SOCKET_SNDBUF_LENGTH;
+                    0 == Configuration.SOCKET_SNDBUF_LENGTH ? defaultSoSndBuf : Configuration.SOCKET_SNDBUF_LENGTH;
 
-            if (ctx.mtuLength() > soSndBuf)
-            {
+            if (ctx.mtuLength() > soSndBuf) {
                 throw new ConfigurationException(String.format(
-                    "MTU greater than socket SO_SNDBUF, adjust %s to match MTU: mtuLength=%d, SO_SNDBUF=%d",
-                    Configuration.SOCKET_SNDBUF_LENGTH_PROP_NAME,
-                    ctx.mtuLength(),
-                    soSndBuf));
+                        "MTU greater than socket SO_SNDBUF, adjust %s to match MTU: mtuLength=%d, SO_SNDBUF=%d",
+                        Configuration.SOCKET_SNDBUF_LENGTH_PROP_NAME,
+                        ctx.mtuLength(),
+                        soSndBuf));
             }
-        }
-        catch (final IOException ex)
-        {
+        } catch (final IOException ex) {
             throw new RuntimeException(String.format("probe socket: %s", ex.toString()), ex);
         }
     }
 
-    private void ensureDirectoryIsRecreated(final Context ctx)
-    {
+    private void ensureDirectoryIsRecreated(final Context ctx) {
         final File aeronDir = new File(ctx.aeronDirectoryName());
 
-        if (aeronDir.exists())
-        {
+        if (aeronDir.exists()) {
             final Consumer<String> logProgress;
-            if (ctx.warnIfDirectoriesExist())
-            {
+            if (ctx.warnIfDirectoriesExist()) {
                 System.err.println("WARNING: " + aeronDir + " already exists.");
                 logProgress = System.err::println;
-            }
-            else
-            {
-                logProgress = (message) -> { };
+            } else {
+                logProgress = (message) -> {
+                };
             }
 
-            if (ctx.dirsDeleteOnStart())
-            {
+            if (ctx.dirsDeleteOnStart()) {
                 ctx.deleteAeronDirectory();
-            }
-            else
-            {
+            } else {
                 final boolean driverActive = ctx.isDriverActive(ctx.driverTimeoutMs(), logProgress);
 
-                if (driverActive)
-                {
+                if (driverActive) {
                     throw new ActiveDriverException("active driver detected");
                 }
 
@@ -383,19 +340,17 @@ public final class MediaDriver implements AutoCloseable
         }
 
         final BiConsumer<String, String> callback =
-            (path, name) ->
-            {
-                if (ctx.warnIfDirectoriesExist())
+                (path, name) ->
                 {
-                    System.err.println("WARNING: " + name + " directory already exists: " + path);
-                }
-            };
+                    if (ctx.warnIfDirectoriesExist()) {
+                        System.err.println("WARNING: " + name + " directory already exists: " + path);
+                    }
+                };
 
         IoUtil.ensureDirectoryIsRecreated(aeronDir, "aeron", callback);
     }
 
-    public static class Context extends CommonContext
-    {
+    public static class Context extends CommonContext {
         private RawLogFactory rawLogFactory;
         private DataTransportPoller receiverTransportPoller;
         private ControlTransportPoller senderTransportPoller;
@@ -454,8 +409,7 @@ public final class MediaDriver implements AutoCloseable
         private SendChannelEndpointSupplier sendChannelEndpointSupplier;
         private ReceiveChannelEndpointSupplier receiveChannelEndpointSupplier;
 
-        public Context()
-        {
+        public Context() {
             termBufferLength(Configuration.termBufferLength());
             termBufferMaxLength(Configuration.termBufferLengthMax());
             initialWindowLength(Configuration.initialWindowLength());
@@ -473,12 +427,10 @@ public final class MediaDriver implements AutoCloseable
             dirsDeleteOnStart(getBoolean(DIRS_DELETE_ON_START_PROP_NAME));
         }
 
-        public Context conclude()
-        {
+        public Context conclude() {
             super.conclude();
 
-            try
-            {
+            try {
                 concludeNullProperties();
 
                 receiverTransportPoller(new DataTransportPoller());
@@ -488,371 +440,314 @@ public final class MediaDriver implements AutoCloseable
                 Configuration.validateInitialWindowLength(initialWindowLength(), mtuLength());
 
                 cncByteBuffer = mapNewFile(
-                    cncFile(),
-                    CncFileDescriptor.computeCncFileLength(
-                        CONDUCTOR_BUFFER_LENGTH + TO_CLIENTS_BUFFER_LENGTH +
-                        COUNTER_LABELS_BUFFER_LENGTH + COUNTER_VALUES_BUFFER_LENGTH));
+                        cncFile(),
+                        CncFileDescriptor.computeCncFileLength(
+                                CONDUCTOR_BUFFER_LENGTH + TO_CLIENTS_BUFFER_LENGTH +
+                                        COUNTER_LABELS_BUFFER_LENGTH + COUNTER_VALUES_BUFFER_LENGTH));
 
                 cncMetaDataBuffer = CncFileDescriptor.createMetaDataBuffer(cncByteBuffer);
                 CncFileDescriptor.fillMetaData(
-                    cncMetaDataBuffer,
-                    CONDUCTOR_BUFFER_LENGTH,
-                    TO_CLIENTS_BUFFER_LENGTH,
-                    COUNTER_LABELS_BUFFER_LENGTH,
-                    COUNTER_VALUES_BUFFER_LENGTH,
-                    clientLivenessTimeoutNs);
+                        cncMetaDataBuffer,
+                        CONDUCTOR_BUFFER_LENGTH,
+                        TO_CLIENTS_BUFFER_LENGTH,
+                        COUNTER_LABELS_BUFFER_LENGTH,
+                        COUNTER_VALUES_BUFFER_LENGTH,
+                        clientLivenessTimeoutNs);
 
                 final BroadcastTransmitter transmitter =
-                    new BroadcastTransmitter(CncFileDescriptor.createToClientsBuffer(cncByteBuffer, cncMetaDataBuffer));
+                        new BroadcastTransmitter(CncFileDescriptor.createToClientsBuffer(cncByteBuffer, cncMetaDataBuffer));
 
                 clientProxy(new ClientProxy(transmitter, eventLogger));
 
                 toDriverCommands(
-                    new ManyToOneRingBuffer(CncFileDescriptor.createToDriverBuffer(cncByteBuffer, cncMetaDataBuffer)));
+                        new ManyToOneRingBuffer(CncFileDescriptor.createToDriverBuffer(cncByteBuffer, cncMetaDataBuffer)));
 
                 concludeCounters();
 
                 receiverProxy(new ReceiverProxy(
-                    threadingMode, receiverCommandQueue(), systemCounters.receiverProxyFails()));
+                        threadingMode, receiverCommandQueue(), systemCounters.receiverProxyFails()));
                 senderProxy(new SenderProxy(threadingMode, senderCommandQueue(), systemCounters.senderProxyFails()));
                 fromReceiverDriverConductorProxy(new DriverConductorProxy(
-                    threadingMode, toConductorFromReceiverCommandQueue, systemCounters.conductorProxyFails()));
+                        threadingMode, toConductorFromReceiverCommandQueue, systemCounters.conductorProxyFails()));
                 fromSenderDriverConductorProxy(new DriverConductorProxy(
-                    threadingMode, toConductorFromSenderCommandQueue, systemCounters.conductorProxyFails()));
+                        threadingMode, toConductorFromSenderCommandQueue, systemCounters.conductorProxyFails()));
 
                 rawLogBuffersFactory(new RawLogFactory(aeronDirectoryName(),
-                    publicationTermBufferLength, maxImageTermBufferLength, ipcPublicationTermBufferLength, eventLogger));
+                        publicationTermBufferLength, maxImageTermBufferLength, ipcPublicationTermBufferLength, eventLogger));
 
                 concludeIdleStrategies();
                 concludeLossGenerators();
-            }
-            catch (final Exception ex)
-            {
+            } catch (final Exception ex) {
                 LangUtil.rethrowUnchecked(ex);
             }
 
             return this;
         }
 
-        private void concludeNullProperties()
-        {
-            if (null == epochClock)
-            {
+        private void concludeNullProperties() {
+            if (null == epochClock) {
                 epochClock = new SystemEpochClock();
             }
 
-            if (null == nanoClock)
-            {
+            if (null == nanoClock) {
                 nanoClock = new SystemNanoClock();
             }
 
-            if (threadingMode == null)
-            {
+            if (threadingMode == null) {
                 threadingMode = Configuration.threadingMode();
             }
 
             final ByteBuffer eventByteBuffer = ByteBuffer.allocateDirect(eventBufferLength);
 
-            if (null == eventLogger)
-            {
+            if (null == eventLogger) {
                 eventLogger = new EventLogger(eventByteBuffer);
             }
 
-            if (null == eventConsumer)
-            {
+            if (null == eventConsumer) {
                 eventConsumer = System.out::println;
             }
 
             toEventReader(new ManyToOneRingBuffer(new UnsafeBuffer(eventByteBuffer)));
 
-            if (null == unicastSenderFlowControlSupplier)
-            {
+            if (null == unicastSenderFlowControlSupplier) {
                 unicastSenderFlowControlSupplier = Configuration::unicastFlowControlStrategy;
             }
 
-            if (null == multicastSenderFlowControlSupplier)
-            {
+            if (null == multicastSenderFlowControlSupplier) {
                 multicastSenderFlowControlSupplier = Configuration::multicastFlowControlStrategy;
             }
 
-            if (0 == ipcPublicationTermBufferLength)
-            {
+            if (0 == ipcPublicationTermBufferLength) {
                 ipcPublicationTermBufferLength = Configuration.ipcTermBufferLength(termBufferLength());
             }
 
-            if (null == sendChannelEndpointSupplier)
-            {
+            if (null == sendChannelEndpointSupplier) {
                 sendChannelEndpointSupplier = Configuration.sendChannelEndpointSupplier();
             }
 
-            if (null == receiveChannelEndpointSupplier)
-            {
+            if (null == receiveChannelEndpointSupplier) {
                 receiveChannelEndpointSupplier = Configuration.receiveChannelEndpointSupplier();
             }
         }
 
-        public Context epochClock(final EpochClock clock)
-        {
+        public Context epochClock(final EpochClock clock) {
             this.epochClock = clock;
             return this;
         }
 
-        public Context nanoClock(final NanoClock clock)
-        {
+        public Context nanoClock(final NanoClock clock) {
             this.nanoClock = clock;
             return this;
         }
 
         public Context toConductorFromReceiverCommandQueue(
-            final OneToOneConcurrentArrayQueue<DriverConductorCmd> conductorCommandQueue)
-        {
+                final OneToOneConcurrentArrayQueue<DriverConductorCmd> conductorCommandQueue) {
             this.toConductorFromReceiverCommandQueue = conductorCommandQueue;
             return this;
         }
 
         public Context toConductorFromSenderCommandQueue(
-            final OneToOneConcurrentArrayQueue<DriverConductorCmd> conductorCommandQueue)
-        {
+                final OneToOneConcurrentArrayQueue<DriverConductorCmd> conductorCommandQueue) {
             this.toConductorFromSenderCommandQueue = conductorCommandQueue;
             return this;
         }
 
-        public Context rawLogBuffersFactory(final RawLogFactory rawLogFactory)
-        {
+        public Context rawLogBuffersFactory(final RawLogFactory rawLogFactory) {
             this.rawLogFactory = rawLogFactory;
             return this;
         }
 
-        public Context receiverTransportPoller(final DataTransportPoller transportPoller)
-        {
+        public Context receiverTransportPoller(final DataTransportPoller transportPoller) {
             this.receiverTransportPoller = transportPoller;
             return this;
         }
 
-        public Context senderTransportPoller(final ControlTransportPoller transportPoller)
-        {
+        public Context senderTransportPoller(final ControlTransportPoller transportPoller) {
             this.senderTransportPoller = transportPoller;
             return this;
         }
 
-        public Context unicastSenderFlowControlSupplier(final Supplier<FlowControl> senderFlowControl)
-        {
+        public Context unicastSenderFlowControlSupplier(final Supplier<FlowControl> senderFlowControl) {
             this.unicastSenderFlowControlSupplier = senderFlowControl;
             return this;
         }
 
-        public Context multicastSenderFlowControlSupplier(final Supplier<FlowControl> senderFlowControl)
-        {
+        public Context multicastSenderFlowControlSupplier(final Supplier<FlowControl> senderFlowControl) {
             this.multicastSenderFlowControlSupplier = senderFlowControl;
             return this;
         }
 
-        public Context receiverCommandQueue(final OneToOneConcurrentArrayQueue<ReceiverCmd> receiverCommandQueue)
-        {
+        public Context receiverCommandQueue(final OneToOneConcurrentArrayQueue<ReceiverCmd> receiverCommandQueue) {
             this.receiverCommandQueue = receiverCommandQueue;
             return this;
         }
 
-        public Context senderCommandQueue(final OneToOneConcurrentArrayQueue<SenderCmd> senderCommandQueue)
-        {
+        public Context senderCommandQueue(final OneToOneConcurrentArrayQueue<SenderCmd> senderCommandQueue) {
             this.senderCommandQueue = senderCommandQueue;
             return this;
         }
 
-        public Context receiverProxy(final ReceiverProxy receiverProxy)
-        {
+        public Context receiverProxy(final ReceiverProxy receiverProxy) {
             this.receiverProxy = receiverProxy;
             return this;
         }
 
-        public Context senderProxy(final SenderProxy senderProxy)
-        {
+        public Context senderProxy(final SenderProxy senderProxy) {
             this.senderProxy = senderProxy;
             return this;
         }
 
-        public Context fromReceiverDriverConductorProxy(final DriverConductorProxy driverConductorProxy)
-        {
+        public Context fromReceiverDriverConductorProxy(final DriverConductorProxy driverConductorProxy) {
             this.fromReceiverDriverConductorProxy = driverConductorProxy;
             return this;
         }
 
-        public Context fromSenderDriverConductorProxy(final DriverConductorProxy driverConductorProxy)
-        {
+        public Context fromSenderDriverConductorProxy(final DriverConductorProxy driverConductorProxy) {
             this.fromSenderDriverConductorProxy = driverConductorProxy;
             return this;
         }
 
-        public Context conductorIdleStrategy(final IdleStrategy strategy)
-        {
+        public Context conductorIdleStrategy(final IdleStrategy strategy) {
             this.conductorIdleStrategy = strategy;
             return this;
         }
 
-        public Context senderIdleStrategy(final IdleStrategy strategy)
-        {
+        public Context senderIdleStrategy(final IdleStrategy strategy) {
             this.senderIdleStrategy = strategy;
             return this;
         }
 
-        public Context receiverIdleStrategy(final IdleStrategy strategy)
-        {
+        public Context receiverIdleStrategy(final IdleStrategy strategy) {
             this.receiverIdleStrategy = strategy;
             return this;
         }
 
-        public Context sharedNetworkIdleStrategy(final IdleStrategy strategy)
-        {
+        public Context sharedNetworkIdleStrategy(final IdleStrategy strategy) {
             this.sharedNetworkIdleStrategy = strategy;
             return this;
         }
 
-        public Context sharedIdleStrategy(final IdleStrategy strategy)
-        {
+        public Context sharedIdleStrategy(final IdleStrategy strategy) {
             this.sharedIdleStrategy = strategy;
             return this;
         }
 
-        public Context clientProxy(final ClientProxy clientProxy)
-        {
+        public Context clientProxy(final ClientProxy clientProxy) {
             this.clientProxy = clientProxy;
             return this;
         }
 
-        public Context toDriverCommands(final RingBuffer toDriverCommands)
-        {
+        public Context toDriverCommands(final RingBuffer toDriverCommands) {
             this.toDriverCommands = toDriverCommands;
             return this;
         }
 
-        public Context countersManager(final CountersManager countersManager)
-        {
+        public Context countersManager(final CountersManager countersManager) {
             this.countersManager = countersManager;
             return this;
         }
 
-        public Context termBufferLength(final int termBufferLength)
-        {
+        public Context termBufferLength(final int termBufferLength) {
             this.publicationTermBufferLength = termBufferLength;
             return this;
         }
 
-        public Context termBufferMaxLength(final int termBufferMaxLength)
-        {
+        public Context termBufferMaxLength(final int termBufferMaxLength) {
             this.maxImageTermBufferLength = termBufferMaxLength;
             return this;
         }
 
-        public Context ipcTermBufferLength(final int ipcTermBufferLength)
-        {
+        public Context ipcTermBufferLength(final int ipcTermBufferLength) {
             this.ipcPublicationTermBufferLength = ipcTermBufferLength;
             return this;
         }
 
-        public Context initialWindowLength(final int initialWindowLength)
-        {
+        public Context initialWindowLength(final int initialWindowLength) {
             this.initialWindowLength = initialWindowLength;
             return this;
         }
 
-        public Context statusMessageTimeout(final long statusMessageTimeout)
-        {
+        public Context statusMessageTimeout(final long statusMessageTimeout) {
             this.statusMessageTimeout = statusMessageTimeout;
             return this;
         }
 
-        public Context warnIfDirectoriesExist(final boolean value)
-        {
+        public Context warnIfDirectoriesExist(final boolean value) {
             this.warnIfDirectoriesExist = value;
             return this;
         }
 
-        public Context eventConsumer(final Consumer<String> value)
-        {
+        public Context eventConsumer(final Consumer<String> value) {
             this.eventConsumer = value;
             return this;
         }
 
-        public Context eventLogger(final EventLogger value)
-        {
+        public Context eventLogger(final EventLogger value) {
             this.eventLogger = value;
             return this;
         }
 
-        public Context toEventReader(final RingBuffer toEventReader)
-        {
+        public Context toEventReader(final RingBuffer toEventReader) {
             this.toEventReader = toEventReader;
             return this;
         }
 
-        public Context imageLivenessTimeoutNs(final long timeout)
-        {
+        public Context imageLivenessTimeoutNs(final long timeout) {
             this.imageLivenessTimeoutNs = timeout;
             return this;
         }
 
-        public Context clientLivenessTimeoutNs(final long timeout)
-        {
+        public Context clientLivenessTimeoutNs(final long timeout) {
             this.clientLivenessTimeoutNs = timeout;
             return this;
         }
 
-        public Context publicationUnblockTimeoutNs(final long timeout)
-        {
+        public Context publicationUnblockTimeoutNs(final long timeout) {
             this.publicationUnblockTimeoutNs = timeout;
             return this;
         }
 
-        public Context eventBufferLength(final int length)
-        {
+        public Context eventBufferLength(final int length) {
             this.eventBufferLength = length;
             return this;
         }
 
-        public Context dataLossRate(final double lossRate)
-        {
+        public Context dataLossRate(final double lossRate) {
             this.dataLossRate = lossRate;
             return this;
         }
 
-        public Context dataLossSeed(final long lossSeed)
-        {
+        public Context dataLossSeed(final long lossSeed) {
             this.dataLossSeed = lossSeed;
             return this;
         }
 
-        public Context controlLossRate(final double lossRate)
-        {
+        public Context controlLossRate(final double lossRate) {
             this.controlLossRate = lossRate;
             return this;
         }
 
-        public Context controlLossSeed(final long lossSeed)
-        {
+        public Context controlLossSeed(final long lossSeed) {
             this.controlLossSeed = lossSeed;
             return this;
         }
 
-        public Context systemCounters(final SystemCounters systemCounters)
-        {
+        public Context systemCounters(final SystemCounters systemCounters) {
             this.systemCounters = systemCounters;
             return this;
         }
 
-        public Context threadingMode(final ThreadingMode threadingMode)
-        {
+        public Context threadingMode(final ThreadingMode threadingMode) {
             this.threadingMode = threadingMode;
             return this;
         }
 
-        public Context dataLossGenerator(final LossGenerator generator)
-        {
+        public Context dataLossGenerator(final LossGenerator generator) {
             this.dataLossGenerator = generator;
             return this;
         }
 
-        public Context controlLossGenerator(final LossGenerator generator)
-        {
+        public Context controlLossGenerator(final LossGenerator generator) {
             this.controlLossGenerator = generator;
             return this;
         }
@@ -863,8 +758,7 @@ public final class MediaDriver implements AutoCloseable
          * @param dirsDeleteOnStart Attempt deletion.
          * @return this Object for method chaining.
          */
-        public Context dirsDeleteOnStart(final boolean dirsDeleteOnStart)
-        {
+        public Context dirsDeleteOnStart(final boolean dirsDeleteOnStart) {
             this.dirsDeleteOnStart = dirsDeleteOnStart;
             return this;
         }
@@ -872,237 +766,191 @@ public final class MediaDriver implements AutoCloseable
         /**
          * @see CommonContext#aeronDirectoryName(String)
          */
-        public Context aeronDirectoryName(String dirName)
-        {
+        public Context aeronDirectoryName(String dirName) {
             super.aeronDirectoryName(dirName);
             return this;
         }
 
-        public Context sendChannelEndpointSupplier(final SendChannelEndpointSupplier supplier)
-        {
+        public Context sendChannelEndpointSupplier(final SendChannelEndpointSupplier supplier) {
             this.sendChannelEndpointSupplier = supplier;
             return this;
         }
 
-        public Context receiveChannelEndpointSupplier(final ReceiveChannelEndpointSupplier supplier)
-        {
+        public Context receiveChannelEndpointSupplier(final ReceiveChannelEndpointSupplier supplier) {
             this.receiveChannelEndpointSupplier = supplier;
             return this;
         }
 
-        public EpochClock epochClock()
-        {
+        public EpochClock epochClock() {
             return epochClock;
         }
 
-        public NanoClock nanoClock()
-        {
+        public NanoClock nanoClock() {
             return nanoClock;
         }
 
-        public OneToOneConcurrentArrayQueue<DriverConductorCmd> toConductorFromReceiverCommandQueue()
-        {
+        public OneToOneConcurrentArrayQueue<DriverConductorCmd> toConductorFromReceiverCommandQueue() {
             return toConductorFromReceiverCommandQueue;
         }
 
-        public OneToOneConcurrentArrayQueue<DriverConductorCmd> toConductorFromSenderCommandQueue()
-        {
+        public OneToOneConcurrentArrayQueue<DriverConductorCmd> toConductorFromSenderCommandQueue() {
             return toConductorFromSenderCommandQueue;
         }
 
-        public RawLogFactory rawLogBuffersFactory()
-        {
+        public RawLogFactory rawLogBuffersFactory() {
             return rawLogFactory;
         }
 
-        public DataTransportPoller receiverTransportPoller()
-        {
+        public DataTransportPoller receiverTransportPoller() {
             return receiverTransportPoller;
         }
 
-        public ControlTransportPoller senderTransportPoller()
-        {
+        public ControlTransportPoller senderTransportPoller() {
             return senderTransportPoller;
         }
 
-        public Supplier<FlowControl> unicastSenderFlowControlSupplier()
-        {
+        public Supplier<FlowControl> unicastSenderFlowControlSupplier() {
             return unicastSenderFlowControlSupplier;
         }
 
-        public Supplier<FlowControl> multicastSenderFlowControlSupplier()
-        {
+        public Supplier<FlowControl> multicastSenderFlowControlSupplier() {
             return multicastSenderFlowControlSupplier;
         }
 
-        public OneToOneConcurrentArrayQueue<ReceiverCmd> receiverCommandQueue()
-        {
+        public OneToOneConcurrentArrayQueue<ReceiverCmd> receiverCommandQueue() {
             return receiverCommandQueue;
         }
 
-        public OneToOneConcurrentArrayQueue<SenderCmd> senderCommandQueue()
-        {
+        public OneToOneConcurrentArrayQueue<SenderCmd> senderCommandQueue() {
             return senderCommandQueue;
         }
 
-        public ReceiverProxy receiverProxy()
-        {
+        public ReceiverProxy receiverProxy() {
             return receiverProxy;
         }
 
-        public SenderProxy senderProxy()
-        {
+        public SenderProxy senderProxy() {
             return senderProxy;
         }
 
-        public DriverConductorProxy fromReceiverDriverConductorProxy()
-        {
+        public DriverConductorProxy fromReceiverDriverConductorProxy() {
             return fromReceiverDriverConductorProxy;
         }
 
-        public DriverConductorProxy fromSenderDriverConductorProxy()
-        {
+        public DriverConductorProxy fromSenderDriverConductorProxy() {
             return fromSenderDriverConductorProxy;
         }
 
-        public IdleStrategy conductorIdleStrategy()
-        {
+        public IdleStrategy conductorIdleStrategy() {
             return conductorIdleStrategy;
         }
 
-        public IdleStrategy senderIdleStrategy()
-        {
+        public IdleStrategy senderIdleStrategy() {
             return senderIdleStrategy;
         }
 
-        public IdleStrategy receiverIdleStrategy()
-        {
+        public IdleStrategy receiverIdleStrategy() {
             return receiverIdleStrategy;
         }
 
-        public IdleStrategy sharedNetworkIdleStrategy()
-        {
+        public IdleStrategy sharedNetworkIdleStrategy() {
             return sharedNetworkIdleStrategy;
         }
 
-        public IdleStrategy sharedIdleStrategy()
-        {
+        public IdleStrategy sharedIdleStrategy() {
             return sharedIdleStrategy;
         }
 
-        public ClientProxy clientProxy()
-        {
+        public ClientProxy clientProxy() {
             return clientProxy;
         }
 
-        public RingBuffer toDriverCommands()
-        {
+        public RingBuffer toDriverCommands() {
             return toDriverCommands;
         }
 
-        public CountersManager countersManager()
-        {
+        public CountersManager countersManager() {
             return countersManager;
         }
 
-        public long imageLivenessTimeoutNs()
-        {
+        public long imageLivenessTimeoutNs() {
             return imageLivenessTimeoutNs;
         }
 
-        public long clientLivenessTimeoutNs()
-        {
+        public long clientLivenessTimeoutNs() {
             return clientLivenessTimeoutNs;
         }
 
-        public long publicationUnblockTimeoutNs()
-        {
+        public long publicationUnblockTimeoutNs() {
             return publicationUnblockTimeoutNs;
         }
 
-        public int termBufferLength()
-        {
+        public int termBufferLength() {
             return publicationTermBufferLength;
         }
 
-        public int termBufferMaxLength()
-        {
+        public int termBufferMaxLength() {
             return maxImageTermBufferLength;
         }
 
-        public int ipcTermBufferLength()
-        {
+        public int ipcTermBufferLength() {
             return ipcPublicationTermBufferLength;
         }
 
-        public int initialWindowLength()
-        {
+        public int initialWindowLength() {
             return initialWindowLength;
         }
 
-        public long statusMessageTimeout()
-        {
+        public long statusMessageTimeout() {
             return statusMessageTimeout;
         }
 
-        public boolean warnIfDirectoriesExist()
-        {
+        public boolean warnIfDirectoriesExist() {
             return warnIfDirectoriesExist;
         }
 
-        public EventLogger eventLogger()
-        {
+        public EventLogger eventLogger() {
             return eventLogger;
         }
 
-        public ErrorHandler errorHandler()
-        {
+        public ErrorHandler errorHandler() {
             return eventLogger::logException;
         }
 
-        public double dataLossRate()
-        {
+        public double dataLossRate() {
             return dataLossRate;
         }
 
-        public long dataLossSeed()
-        {
+        public long dataLossSeed() {
             return dataLossSeed;
         }
 
-        public double controlLossRate()
-        {
+        public double controlLossRate() {
             return controlLossRate;
         }
 
-        public long controlLossSeed()
-        {
+        public long controlLossSeed() {
             return controlLossSeed;
         }
 
-        public int mtuLength()
-        {
+        public int mtuLength() {
             return mtuLength;
         }
 
-        public LossGenerator dataLossGenerator()
-        {
+        public LossGenerator dataLossGenerator() {
             return dataLossGenerator;
         }
 
-        public LossGenerator controlLossGenerator()
-        {
+        public LossGenerator controlLossGenerator() {
             return controlLossGenerator;
         }
 
-        public CommonContext mtuLength(final int mtuLength)
-        {
+        public CommonContext mtuLength(final int mtuLength) {
             this.mtuLength = mtuLength;
             return this;
         }
 
-        public SystemCounters systemCounters()
-        {
+        public SystemCounters systemCounters() {
             return systemCounters;
         }
 
@@ -1111,104 +959,83 @@ public final class MediaDriver implements AutoCloseable
          *
          * @return true when directories will be deleted, otherwise false.
          */
-        public boolean dirsDeleteOnStart()
-        {
+        public boolean dirsDeleteOnStart() {
             return dirsDeleteOnStart;
         }
 
-        public Consumer<String> eventConsumer()
-        {
+        public Consumer<String> eventConsumer() {
             return eventConsumer;
         }
 
-        public int eventBufferLength()
-        {
+        public int eventBufferLength() {
             return eventBufferLength;
         }
 
-        public RingBuffer toEventReader()
-        {
+        public RingBuffer toEventReader() {
             return toEventReader;
         }
 
-        public SendChannelEndpointSupplier sendChannelEndpointSupplier()
-        {
+        public SendChannelEndpointSupplier sendChannelEndpointSupplier() {
             return sendChannelEndpointSupplier;
         }
 
-        public ReceiveChannelEndpointSupplier receiveChannelEndpointSupplier()
-        {
+        public ReceiveChannelEndpointSupplier receiveChannelEndpointSupplier() {
             return receiveChannelEndpointSupplier;
         }
 
-        public void close()
-        {
+        public void close() {
             // do not close the systemsCounters so that all counters are kept as is.
             IoUtil.unmap(cncByteBuffer);
 
             super.close();
         }
 
-        private void concludeCounters()
-        {
-            if (countersManager() == null)
-            {
-                if (counterLabelsBuffer() == null)
-                {
+        private void concludeCounters() {
+            if (countersManager() == null) {
+                if (counterLabelsBuffer() == null) {
                     counterLabelsBuffer(CncFileDescriptor.createCounterLabelsBuffer(cncByteBuffer, cncMetaDataBuffer));
                 }
 
-                if (counterValuesBuffer() == null)
-                {
+                if (counterValuesBuffer() == null) {
                     counterValuesBuffer(CncFileDescriptor.createCounterValuesBuffer(cncByteBuffer, cncMetaDataBuffer));
                 }
 
                 countersManager(new CountersManager(counterLabelsBuffer(), counterValuesBuffer()));
             }
 
-            if (null == systemCounters)
-            {
+            if (null == systemCounters) {
                 systemCounters = new SystemCounters(countersManager);
             }
         }
 
-        private void concludeIdleStrategies()
-        {
-            if (null == conductorIdleStrategy)
-            {
+        private void concludeIdleStrategies() {
+            if (null == conductorIdleStrategy) {
                 conductorIdleStrategy(Configuration.conductorIdleStrategy());
             }
 
-            if (null == senderIdleStrategy)
-            {
+            if (null == senderIdleStrategy) {
                 senderIdleStrategy(Configuration.senderIdleStrategy());
             }
 
-            if (null == receiverIdleStrategy)
-            {
+            if (null == receiverIdleStrategy) {
                 receiverIdleStrategy(Configuration.receiverIdleStrategy());
             }
 
-            if (null == sharedNetworkIdleStrategy)
-            {
+            if (null == sharedNetworkIdleStrategy) {
                 sharedNetworkIdleStrategy(Configuration.sharedNetworkIdleStrategy());
             }
 
-            if (null == sharedIdleStrategy)
-            {
+            if (null == sharedIdleStrategy) {
                 sharedIdleStrategy(Configuration.sharedIdleStrategy());
             }
         }
 
-        private void concludeLossGenerators()
-        {
-            if (null == dataLossGenerator)
-            {
+        private void concludeLossGenerators() {
+            if (null == dataLossGenerator) {
                 dataLossGenerator(Configuration.createLossGenerator(dataLossRate, dataLossSeed));
             }
 
-            if (null == controlLossGenerator)
-            {
+            if (null == controlLossGenerator) {
                 controlLossGenerator(Configuration.createLossGenerator(controlLossRate, controlLossSeed));
             }
         }

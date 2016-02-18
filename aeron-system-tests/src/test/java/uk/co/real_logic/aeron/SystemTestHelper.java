@@ -18,17 +18,14 @@ package uk.co.real_logic.aeron;
 import java.util.function.BooleanSupplier;
 import java.util.function.IntConsumer;
 
-public class SystemTestHelper
-{
+public class SystemTestHelper {
     public static void executeUntil(
-        final BooleanSupplier condition, final IntConsumer body, final int maxIterations, final long timeout)
-    {
+            final BooleanSupplier condition, final IntConsumer body, final int maxIterations, final long timeout) {
         final long start = System.nanoTime();
         long end;
         int iteration = 0;
 
-        do
-        {
+        do {
             body.accept(iteration);
             end = System.nanoTime();
         }

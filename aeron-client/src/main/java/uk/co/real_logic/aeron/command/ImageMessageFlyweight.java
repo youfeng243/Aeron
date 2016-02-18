@@ -24,7 +24,7 @@ import static uk.co.real_logic.agrona.BitUtil.SIZE_OF_INT;
 /**
  * Control message flyweight for any message that needs to represent a connection
  *
- * <p>
+ *
  * 0                   1                   2                   3
  * 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
  * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -39,8 +39,7 @@ import static uk.co.real_logic.agrona.BitUtil.SIZE_OF_INT;
  * ...                                                             |
  * +---------------------------------------------------------------+
  */
-public class ImageMessageFlyweight
-{
+public class ImageMessageFlyweight {
     private static final int CORRELATION_ID_OFFSET = 0;
     private static final int STREAM_ID_FIELD_OFFSET = 8;
     private static final int CHANNEL_OFFSET = 12;
@@ -56,8 +55,7 @@ public class ImageMessageFlyweight
      * @param offset at which the message begins.
      * @return for fluent API
      */
-    public final ImageMessageFlyweight wrap(final MutableDirectBuffer buffer, final int offset)
-    {
+    public final ImageMessageFlyweight wrap(final MutableDirectBuffer buffer, final int offset) {
         this.buffer = buffer;
         this.offset = offset;
 
@@ -66,20 +64,20 @@ public class ImageMessageFlyweight
 
     /**
      * return correlation id field
+     *
      * @return correlation id field
      */
-    public long correlationId()
-    {
+    public long correlationId() {
         return buffer.getLong(offset + CORRELATION_ID_OFFSET);
     }
 
     /**
      * set correlation id field
+     *
      * @param correlationId field value
      * @return flyweight
      */
-    public ImageMessageFlyweight correlationId(final long correlationId)
-    {
+    public ImageMessageFlyweight correlationId(final long correlationId) {
         buffer.putLong(offset + CORRELATION_ID_OFFSET, correlationId);
 
         return this;
@@ -90,8 +88,7 @@ public class ImageMessageFlyweight
      *
      * @return stream id field
      */
-    public int streamId()
-    {
+    public int streamId() {
         return buffer.getInt(offset + STREAM_ID_FIELD_OFFSET);
     }
 
@@ -101,8 +98,7 @@ public class ImageMessageFlyweight
      * @param streamId field value
      * @return flyweight
      */
-    public ImageMessageFlyweight streamId(final int streamId)
-    {
+    public ImageMessageFlyweight streamId(final int streamId) {
         buffer.putInt(offset + STREAM_ID_FIELD_OFFSET, streamId);
 
         return this;
@@ -113,8 +109,7 @@ public class ImageMessageFlyweight
      *
      * @return channel field
      */
-    public String channel()
-    {
+    public String channel() {
         final int length = buffer.getInt(offset + CHANNEL_OFFSET);
         lengthOfChannel = SIZE_OF_INT + length;
 
@@ -127,8 +122,7 @@ public class ImageMessageFlyweight
      * @param channel field value
      * @return flyweight
      */
-    public ImageMessageFlyweight channel(final String channel)
-    {
+    public ImageMessageFlyweight channel(final String channel) {
         lengthOfChannel = buffer.putStringUtf8(offset + CHANNEL_OFFSET, channel, ByteOrder.nativeOrder());
 
         return this;
@@ -141,8 +135,7 @@ public class ImageMessageFlyweight
      *
      * @return the length of the current message
      */
-    public int length()
-    {
+    public int length() {
         return CHANNEL_OFFSET + lengthOfChannel;
     }
 }

@@ -28,12 +28,10 @@ import static uk.co.real_logic.aeron.driver.Configuration.MTU_LENGTH_DEFAULT;
 import static uk.co.real_logic.aeron.samples.raw.Common.init;
 import static uk.co.real_logic.agrona.BitUtil.SIZE_OF_LONG;
 
-public class TransferToPong
-{
+public class TransferToPong {
     private static final String LOCALHOST = "localhost";
 
-    public static void main(final String[] args) throws IOException
-    {
+    public static void main(final String[] args) throws IOException {
         final FileChannel receiveFileChannel = Common.createTmpFileChannel();
         final ByteBuffer receiveByteBuffer = receiveFileChannel.map(FileChannel.MapMode.READ_WRITE, 0, MTU_LENGTH_DEFAULT);
         final DatagramChannel receiveDatagramChannel = DatagramChannel.open();
@@ -53,19 +51,15 @@ public class TransferToPong
 
         final int packetSize = SIZE_OF_LONG * 2;
 
-        while (true)
-        {
+        while (true) {
             boolean available = false;
-            while (!available)
-            {
-                if (!running.get())
-                {
+            while (!available) {
+                if (!running.get()) {
                     return;
                 }
 
                 final long bytesReceived = receiveFileChannel.transferFrom(receiveDatagramChannel, 0, packetSize);
-                if (packetSize == bytesReceived)
-                {
+                if (packetSize == bytesReceived) {
                     available = true;
                 }
             }
@@ -77,8 +71,7 @@ public class TransferToPong
             sendByteBuffer.putLong(SIZE_OF_LONG, receivedTimestamp);
 
             final long bytesSent = sendFileChannel.transferTo(0, packetSize, sendDatagramChannel);
-            if (packetSize != bytesSent)
-            {
+            if (packetSize != bytesSent) {
                 throw new IllegalStateException("Invalid bytes sent " + bytesSent);
             }
         }

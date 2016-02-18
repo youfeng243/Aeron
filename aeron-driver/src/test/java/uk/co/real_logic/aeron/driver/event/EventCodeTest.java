@@ -22,14 +22,11 @@ import java.util.Set;
 
 import static org.junit.Assert.assertTrue;
 
-public class EventCodeTest
-{
+public class EventCodeTest {
     @Test
-    public void allTagsBitsAreUnique()
-    {
+    public void allTagsBitsAreUnique() {
         final Set<Long> seenTagBits = new HashSet<>();
-        for (final EventCode code : EventCode.values())
-        {
+        for (final EventCode code : EventCode.values()) {
             assertTrue(seenTagBits.add(code.tagBit()));
         }
     }

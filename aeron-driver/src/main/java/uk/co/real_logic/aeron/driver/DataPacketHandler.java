@@ -22,8 +22,7 @@ import uk.co.real_logic.agrona.concurrent.UnsafeBuffer;
 import java.net.InetSocketAddress;
 
 @FunctionalInterface
-public interface DataPacketHandler
-{
+public interface DataPacketHandler {
     /**
      * Handle a Data Frame from the network.
      *
@@ -35,9 +34,9 @@ public interface DataPacketHandler
      * @return the number of bytes received.
      */
     int onDataPacket(
-        ReceiveChannelEndpoint channelEndpoint,
-        DataHeaderFlyweight header,
-        UnsafeBuffer buffer,
-        int length,
-        InetSocketAddress srcAddress);
+            ReceiveChannelEndpoint channelEndpoint,
+            DataHeaderFlyweight header,
+            UnsafeBuffer buffer,
+            int length,
+            InetSocketAddress srcAddress);
 }

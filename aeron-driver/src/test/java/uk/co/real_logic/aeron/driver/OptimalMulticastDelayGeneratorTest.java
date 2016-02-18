@@ -22,8 +22,7 @@ import java.util.stream.IntStream;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.lessThanOrEqualTo;
 
-public class OptimalMulticastDelayGeneratorTest
-{
+public class OptimalMulticastDelayGeneratorTest {
     private static final long MAX_BACKOFF = 60;
     private static final long GROUP_SIZE = 10;
     private static final long GRTT = 10;
@@ -31,13 +30,12 @@ public class OptimalMulticastDelayGeneratorTest
     private OptimalMulticastDelayGenerator generator = new OptimalMulticastDelayGenerator(MAX_BACKOFF, GROUP_SIZE, GRTT);
 
     @Test
-    public void shouldNotExceedTmaxBackoff()
-    {
+    public void shouldNotExceedTmaxBackoff() {
         IntStream.range(0, 100000).forEach(
-            (i) ->
-            {
-                final double delay = generator.generateNewOptimalDelay();
-                assertThat(delay, lessThanOrEqualTo((double)MAX_BACKOFF));
-            });
+                (i) ->
+                {
+                    final double delay = generator.generateNewOptimalDelay();
+                    assertThat(delay, lessThanOrEqualTo((double) MAX_BACKOFF));
+                });
     }
 }

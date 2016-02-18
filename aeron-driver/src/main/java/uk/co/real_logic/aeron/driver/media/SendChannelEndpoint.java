@@ -39,8 +39,7 @@ import static uk.co.real_logic.aeron.protocol.StatusMessageFlyweight.SEND_SETUP_
  * Aggregator of multiple {@link NetworkPublication}s onto a single transport session for
  * sending data and setup frames plus the receiving of status and NAK frames.
  */
-public class SendChannelEndpoint extends UdpChannelTransport
-{
+public class SendChannelEndpoint extends UdpChannelTransport {
     private final NakFlyweight nakMessage;
     private final StatusMessageFlyweight statusMessage;
 
@@ -50,14 +49,13 @@ public class SendChannelEndpoint extends UdpChannelTransport
     private final AtomicCounter statusMessagesReceived;
     private final AtomicCounter nakMessagesReceived;
 
-    public SendChannelEndpoint(final UdpChannel udpChannel, final MediaDriver.Context context)
-    {
+    public SendChannelEndpoint(final UdpChannel udpChannel, final MediaDriver.Context context) {
         super(
-            udpChannel,
-            udpChannel.remoteControl(),
-            udpChannel.localControl(),
-            udpChannel.remoteData(),
-            context.eventLogger());
+                udpChannel,
+                udpChannel.remoteControl(),
+                udpChannel.localControl(),
+                udpChannel.remoteData(),
+                context.eventLogger());
 
         this.nakMessagesReceived = context.systemCounters().nakMessagesReceived();
         this.statusMessagesReceived = context.systemCounters().statusMessagesReceived();
@@ -69,13 +67,11 @@ public class SendChannelEndpoint extends UdpChannelTransport
     /**
      * Called from the {@link Sender} to create the channel for the transport.
      */
-    public void openChannel()
-    {
+    public void openChannel() {
         openDatagramChannel();
     }
 
-    public String originalUriString()
-    {
+    public String originalUriString() {
         return udpChannel().originalUriString();
     }
 
@@ -85,8 +81,7 @@ public class SendChannelEndpoint extends UdpChannelTransport
      * @param streamId for the publication
      * @return publication
      */
-    public NetworkPublication getPublication(final int streamId)
-    {
+    public NetworkPublication getPublication(final int streamId) {
         return driversPublicationByStreamId.get(streamId);
     }
 
@@ -95,8 +90,7 @@ public class SendChannelEndpoint extends UdpChannelTransport
      *
      * @param publication to associate
      */
-    public void addPublication(final NetworkPublication publication)
-    {
+    public void addPublication(final NetworkPublication publication) {
         driversPublicationByStreamId.put(publication.streamId(), publication);
     }
 
@@ -106,8 +100,7 @@ public class SendChannelEndpoint extends UdpChannelTransport
      * @param publication to remove
      * @return publication removed
      */
-    public NetworkPublication removePublication(final NetworkPublication publication)
-    {
+    public NetworkPublication removePublication(final NetworkPublication publication) {
         return driversPublicationByStreamId.remove(publication.streamId());
     }
 
@@ -116,8 +109,7 @@ public class SendChannelEndpoint extends UdpChannelTransport
      *
      * @return number of publications associated.
      */
-    public int sessionCount()
-    {
+    public int sessionCount() {
         return driversPublicationByStreamId.size();
     }
 
@@ -126,8 +118,7 @@ public class SendChannelEndpoint extends UdpChannelTransport
      *
      * @param publication to add to the dispatcher
      */
-    public void registerForSend(final NetworkPublication publication)
-    {
+    public void registerForSend(final NetworkPublication publication) {
         sendersPublicationByStreamAndSessionId.put(publication.sessionId(), publication.streamId(), publication);
     }
 
@@ -136,8 +127,7 @@ public class SendChannelEndpoint extends UdpChannelTransport
      *
      * @param publication to remove
      */
-    public void unregisterForSend(final NetworkPublication publication)
-    {
+    public void unregisterForSend(final NetworkPublication publication) {
         sendersPublicationByStreamAndSessionId.remove(publication.sessionId(), publication.streamId());
     }
 
@@ -148,36 +138,27 @@ public class SendChannelEndpoint extends UdpChannelTransport
      * @param buffer to send
      * @return number of bytes sent
      */
-    public int send(final ByteBuffer buffer)
-    {
+    public int send(final ByteBuffer buffer) {
         int byteSent = 0;
-        try
-        {
+        try {
             byteSent = sendDatagramChannel.write(buffer);
-        }
-        catch (final PortUnreachableException | ClosedChannelException ex)
-        {
+        } catch (final PortUnreachableException | ClosedChannelException ex) {
             // ignore
-        }
-        catch (final IOException ex)
-        {
+        } catch (final IOException ex) {
             LangUtil.rethrowUnchecked(ex);
         }
 
         return byteSent;
     }
 
-    public int pollForData()
-    {
+    public int pollForData() {
         int bytesReceived = 0;
         final InetSocketAddress srcAddress = receive();
 
-        if (null != srcAddress)
-        {
+        if (null != srcAddress) {
             final int length = receiveByteBuffer.position();
 
-            if (isValidFrame(receiveBuffer, length))
-            {
+            if (isValidFrame(receiveBuffer, length)) {
                 bytesReceived = dispatch(receiveBuffer, length, srcAddress);
             }
         }
@@ -185,11 +166,9 @@ public class SendChannelEndpoint extends UdpChannelTransport
         return bytesReceived;
     }
 
-    protected int dispatch(final UnsafeBuffer buffer, final int length, final InetSocketAddress srcAddress)
-    {
+    protected int dispatch(final UnsafeBuffer buffer, final int length, final InetSocketAddress srcAddress) {
         int framesRead = 0;
-        switch (frameType(buffer, 0))
-        {
+        switch (frameType(buffer, 0)) {
             case HDR_TYPE_NAK:
                 onNakMessage(nakMessage);
                 framesRead = 1;
@@ -204,34 +183,27 @@ public class SendChannelEndpoint extends UdpChannelTransport
         return framesRead;
     }
 
-    private void onStatusMessage(final StatusMessageFlyweight msg, final InetSocketAddress srcAddress)
-    {
+    private void onStatusMessage(final StatusMessageFlyweight msg, final InetSocketAddress srcAddress) {
         final NetworkPublication publication = sendersPublicationByStreamAndSessionId.get(msg.sessionId(), msg.streamId());
 
-        if (null != publication)
-        {
-            if (SEND_SETUP_FLAG == (msg.flags() & SEND_SETUP_FLAG))
-            {
+        if (null != publication) {
+            if (SEND_SETUP_FLAG == (msg.flags() & SEND_SETUP_FLAG)) {
                 publication.triggerSendSetupFrame();
-            }
-            else
-            {
+            } else {
                 publication.onStatusMessage(
-                    msg.consumptionTermId(),
-                    msg.consumptionTermOffset(),
-                    msg.receiverWindowLength(),
-                    srcAddress);
+                        msg.consumptionTermId(),
+                        msg.consumptionTermOffset(),
+                        msg.receiverWindowLength(),
+                        srcAddress);
             }
 
             statusMessagesReceived.orderedIncrement();
         }
     }
 
-    private void onNakMessage(final NakFlyweight msg)
-    {
+    private void onNakMessage(final NakFlyweight msg) {
         final NetworkPublication publication = sendersPublicationByStreamAndSessionId.get(msg.sessionId(), msg.streamId());
-        if (null != publication)
-        {
+        if (null != publication) {
             publication.onNak(msg.termId(), msg.termOffset(), msg.length());
             nakMessagesReceived.orderedIncrement();
         }

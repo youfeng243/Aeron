@@ -19,8 +19,7 @@ package uk.co.real_logic.aeron;
  * Interface for delivery of inactive image events to a {@link uk.co.real_logic.aeron.Subscription}.
  */
 @FunctionalInterface
-public interface UnavailableImageHandler
-{
+public interface UnavailableImageHandler {
     /**
      * Method called by Aeron to deliver notification that an Image is no longer available for polling.
      *

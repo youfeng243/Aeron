@@ -28,8 +28,7 @@ import static uk.co.real_logic.agrona.BitUtil.align;
  *
  * This can be used to concurrently read a term buffer which is being appended to.
  */
-public final class TermScanner
-{
+public final class TermScanner {
     /**
      * Scan the term buffer for availability of new messages from a given offset up to a maxLength of bytes.
      *
@@ -38,32 +37,27 @@ public final class TermScanner
      * @param maxLength  in bytes of how much should be scanned.
      * @return resulting status of the scan which packs the available bytes and padding into a long.
      */
-    public static long scanForAvailability(final UnsafeBuffer termBuffer, final int offset, int maxLength)
-    {
+    public static long scanForAvailability(final UnsafeBuffer termBuffer, final int offset, int maxLength) {
         maxLength = Math.min(maxLength, termBuffer.capacity() - offset);
         int available = 0;
         int padding = 0;
 
-        do
-        {
+        do {
             final int termOffset = offset + available;
             final int frameLength = frameLengthVolatile(termBuffer, termOffset);
-            if (frameLength <= 0)
-            {
+            if (frameLength <= 0) {
                 break;
             }
 
             int alignedFrameLength = align(frameLength, FRAME_ALIGNMENT);
-            if (isPaddingFrame(termBuffer, termOffset))
-            {
+            if (isPaddingFrame(termBuffer, termOffset)) {
                 padding = alignedFrameLength - HEADER_LENGTH;
                 alignedFrameLength = HEADER_LENGTH;
             }
 
             available += alignedFrameLength;
 
-            if (available > maxLength)
-            {
+            if (available > maxLength) {
                 available -= alignedFrameLength;
                 padding = 0;
                 break;
@@ -81,9 +75,8 @@ public final class TermScanner
      * @param available value to be packed.
      * @return a long with both ints packed into it.
      */
-    public static long pack(final int padding, final int available)
-    {
-        return ((long)padding << 32) | available;
+    public static long pack(final int padding, final int available) {
+        return ((long) padding << 32) | available;
     }
 
     /**
@@ -92,9 +85,8 @@ public final class TermScanner
      * @param result into which the padding value has been packed.
      * @return the count of bytes that are available to be read.
      */
-    public static int available(final long result)
-    {
-        return (int)result;
+    public static int available(final long result) {
+        return (int) result;
     }
 
     /**
@@ -103,8 +95,7 @@ public final class TermScanner
      * @param result into which the padding value has been packed.
      * @return the count of bytes that should be added for padding to the position on top of what is available.
      */
-    public static int padding(final long result)
-    {
-        return (int)(result >>> 32);
+    public static int padding(final long result) {
+        return (int) (result >>> 32);
     }
 }

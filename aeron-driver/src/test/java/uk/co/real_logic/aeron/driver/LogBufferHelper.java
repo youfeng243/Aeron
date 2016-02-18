@@ -25,67 +25,55 @@ import java.util.stream.Stream;
 import static uk.co.real_logic.aeron.logbuffer.LogBufferDescriptor.LOG_META_DATA_LENGTH;
 import static uk.co.real_logic.aeron.logbuffer.LogBufferDescriptor.PARTITION_COUNT;
 
-public class LogBufferHelper
-{
-    public static RawLog newTestLogBuffers(final int termLength, final int metaDataLength)
-    {
-        return new RawLog()
-        {
+public class LogBufferHelper {
+    public static RawLog newTestLogBuffers(final int termLength, final int metaDataLength) {
+        return new RawLog() {
             private final LogBufferPartition[] partitions = new LogBufferPartition[]
-            {
-                newTestLogBuffer(termLength, metaDataLength),
-                newTestLogBuffer(termLength, metaDataLength),
-                newTestLogBuffer(termLength, metaDataLength),
-            };
+                    {
+                            newTestLogBuffer(termLength, metaDataLength),
+                            newTestLogBuffer(termLength, metaDataLength),
+                            newTestLogBuffer(termLength, metaDataLength),
+                    };
 
             private final UnsafeBuffer logMetaData = new UnsafeBuffer(ByteBuffer.allocateDirect(LOG_META_DATA_LENGTH));
 
-            public int termLength()
-            {
+            public int termLength() {
                 return partitions[0].termBuffer().capacity();
             }
 
-            public Stream<LogBufferPartition> stream()
-            {
+            public Stream<LogBufferPartition> stream() {
                 return Stream.of(partitions);
             }
 
-            public LogBufferPartition[] partitions()
-            {
+            public LogBufferPartition[] partitions() {
                 return partitions;
             }
 
-            public UnsafeBuffer logMetaData()
-            {
+            public UnsafeBuffer logMetaData() {
                 return logMetaData;
             }
 
-            public ByteBuffer[] sliceTerms()
-            {
+            public ByteBuffer[] sliceTerms() {
                 final ByteBuffer[] terms = new ByteBuffer[PARTITION_COUNT];
-                for (int i = 0; i < PARTITION_COUNT; i++)
-                {
+                for (int i = 0; i < PARTITION_COUNT; i++) {
                     terms[i] = partitions[i].termBuffer().byteBuffer().duplicate();
                 }
 
                 return terms;
             }
 
-            public String logFileName()
-            {
+            public String logFileName() {
                 return "stream.log";
             }
 
-            public void close()
-            {
+            public void close() {
             }
         };
     }
 
-    private static LogBufferPartition newTestLogBuffer(final int termBufferLength, final int metaDataBufferLength)
-    {
+    private static LogBufferPartition newTestLogBuffer(final int termBufferLength, final int metaDataBufferLength) {
         return new LogBufferPartition(
-            new UnsafeBuffer(ByteBuffer.allocateDirect(termBufferLength)),
-            new UnsafeBuffer(ByteBuffer.allocateDirect(metaDataBufferLength)));
+                new UnsafeBuffer(ByteBuffer.allocateDirect(termBufferLength)),
+                new UnsafeBuffer(ByteBuffer.allocateDirect(metaDataBufferLength)));
     }
 }

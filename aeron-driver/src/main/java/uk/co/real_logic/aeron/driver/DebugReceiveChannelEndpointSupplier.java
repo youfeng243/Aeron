@@ -21,11 +21,9 @@ import uk.co.real_logic.aeron.driver.media.UdpChannel;
 /**
  * Supply a debug implementation of a {@link ReceiveChannelEndpoint}.
  */
-public class DebugReceiveChannelEndpointSupplier implements ReceiveChannelEndpointSupplier
-{
+public class DebugReceiveChannelEndpointSupplier implements ReceiveChannelEndpointSupplier {
     public ReceiveChannelEndpoint newInstance(
-        final UdpChannel udpChannel, final DataPacketDispatcher dispatcher, final MediaDriver.Context context)
-    {
+            final UdpChannel udpChannel, final DataPacketDispatcher dispatcher, final MediaDriver.Context context) {
         return new DebugReceiveChannelEndpoint(udpChannel, dispatcher, context);
     }
 }

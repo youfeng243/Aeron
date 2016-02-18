@@ -19,19 +19,16 @@ import uk.co.real_logic.aeron.driver.PublicationImage;
 import uk.co.real_logic.aeron.driver.Receiver;
 import uk.co.real_logic.aeron.driver.media.ReceiveChannelEndpoint;
 
-public class NewPublicationImageCmd implements ReceiverCmd
-{
+public class NewPublicationImageCmd implements ReceiverCmd {
     private final ReceiveChannelEndpoint channelEndpoint;
     private final PublicationImage publicationImage;
 
-    public NewPublicationImageCmd(final ReceiveChannelEndpoint channelEndpoint, final PublicationImage publicationImage)
-    {
+    public NewPublicationImageCmd(final ReceiveChannelEndpoint channelEndpoint, final PublicationImage publicationImage) {
         this.channelEndpoint = channelEndpoint;
         this.publicationImage = publicationImage;
     }
 
-    public void execute(final Receiver receiver)
-    {
+    public void execute(final Receiver receiver) {
         receiver.onNewPublicationImage(channelEndpoint, publicationImage);
     }
 }

@@ -45,8 +45,7 @@ import static uk.co.real_logic.aeron.ErrorCode.*;
 import static uk.co.real_logic.aeron.driver.Configuration.*;
 import static uk.co.real_logic.aeron.logbuffer.LogBufferDescriptor.TERM_META_DATA_LENGTH;
 
-public class DriverConductorTest
-{
+public class DriverConductorTest {
     private static final String CHANNEL_4000 = "udp://localhost:4000";
     private static final String CHANNEL_4001 = "udp://localhost:4001";
     private static final String CHANNEL_4002 = "udp://localhost:4002";
@@ -64,7 +63,7 @@ public class DriverConductorTest
 
     private final ByteBuffer toDriverBuffer = ByteBuffer.allocateDirect(Configuration.CONDUCTOR_BUFFER_LENGTH);
     private final ByteBuffer toEventBuffer = ByteBuffer.allocateDirect(
-        EventConfiguration.BUFFER_LENGTH_DEFAULT + RingBufferDescriptor.TRAILER_LENGTH);
+            EventConfiguration.BUFFER_LENGTH_DEFAULT + RingBufferDescriptor.TRAILER_LENGTH);
 
     private final RawLogFactory mockRawLogFactory = mock(RawLogFactory.class);
 
@@ -87,46 +86,45 @@ public class DriverConductorTest
     private DriverConductor driverConductor;
 
     private final Answer<Void> closeChannelEndpointAnswer =
-        (invocation) ->
-        {
-            final Object args[] = invocation.getArguments();
-            final ReceiveChannelEndpoint channelEndpoint = (ReceiveChannelEndpoint)args[0];
-            channelEndpoint.close();
+            (invocation) ->
+            {
+                final Object args[] = invocation.getArguments();
+                final ReceiveChannelEndpoint channelEndpoint = (ReceiveChannelEndpoint) args[0];
+                channelEndpoint.close();
 
-            return null;
-        };
+                return null;
+            };
 
     @Before
-    public void setUp() throws Exception
-    {
+    public void setUp() throws Exception {
         // System GC required in order to ensure that the direct byte buffers get cleaned and avoid OOM.
         System.gc();
 
         when(mockRawLogFactory.newNetworkPublication(anyObject(), anyInt(), anyInt(), anyInt()))
-            .thenReturn(LogBufferHelper.newTestLogBuffers(TERM_BUFFER_LENGTH, TERM_META_DATA_LENGTH));
+                .thenReturn(LogBufferHelper.newTestLogBuffers(TERM_BUFFER_LENGTH, TERM_META_DATA_LENGTH));
         when(mockRawLogFactory.newNetworkedImage(anyObject(), anyInt(), anyInt(), anyInt(), eq(TERM_BUFFER_LENGTH)))
-            .thenReturn(LogBufferHelper.newTestLogBuffers(TERM_BUFFER_LENGTH, TERM_META_DATA_LENGTH));
+                .thenReturn(LogBufferHelper.newTestLogBuffers(TERM_BUFFER_LENGTH, TERM_META_DATA_LENGTH));
         when(mockRawLogFactory.newDirectPublication(anyInt(), anyInt(), anyLong()))
-            .thenReturn(LogBufferHelper.newTestLogBuffers(TERM_BUFFER_LENGTH, TERM_META_DATA_LENGTH));
+                .thenReturn(LogBufferHelper.newTestLogBuffers(TERM_BUFFER_LENGTH, TERM_META_DATA_LENGTH));
 
         currentTime = 0;
 
         final UnsafeBuffer counterBuffer = new UnsafeBuffer(ByteBuffer.allocateDirect(BUFFER_LENGTH));
         final CountersManager countersManager = new CountersManager(
-            new UnsafeBuffer(ByteBuffer.allocateDirect(BUFFER_LENGTH)), counterBuffer);
+                new UnsafeBuffer(ByteBuffer.allocateDirect(BUFFER_LENGTH)), counterBuffer);
 
         final MediaDriver.Context ctx = new MediaDriver.Context()
-            .unicastSenderFlowControlSupplier(UnicastFlowControl::new)
-            .multicastSenderFlowControlSupplier(MaxMulticastFlowControl::new)
+                .unicastSenderFlowControlSupplier(UnicastFlowControl::new)
+                .multicastSenderFlowControlSupplier(MaxMulticastFlowControl::new)
                 // TODO: remove
-            .toConductorFromReceiverCommandQueue(new OneToOneConcurrentArrayQueue<>(1024))
-            .toConductorFromSenderCommandQueue(new OneToOneConcurrentArrayQueue<>(1024))
-            .eventLogger(mockConductorLogger)
-            .rawLogBuffersFactory(mockRawLogFactory)
-            .countersManager(countersManager)
-            .nanoClock(nanoClock)
-            .sendChannelEndpointSupplier(Configuration.sendChannelEndpointSupplier())
-            .receiveChannelEndpointSupplier(Configuration.receiveChannelEndpointSupplier());
+                .toConductorFromReceiverCommandQueue(new OneToOneConcurrentArrayQueue<>(1024))
+                .toConductorFromSenderCommandQueue(new OneToOneConcurrentArrayQueue<>(1024))
+                .eventLogger(mockConductorLogger)
+                .rawLogBuffersFactory(mockRawLogFactory)
+                .countersManager(countersManager)
+                .nanoClock(nanoClock)
+                .sendChannelEndpointSupplier(Configuration.sendChannelEndpointSupplier())
+                .receiveChannelEndpointSupplier(Configuration.receiveChannelEndpointSupplier());
 
         ctx.toEventReader(toEventReader);
         ctx.toDriverCommands(fromClientCommands);
@@ -152,14 +150,12 @@ public class DriverConductorTest
     }
 
     @After
-    public void tearDown() throws Exception
-    {
+    public void tearDown() throws Exception {
         driverConductor.onClose();
     }
 
     @Test
-    public void shouldBeAbleToAddSinglePublication() throws Exception
-    {
+    public void shouldBeAbleToAddSinglePublication() throws Exception {
         driverProxy.addPublication(CHANNEL_4000, STREAM_ID_1);
 
         driverConductor.doWork();
@@ -175,8 +171,7 @@ public class DriverConductorTest
     }
 
     @Test
-    public void shouldBeAbleToAddSingleSubscription() throws Exception
-    {
+    public void shouldBeAbleToAddSingleSubscription() throws Exception {
         final long id = driverProxy.addSubscription(CHANNEL_4000, STREAM_ID_1);
 
         driverConductor.doWork();
@@ -189,8 +184,7 @@ public class DriverConductorTest
     }
 
     @Test
-    public void shouldBeAbleToAddAndRemoveSingleSubscription() throws Exception
-    {
+    public void shouldBeAbleToAddAndRemoveSingleSubscription() throws Exception {
         final long id = driverProxy.addSubscription(CHANNEL_4000, STREAM_ID_1);
         driverProxy.removeSubscription(id);
 
@@ -200,8 +194,7 @@ public class DriverConductorTest
     }
 
     @Test
-    public void shouldBeAbleToAddMultipleStreams() throws Exception
-    {
+    public void shouldBeAbleToAddMultipleStreams() throws Exception {
         driverProxy.addPublication(CHANNEL_4001, STREAM_ID_1);
         driverProxy.addPublication(CHANNEL_4002, STREAM_ID_2);
         driverProxy.addPublication(CHANNEL_4003, STREAM_ID_3);
@@ -213,8 +206,7 @@ public class DriverConductorTest
     }
 
     @Test
-    public void shouldBeAbleToRemoveSingleStream() throws Exception
-    {
+    public void shouldBeAbleToRemoveSingleStream() throws Exception {
         final long id = driverProxy.addPublication(CHANNEL_4000, STREAM_ID_1);
         driverProxy.removePublication(id);
 
@@ -227,8 +219,7 @@ public class DriverConductorTest
     }
 
     @Test
-    public void shouldBeAbleToRemoveMultipleStreams() throws Exception
-    {
+    public void shouldBeAbleToRemoveMultipleStreams() throws Exception {
         final long id1 = driverProxy.addPublication(CHANNEL_4001, STREAM_ID_1);
         final long id2 = driverProxy.addPublication(CHANNEL_4002, STREAM_ID_2);
         final long id3 = driverProxy.addPublication(CHANNEL_4003, STREAM_ID_3);
@@ -247,8 +238,7 @@ public class DriverConductorTest
     }
 
     @Test
-    public void shouldKeepSubscriptionMediaEndpointUponRemovalOfAllButOneSubscriber() throws Exception
-    {
+    public void shouldKeepSubscriptionMediaEndpointUponRemovalOfAllButOneSubscriber() throws Exception {
         final UdpChannel udpChannel = UdpChannel.parse(CHANNEL_4000);
 
         final long id1 = driverProxy.addSubscription(CHANNEL_4000, STREAM_ID_1);
@@ -272,8 +262,7 @@ public class DriverConductorTest
     }
 
     @Test
-    public void shouldOnlyRemoveSubscriptionMediaEndpointUponRemovalOfAllSubscribers() throws Exception
-    {
+    public void shouldOnlyRemoveSubscriptionMediaEndpointUponRemovalOfAllSubscribers() throws Exception {
         final UdpChannel udpChannel = UdpChannel.parse(CHANNEL_4000);
 
         final long id1 = driverProxy.addSubscription(CHANNEL_4000, STREAM_ID_1);
@@ -303,8 +292,7 @@ public class DriverConductorTest
     }
 
     @Test
-    public void shouldErrorOnRemovePublicationOnUnknownRegistrationId() throws Exception
-    {
+    public void shouldErrorOnRemovePublicationOnUnknownRegistrationId() throws Exception {
         final long id = driverProxy.addPublication(CHANNEL_4000, STREAM_ID_1);
         driverProxy.removePublication(id + 1);
 
@@ -321,8 +309,7 @@ public class DriverConductorTest
     }
 
     @Test
-    public void shouldErrorOnRemoveSubscriptionOnUnknownRegistrationId() throws Exception
-    {
+    public void shouldErrorOnRemoveSubscriptionOnUnknownRegistrationId() throws Exception {
         final long id1 = driverProxy.addSubscription(CHANNEL_4000, STREAM_ID_1);
         driverProxy.removeSubscription(id1 + 100);
 
@@ -339,8 +326,7 @@ public class DriverConductorTest
     }
 
     @Test
-    public void shouldErrorOnAddSubscriptionWithInvalidUri() throws Exception
-    {
+    public void shouldErrorOnAddSubscriptionWithInvalidUri() throws Exception {
         driverProxy.addSubscription(INVALID_URI, STREAM_ID_1);
 
         driverConductor.doWork();
@@ -354,8 +340,7 @@ public class DriverConductorTest
     }
 
     @Test
-    public void shouldTimeoutPublication() throws Exception
-    {
+    public void shouldTimeoutPublication() throws Exception {
         driverProxy.addPublication(CHANNEL_4000, STREAM_ID_1);
 
         driverConductor.doWork();
@@ -372,8 +357,7 @@ public class DriverConductorTest
     }
 
     @Test
-    public void shouldNotTimeoutPublicationOnKeepAlive() throws Exception
-    {
+    public void shouldNotTimeoutPublicationOnKeepAlive() throws Exception {
         driverProxy.addPublication(CHANNEL_4000, STREAM_ID_1);
 
         driverConductor.doWork();
@@ -397,14 +381,13 @@ public class DriverConductorTest
     }
 
     @Test
-    public void shouldTimeoutSubscription() throws Exception
-    {
+    public void shouldTimeoutSubscription() throws Exception {
         driverProxy.addSubscription(CHANNEL_4000, STREAM_ID_1);
 
         driverConductor.doWork();
 
         final ReceiveChannelEndpoint receiveChannelEndpoint =
-            driverConductor.receiverChannelEndpoint(UdpChannel.parse(CHANNEL_4000));
+                driverConductor.receiverChannelEndpoint(UdpChannel.parse(CHANNEL_4000));
         assertNotNull(receiveChannelEndpoint);
 
         verify(receiverProxy).addSubscription(eq(receiveChannelEndpoint), eq(STREAM_ID_1));
@@ -417,14 +400,13 @@ public class DriverConductorTest
     }
 
     @Test
-    public void shouldNotTimeoutSubscriptionOnKeepAlive() throws Exception
-    {
+    public void shouldNotTimeoutSubscriptionOnKeepAlive() throws Exception {
         driverProxy.addSubscription(CHANNEL_4000, STREAM_ID_1);
 
         driverConductor.doWork();
 
         final ReceiveChannelEndpoint receiveChannelEndpoint =
-            driverConductor.receiverChannelEndpoint(UdpChannel.parse(CHANNEL_4000));
+                driverConductor.receiverChannelEndpoint(UdpChannel.parse(CHANNEL_4000));
         assertNotNull(receiveChannelEndpoint);
 
         verify(receiverProxy).addSubscription(eq(receiveChannelEndpoint), eq(STREAM_ID_1));
@@ -444,8 +426,7 @@ public class DriverConductorTest
     }
 
     @Test
-    public void shouldCreateImageOnSubscription() throws Exception
-    {
+    public void shouldCreateImageOnSubscription() throws Exception {
         final InetSocketAddress sourceAddress = new InetSocketAddress("localhost", 4400);
         final int initialTermId = 1;
         final int activeTermId = 2;
@@ -456,14 +437,14 @@ public class DriverConductorTest
         driverConductor.doWork();
 
         final ReceiveChannelEndpoint receiveChannelEndpoint =
-            driverConductor.receiverChannelEndpoint(UdpChannel.parse(CHANNEL_4000));
+                driverConductor.receiverChannelEndpoint(UdpChannel.parse(CHANNEL_4000));
         assertNotNull(receiveChannelEndpoint);
 
         receiveChannelEndpoint.openChannel();
 
         driverConductor.onCreatePublicationImage(
-            SESSION_ID, STREAM_ID_1, initialTermId, activeTermId, termOffset, TERM_BUFFER_LENGTH, MTU_LENGTH,
-            mock(InetSocketAddress.class), sourceAddress, receiveChannelEndpoint);
+                SESSION_ID, STREAM_ID_1, initialTermId, activeTermId, termOffset, TERM_BUFFER_LENGTH, MTU_LENGTH,
+                mock(InetSocketAddress.class), sourceAddress, receiveChannelEndpoint);
 
         final ArgumentCaptor<PublicationImage> captor = ArgumentCaptor.forClass(PublicationImage.class);
         verify(receiverProxy).newPublicationImage(eq(receiveChannelEndpoint), captor.capture());
@@ -473,12 +454,11 @@ public class DriverConductorTest
         assertThat(publicationImage.streamId(), is(STREAM_ID_1));
 
         verify(mockClientProxy).onAvailableImage(
-            anyLong(), eq(STREAM_ID_1), eq(SESSION_ID), anyObject(), anyObject(), anyString());
+                anyLong(), eq(STREAM_ID_1), eq(SESSION_ID), anyObject(), anyObject(), anyString());
     }
 
     @Test
-    public void shouldNotCreateImageOnUnknownSubscription() throws Exception
-    {
+    public void shouldNotCreateImageOnUnknownSubscription() throws Exception {
         final InetSocketAddress sourceAddress = new InetSocketAddress("localhost", 4400);
 
         driverProxy.addSubscription(CHANNEL_4000, STREAM_ID_1);
@@ -486,23 +466,22 @@ public class DriverConductorTest
         driverConductor.doWork();
 
         final ReceiveChannelEndpoint receiveChannelEndpoint =
-            driverConductor.receiverChannelEndpoint(UdpChannel.parse(CHANNEL_4000));
+                driverConductor.receiverChannelEndpoint(UdpChannel.parse(CHANNEL_4000));
         assertNotNull(receiveChannelEndpoint);
 
         receiveChannelEndpoint.openChannel();
 
         driverConductor.onCreatePublicationImage(
-            SESSION_ID, STREAM_ID_2, 1, 1, 0, TERM_BUFFER_LENGTH, MTU_LENGTH,
-            mock(InetSocketAddress.class), sourceAddress, receiveChannelEndpoint);
+                SESSION_ID, STREAM_ID_2, 1, 1, 0, TERM_BUFFER_LENGTH, MTU_LENGTH,
+                mock(InetSocketAddress.class), sourceAddress, receiveChannelEndpoint);
 
         verify(receiverProxy, never()).newPublicationImage(any(), any());
         verify(mockClientProxy, never()).onAvailableImage(
-            anyLong(), anyInt(), anyInt(), anyObject(), anyObject(), anyString());
+                anyLong(), anyInt(), anyInt(), anyObject(), anyObject(), anyString());
     }
 
     @Test
-    public void shouldSignalInactiveImageWhenImageTimesout() throws Exception
-    {
+    public void shouldSignalInactiveImageWhenImageTimesout() throws Exception {
         final InetSocketAddress sourceAddress = new InetSocketAddress("localhost", 4400);
 
         driverProxy.addSubscription(CHANNEL_4000, STREAM_ID_1);
@@ -510,14 +489,14 @@ public class DriverConductorTest
         driverConductor.doWork();
 
         final ReceiveChannelEndpoint receiveChannelEndpoint =
-            driverConductor.receiverChannelEndpoint(UdpChannel.parse(CHANNEL_4000));
+                driverConductor.receiverChannelEndpoint(UdpChannel.parse(CHANNEL_4000));
         assertNotNull(receiveChannelEndpoint);
 
         receiveChannelEndpoint.openChannel();
 
         driverConductor.onCreatePublicationImage(
-            SESSION_ID, STREAM_ID_1, 1, 1, 0, TERM_BUFFER_LENGTH, MTU_LENGTH,
-            mock(InetSocketAddress.class), sourceAddress, receiveChannelEndpoint);
+                SESSION_ID, STREAM_ID_1, 1, 1, 0, TERM_BUFFER_LENGTH, MTU_LENGTH,
+                mock(InetSocketAddress.class), sourceAddress, receiveChannelEndpoint);
 
         final ArgumentCaptor<PublicationImage> captor = ArgumentCaptor.forClass(PublicationImage.class);
         verify(receiverProxy).newPublicationImage(eq(receiveChannelEndpoint), captor.capture());
@@ -532,8 +511,7 @@ public class DriverConductorTest
     }
 
     @Test
-    public void shouldAlwaysGiveNetworkPublicationCorrelationIdToClientCallbacks() throws Exception
-    {
+    public void shouldAlwaysGiveNetworkPublicationCorrelationIdToClientCallbacks() throws Exception {
         final InetSocketAddress sourceAddress = new InetSocketAddress("localhost", 4400);
 
         driverProxy.addSubscription(CHANNEL_4000, STREAM_ID_1);
@@ -541,14 +519,14 @@ public class DriverConductorTest
         driverConductor.doWork();
 
         final ReceiveChannelEndpoint receiveChannelEndpoint =
-            driverConductor.receiverChannelEndpoint(UdpChannel.parse(CHANNEL_4000));
+                driverConductor.receiverChannelEndpoint(UdpChannel.parse(CHANNEL_4000));
         assertNotNull(receiveChannelEndpoint);
 
         receiveChannelEndpoint.openChannel();
 
         driverConductor.onCreatePublicationImage(
-            SESSION_ID, STREAM_ID_1, 1, 1, 0, TERM_BUFFER_LENGTH, MTU_LENGTH,
-            mock(InetSocketAddress.class), sourceAddress, receiveChannelEndpoint);
+                SESSION_ID, STREAM_ID_1, 1, 1, 0, TERM_BUFFER_LENGTH, MTU_LENGTH,
+                mock(InetSocketAddress.class), sourceAddress, receiveChannelEndpoint);
 
         final ArgumentCaptor<PublicationImage> captor = ArgumentCaptor.forClass(PublicationImage.class);
         verify(receiverProxy).newPublicationImage(eq(receiveChannelEndpoint), captor.capture());
@@ -567,14 +545,13 @@ public class DriverConductorTest
 
         final InOrder inOrder = inOrder(mockClientProxy);
         inOrder.verify(mockClientProxy, times(2)).onAvailableImage(
-            eq(publicationImage.correlationId()), eq(STREAM_ID_1), eq(SESSION_ID), anyObject(), anyObject(), anyString());
+                eq(publicationImage.correlationId()), eq(STREAM_ID_1), eq(SESSION_ID), anyObject(), anyObject(), anyString());
         inOrder.verify(mockClientProxy, times(1)).onUnavailableImage(
-            eq(publicationImage.correlationId()), eq(STREAM_ID_1), anyString());
+                eq(publicationImage.correlationId()), eq(STREAM_ID_1), anyString());
     }
 
     @Test
-    public void shouldBeAbleToAddSingleDirectPublicationPublication() throws Exception
-    {
+    public void shouldBeAbleToAddSingleDirectPublicationPublication() throws Exception {
         final long id = driverProxy.addPublication(CHANNEL_IPC, STREAM_ID_1);
 
         driverConductor.doWork();
@@ -584,8 +561,7 @@ public class DriverConductorTest
     }
 
     @Test
-    public void shouldBeAbleToAddSingleDirectPublicationSubscription() throws Exception
-    {
+    public void shouldBeAbleToAddSingleDirectPublicationSubscription() throws Exception {
         final long id = driverProxy.addSubscription(CHANNEL_IPC, STREAM_ID_1);
 
         driverConductor.doWork();
@@ -596,13 +572,12 @@ public class DriverConductorTest
         final InOrder inOrder = inOrder(mockClientProxy);
         inOrder.verify(mockClientProxy).operationSucceeded(eq(id));
         inOrder.verify(mockClientProxy).onAvailableImage(
-            eq(directPublication.correlationId()), eq(STREAM_ID_1), eq(directPublication.sessionId()),
-            eq(directPublication.rawLog().logFileName()), anyObject(), anyString());
+                eq(directPublication.correlationId()), eq(STREAM_ID_1), eq(directPublication.sessionId()),
+                eq(directPublication.rawLog().logFileName()), anyObject(), anyString());
     }
 
     @Test
-    public void shouldBeAbleToAddDirectPublicationPublicationThenSubscription() throws Exception
-    {
+    public void shouldBeAbleToAddDirectPublicationPublicationThenSubscription() throws Exception {
         final long idPub = driverProxy.addPublication(CHANNEL_IPC, STREAM_ID_1);
         final long idSub = driverProxy.addSubscription(CHANNEL_IPC, STREAM_ID_1);
 
@@ -615,13 +590,12 @@ public class DriverConductorTest
         inOrder.verify(mockClientProxy).onPublicationReady(eq(idPub), eq(STREAM_ID_1), anyInt(), any(), anyInt());
         inOrder.verify(mockClientProxy).operationSucceeded(eq(idSub));
         inOrder.verify(mockClientProxy).onAvailableImage(
-            eq(directPublication.correlationId()), eq(STREAM_ID_1), eq(directPublication.sessionId()),
-            eq(directPublication.rawLog().logFileName()), anyObject(), anyString());
+                eq(directPublication.correlationId()), eq(STREAM_ID_1), eq(directPublication.sessionId()),
+                eq(directPublication.rawLog().logFileName()), anyObject(), anyString());
     }
 
     @Test
-    public void shouldBeAbleToAddDirectPublicationSubscriptionThenPublication() throws Exception
-    {
+    public void shouldBeAbleToAddDirectPublicationSubscriptionThenPublication() throws Exception {
         final long idSub = driverProxy.addSubscription(CHANNEL_IPC, STREAM_ID_1);
         final long idPub = driverProxy.addPublication(CHANNEL_IPC, STREAM_ID_1);
 
@@ -633,14 +607,13 @@ public class DriverConductorTest
         final InOrder inOrder = inOrder(mockClientProxy);
         inOrder.verify(mockClientProxy).operationSucceeded(eq(idSub));
         inOrder.verify(mockClientProxy).onAvailableImage(
-            eq(directPublication.correlationId()), eq(STREAM_ID_1), eq(directPublication.sessionId()),
-            eq(directPublication.rawLog().logFileName()), anyObject(), anyString());
+                eq(directPublication.correlationId()), eq(STREAM_ID_1), eq(directPublication.sessionId()),
+                eq(directPublication.rawLog().logFileName()), anyObject(), anyString());
         inOrder.verify(mockClientProxy).onPublicationReady(eq(idPub), eq(STREAM_ID_1), anyInt(), any(), anyInt());
     }
 
     @Test
-    public void shouldBeAbleToAddAndRemoveDirectPublicationPublication() throws Exception
-    {
+    public void shouldBeAbleToAddAndRemoveDirectPublicationPublication() throws Exception {
         final long idAdd = driverProxy.addPublication(CHANNEL_IPC, STREAM_ID_1);
         driverProxy.removePublication(idAdd);
 
@@ -651,8 +624,7 @@ public class DriverConductorTest
     }
 
     @Test
-    public void shouldBeAbleToAddAndRemoveDirectPublicationSubscription() throws Exception
-    {
+    public void shouldBeAbleToAddAndRemoveDirectPublicationSubscription() throws Exception {
         final long idAdd = driverProxy.addSubscription(CHANNEL_IPC, STREAM_ID_1);
         driverProxy.removeSubscription(idAdd);
 
@@ -663,8 +635,7 @@ public class DriverConductorTest
     }
 
     @Test
-    public void shouldBeAbleToAddAndRemoveDirectPublicationTwoPublications() throws Exception
-    {
+    public void shouldBeAbleToAddAndRemoveDirectPublicationTwoPublications() throws Exception {
         final long idAdd1 = driverProxy.addPublication(CHANNEL_IPC, STREAM_ID_1);
         final long idAdd2 = driverProxy.addPublication(CHANNEL_IPC, STREAM_ID_1);
         driverProxy.removePublication(idAdd1);
@@ -683,8 +654,7 @@ public class DriverConductorTest
     }
 
     @Test
-    public void shouldBeAbleToAddAndRemoveDirectPublicationTwoSubscriptions() throws Exception
-    {
+    public void shouldBeAbleToAddAndRemoveDirectPublicationTwoSubscriptions() throws Exception {
         final long idAdd1 = driverProxy.addSubscription(CHANNEL_IPC, STREAM_ID_1);
         final long idAdd2 = driverProxy.addSubscription(CHANNEL_IPC, STREAM_ID_1);
         driverProxy.removeSubscription(idAdd1);
@@ -703,8 +673,7 @@ public class DriverConductorTest
     }
 
     @Test
-    public void shouldBeAbleToAddAndRemoveDirectPublicationPublicationAndSubscription() throws Exception
-    {
+    public void shouldBeAbleToAddAndRemoveDirectPublicationPublicationAndSubscription() throws Exception {
         final long idAdd1 = driverProxy.addSubscription(CHANNEL_IPC, STREAM_ID_1);
         final long idAdd2 = driverProxy.addPublication(CHANNEL_IPC, STREAM_ID_1);
         driverProxy.removeSubscription(idAdd1);
@@ -723,8 +692,7 @@ public class DriverConductorTest
     }
 
     @Test
-    public void shouldTimeoutDirectPublicationPublication() throws Exception
-    {
+    public void shouldTimeoutDirectPublicationPublication() throws Exception {
         driverProxy.addPublication(CHANNEL_IPC, STREAM_ID_1);
 
         driverConductor.doWork();
@@ -739,8 +707,7 @@ public class DriverConductorTest
     }
 
     @Test
-    public void shouldNotTimeoutDirectPublicationPublicationWithKeepalive() throws Exception
-    {
+    public void shouldNotTimeoutDirectPublicationPublicationWithKeepalive() throws Exception {
         driverProxy.addPublication(CHANNEL_IPC, STREAM_ID_1);
 
         driverConductor.doWork();
@@ -759,8 +726,7 @@ public class DriverConductorTest
     }
 
     @Test
-    public void shouldTimeoutDirectPublicationSubscription() throws Exception
-    {
+    public void shouldTimeoutDirectPublicationSubscription() throws Exception {
         driverProxy.addSubscription(CHANNEL_IPC, STREAM_ID_1);
 
         driverConductor.doWork();
@@ -775,8 +741,7 @@ public class DriverConductorTest
     }
 
     @Test
-    public void shouldNotTimeoutDirectPublicationSubscriptionWithKeepalive() throws Exception
-    {
+    public void shouldNotTimeoutDirectPublicationSubscriptionWithKeepalive() throws Exception {
         driverProxy.addSubscription(CHANNEL_IPC, STREAM_ID_1);
 
         driverConductor.doWork();
@@ -794,12 +759,10 @@ public class DriverConductorTest
         assertNotNull(directPublication);
     }
 
-    private long doWorkUntil(final BooleanSupplier condition) throws Exception
-    {
+    private long doWorkUntil(final BooleanSupplier condition) throws Exception {
         final long startTime = currentTime;
 
-        while (!condition.getAsBoolean())
-        {
+        while (!condition.getAsBoolean()) {
             currentTime += TimeUnit.MILLISECONDS.toNanos(10);
             driverConductor.doWork();
         }

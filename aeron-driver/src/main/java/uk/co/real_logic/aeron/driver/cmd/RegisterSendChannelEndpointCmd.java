@@ -19,17 +19,14 @@ package uk.co.real_logic.aeron.driver.cmd;
 import uk.co.real_logic.aeron.driver.Sender;
 import uk.co.real_logic.aeron.driver.media.SendChannelEndpoint;
 
-public class RegisterSendChannelEndpointCmd implements SenderCmd
-{
+public class RegisterSendChannelEndpointCmd implements SenderCmd {
     private final SendChannelEndpoint channelEndpoint;
 
-    public RegisterSendChannelEndpointCmd(final SendChannelEndpoint channelEndpoint)
-    {
+    public RegisterSendChannelEndpointCmd(final SendChannelEndpoint channelEndpoint) {
         this.channelEndpoint = channelEndpoint;
     }
 
-    public void execute(final Sender sender)
-    {
+    public void execute(final Sender sender) {
         sender.onRegisterSendChannelEndpoint(channelEndpoint);
     }
 }

@@ -39,8 +39,7 @@ import static uk.co.real_logic.agrona.BitUtil.SIZE_OF_LONG;
  *
  * @see HackSelectReceiveSendUdpPong
  */
-public class SendHackSelectReceiveUdpPing implements ToIntFunction<SelectionKey>
-{
+public class SendHackSelectReceiveUdpPing implements ToIntFunction<SelectionKey> {
     private static final InetSocketAddress SEND_ADDRESS = new InetSocketAddress("localhost", Common.PING_PORT);
 
     private static final Histogram HISTOGRAM = new Histogram(TimeUnit.SECONDS.toNanos(10), 3);
@@ -48,13 +47,11 @@ public class SendHackSelectReceiveUdpPing implements ToIntFunction<SelectionKey>
     private DatagramChannel receiveChannel;
     private int sequenceNumber;
 
-    public static void main(final String[] args) throws IOException
-    {
+    public static void main(final String[] args) throws IOException {
         new SendHackSelectReceiveUdpPing().run();
     }
 
-    private void run() throws IOException
-    {
+    private void run() throws IOException {
         receiveChannel = DatagramChannel.open();
         Common.init(receiveChannel);
         receiveChannel.bind(new InetSocketAddress("localhost", Common.PONG_PORT));
@@ -69,8 +66,7 @@ public class SendHackSelectReceiveUdpPing implements ToIntFunction<SelectionKey>
         final AtomicBoolean running = new AtomicBoolean(true);
         SigInt.register(() -> running.set(false));
 
-        while (running.get())
-        {
+        while (running.get()) {
             measureRoundTrip(HISTOGRAM, SEND_ADDRESS, buffer, sendChannel, selector, keySet, running);
 
             HISTOGRAM.reset();
@@ -79,26 +75,21 @@ public class SendHackSelectReceiveUdpPing implements ToIntFunction<SelectionKey>
         }
     }
 
-    public int applyAsInt(final SelectionKey key)
-    {
-        try
-        {
+    public int applyAsInt(final SelectionKey key) {
+        try {
             buffer.clear();
             receiveChannel.receive(buffer);
 
             final long receivedSequenceNumber = buffer.getLong(0);
             final long timestamp = buffer.getLong(SIZE_OF_LONG);
 
-            if (receivedSequenceNumber != sequenceNumber)
-            {
+            if (receivedSequenceNumber != sequenceNumber) {
                 throw new IllegalStateException("Data Loss:" + sequenceNumber + " to " + receivedSequenceNumber);
             }
 
             final long duration = System.nanoTime() - timestamp;
             HISTOGRAM.recordValue(duration);
-        }
-        catch (final IOException ex)
-        {
+        } catch (final IOException ex) {
             ex.printStackTrace();
         }
 
@@ -106,17 +97,15 @@ public class SendHackSelectReceiveUdpPing implements ToIntFunction<SelectionKey>
     }
 
     private void measureRoundTrip(
-        final Histogram histogram,
-        final InetSocketAddress sendAddress,
-        final ByteBuffer buffer,
-        final DatagramChannel sendChannel,
-        final Selector selector,
-        final NioSelectedKeySet keySet,
-        final AtomicBoolean running)
-        throws IOException
-    {
-        for (sequenceNumber = 0; sequenceNumber < Common.NUM_MESSAGES; sequenceNumber++)
-        {
+            final Histogram histogram,
+            final InetSocketAddress sendAddress,
+            final ByteBuffer buffer,
+            final DatagramChannel sendChannel,
+            final Selector selector,
+            final NioSelectedKeySet keySet,
+            final AtomicBoolean running)
+            throws IOException {
+        for (sequenceNumber = 0; sequenceNumber < Common.NUM_MESSAGES; sequenceNumber++) {
             final long timestamp = System.nanoTime();
 
             buffer.clear();
@@ -126,10 +115,8 @@ public class SendHackSelectReceiveUdpPing implements ToIntFunction<SelectionKey>
 
             sendChannel.send(buffer, sendAddress);
 
-            while (selector.selectNow() == 0)
-            {
-                if (!running.get())
-                {
+            while (selector.selectNow() == 0) {
+                if (!running.get()) {
                     return;
                 }
             }

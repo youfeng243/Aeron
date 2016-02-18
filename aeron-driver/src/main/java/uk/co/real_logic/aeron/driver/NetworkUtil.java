@@ -30,8 +30,7 @@ import static java.util.Collections.sort;
 /**
  * Collection of network specific utility functions
  */
-public class NetworkUtil
-{
+public class NetworkUtil {
     /**
      * Search for a list of network interfaces that match the specified address and subnet prefix.
      * The results will be ordered by the length of the subnet prefix
@@ -45,26 +44,22 @@ public class NetworkUtil
      * @throws SocketException if an error occurs
      */
     public static Collection<NetworkInterface> filterBySubnet(final InetAddress address, final int subnetPrefix)
-        throws SocketException
-    {
+            throws SocketException {
         return filterBySubnet(NetworkInterfaceShim.DEFAULT, address, subnetPrefix);
     }
 
     static Collection<NetworkInterface> filterBySubnet(
-        final NetworkInterfaceShim shim, final InetAddress address, final int subnetPrefix)
-        throws SocketException
-    {
+            final NetworkInterfaceShim shim, final InetAddress address, final int subnetPrefix)
+            throws SocketException {
         final List<FilterResult> filterResults = new ArrayList<>();
         final byte[] queryAddress = address.getAddress();
 
         final Enumeration<NetworkInterface> ifcs = shim.getNetworkInterfaces();
-        while (ifcs.hasMoreElements())
-        {
+        while (ifcs.hasMoreElements()) {
             final NetworkInterface ifc = ifcs.nextElement();
             final InterfaceAddress interfaceAddress = findAddressOnInterface(shim, ifc, queryAddress, subnetPrefix);
 
-            if (null != interfaceAddress)
-            {
+            if (null != interfaceAddress) {
                 filterResults.add(new FilterResult(interfaceAddress, ifc, shim.isLoopback(ifc)));
             }
         }
@@ -78,13 +73,11 @@ public class NetworkUtil
     }
 
     public static InetAddress findAddressOnInterface(
-        final NetworkInterface ifc, final InetAddress address, final int subnetPrefix)
-    {
+            final NetworkInterface ifc, final InetAddress address, final int subnetPrefix) {
         final InterfaceAddress interfaceAddress =
-            findAddressOnInterface(NetworkInterfaceShim.DEFAULT, ifc, address.getAddress(), subnetPrefix);
+                findAddressOnInterface(NetworkInterfaceShim.DEFAULT, ifc, address.getAddress(), subnetPrefix);
 
-        if (null == interfaceAddress)
-        {
+        if (null == interfaceAddress) {
             return null;
         }
 
@@ -92,15 +85,12 @@ public class NetworkUtil
     }
 
     static InterfaceAddress findAddressOnInterface(
-        final NetworkInterfaceShim shim, final NetworkInterface ifc, final byte[] queryAddress, final int prefixLength)
-    {
+            final NetworkInterfaceShim shim, final NetworkInterface ifc, final byte[] queryAddress, final int prefixLength) {
         InterfaceAddress foundInterfaceAddress = null;
 
-        for (final InterfaceAddress interfaceAddress : shim.getInterfaceAddresses(ifc))
-        {
+        for (final InterfaceAddress interfaceAddress : shim.getInterfaceAddresses(ifc)) {
             final byte[] candidateAddress = interfaceAddress.getAddress().getAddress();
-            if (isMatchWithPrefix(candidateAddress, queryAddress, prefixLength))
-            {
+            if (isMatchWithPrefix(candidateAddress, queryAddress, prefixLength)) {
                 foundInterfaceAddress = interfaceAddress;
                 break;
             }
@@ -113,100 +103,79 @@ public class NetworkUtil
     // Byte matching and calculation.
     //
 
-    static boolean isMatchWithPrefix(final byte[] candidate, final byte[] expected, final int prefixLength)
-    {
-        if (candidate.length != expected.length)
-        {
+    static boolean isMatchWithPrefix(final byte[] candidate, final byte[] expected, final int prefixLength) {
+        if (candidate.length != expected.length) {
             return false;
         }
 
-        if (candidate.length == 4)
-        {
+        if (candidate.length == 4) {
             final int mask = prefixLengthToIpV4Mask(prefixLength);
 
             return (toInt(candidate) & mask) == (toInt(expected) & mask);
-        }
-        else if (candidate.length == 16)
-        {
+        } else if (candidate.length == 16) {
             final long upperMask = prefixLengthToIpV6Mask(min(prefixLength, 64));
             final long lowerMask = prefixLengthToIpV6Mask(max(prefixLength - 64, 0));
 
             return
-                (upperMask & toLong(candidate, 0)) == (upperMask & toLong(expected, 0)) &&
-                    (lowerMask & toLong(candidate, 8)) == (lowerMask & toLong(expected, 8));
+                    (upperMask & toLong(candidate, 0)) == (upperMask & toLong(expected, 0)) &&
+                            (lowerMask & toLong(candidate, 8)) == (lowerMask & toLong(expected, 8));
         }
 
         throw new IllegalArgumentException("How many bytes does an IP address have again?");
     }
 
-    private static int prefixLengthToIpV4Mask(final int subnetPrefix)
-    {
+    private static int prefixLengthToIpV4Mask(final int subnetPrefix) {
         return 0 == subnetPrefix ? 0 : ~((1 << 32 - subnetPrefix) - 1);
     }
 
-    private static long prefixLengthToIpV6Mask(final int subnetPrefix)
-    {
+    private static long prefixLengthToIpV6Mask(final int subnetPrefix) {
         return 0 == subnetPrefix ? 0 : ~((1L << 64 - subnetPrefix) - 1);
     }
 
     // TODO: Should these be common?
-    private static int toInt(final byte[] b)
-    {
+    private static int toInt(final byte[] b) {
         return ((b[3] & 0xFF)) + ((b[2] & 0xFF) << 8) + ((b[1] & 0xFF) << 16) + ((b[0]) << 24);
     }
 
-    static long toLong(final byte[] b, final int offset)
-    {
+    static long toLong(final byte[] b, final int offset) {
         return ((b[offset + 7] & 0xFFL)) +
-            ((b[offset + 6] & 0xFFL) << 8) +
-            ((b[offset + 5] & 0xFFL) << 16) +
-            ((b[offset + 4] & 0xFFL) << 24) +
-            ((b[offset + 3] & 0xFFL) << 32) +
-            ((b[offset + 2] & 0xFFL) << 40) +
-            ((b[offset + 1] & 0xFFL) << 48) +
-            (((long)b[offset]) << 56);
+                ((b[offset + 6] & 0xFFL) << 8) +
+                ((b[offset + 5] & 0xFFL) << 16) +
+                ((b[offset + 4] & 0xFFL) << 24) +
+                ((b[offset + 3] & 0xFFL) << 32) +
+                ((b[offset + 2] & 0xFFL) << 40) +
+                ((b[offset + 1] & 0xFFL) << 48) +
+                (((long) b[offset]) << 56);
     }
 
-    public static ProtocolFamily getProtocolFamily(InetAddress address)
-    {
-        if (address instanceof Inet4Address)
-        {
+    public static ProtocolFamily getProtocolFamily(InetAddress address) {
+        if (address instanceof Inet4Address) {
             return StandardProtocolFamily.INET;
-        }
-        else if (address instanceof Inet6Address)
-        {
+        } else if (address instanceof Inet6Address) {
             return StandardProtocolFamily.INET6;
-        }
-        else
-        {
+        } else {
             throw new IllegalStateException("Unknown ProtocolFamily");
         }
     }
 
-    static class FilterResult implements Comparable<FilterResult>
-    {
+    static class FilterResult implements Comparable<FilterResult> {
         private final InterfaceAddress interfaceAddress;
         private final NetworkInterface ifc;
         private final boolean isLoopback;
 
         FilterResult(final InterfaceAddress interfaceAddress, final NetworkInterface ifc, final boolean isLoopback)
-            throws SocketException
-        {
+                throws SocketException {
             this.interfaceAddress = interfaceAddress;
             this.ifc = ifc;
             this.isLoopback = isLoopback;
         }
 
-        public int compareTo(final FilterResult other)
-        {
-            if (isLoopback == other.isLoopback)
-            {
+        public int compareTo(final FilterResult other) {
+            if (isLoopback == other.isLoopback) {
                 return -compare(
-                    interfaceAddress.getNetworkPrefixLength(),
-                    other.interfaceAddress.getNetworkPrefixLength());
-            }
-            else
-            {
+                        interfaceAddress.getNetworkPrefixLength(),
+                        other.interfaceAddress.getNetworkPrefixLength());
+            } else {
                 return compare(isLoopback, other.isLoopback);
             }
         }

@@ -37,24 +37,21 @@ import static uk.co.real_logic.aeron.samples.SamplesUtil.printStringMessage;
  * For an example that implements reassembly of large, fragmented messages, see
  * {link@ MultipleSubscribersWithFragmentAssembly}.
  */
-public class BasicSubscriber
-{
+public class BasicSubscriber {
     private static final int STREAM_ID = SampleConfiguration.STREAM_ID;
     private static final String CHANNEL = SampleConfiguration.CHANNEL;
     private static final int FRAGMENT_COUNT_LIMIT = SampleConfiguration.FRAGMENT_COUNT_LIMIT;
     private static final boolean EMBEDDED_MEDIA_DRIVER = SampleConfiguration.EMBEDDED_MEDIA_DRIVER;
 
-    public static void main(final String[] args) throws Exception
-    {
+    public static void main(final String[] args) throws Exception {
         System.out.println("Subscribing to " + CHANNEL + " on stream Id " + STREAM_ID);
 
         final MediaDriver driver = EMBEDDED_MEDIA_DRIVER ? MediaDriver.launchEmbedded() : null;
         final Aeron.Context ctx = new Aeron.Context()
-            .availableImageHandler(SamplesUtil::printAvailableImage)
-            .unavailableImageHandler(SamplesUtil::printUnavailableImage);
+                .availableImageHandler(SamplesUtil::printAvailableImage)
+                .unavailableImageHandler(SamplesUtil::printUnavailableImage);
 
-        if (EMBEDDED_MEDIA_DRIVER)
-        {
+        if (EMBEDDED_MEDIA_DRIVER) {
             ctx.aeronDirectoryName(driver.aeronDirectoryName());
         }
 
@@ -70,8 +67,7 @@ public class BasicSubscriber
         // The Aeron and Subscription classes implement "AutoCloseable" and will automatically
         // clean up resources when this try block is finished
         try (final Aeron aeron = Aeron.connect(ctx);
-             final Subscription subscription = aeron.addSubscription(CHANNEL, STREAM_ID))
-        {
+             final Subscription subscription = aeron.addSubscription(CHANNEL, STREAM_ID)) {
             SamplesUtil.subscriberLoop(fragmentHandler, FRAGMENT_COUNT_LIMIT, running).accept(subscription);
 
             System.out.println("Shutting down...");

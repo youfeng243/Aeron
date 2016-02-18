@@ -18,17 +18,14 @@ package uk.co.real_logic.aeron.driver.cmd;
 import uk.co.real_logic.aeron.driver.Receiver;
 import uk.co.real_logic.aeron.driver.media.ReceiveChannelEndpoint;
 
-public class RegisterReceiveChannelEndpointCmd implements ReceiverCmd
-{
+public class RegisterReceiveChannelEndpointCmd implements ReceiverCmd {
     private final ReceiveChannelEndpoint channelEndpoint;
 
-    public RegisterReceiveChannelEndpointCmd(final ReceiveChannelEndpoint channelEndpoint)
-    {
+    public RegisterReceiveChannelEndpointCmd(final ReceiveChannelEndpoint channelEndpoint) {
         this.channelEndpoint = channelEndpoint;
     }
 
-    public void execute(final Receiver receiver)
-    {
+    public void execute(final Receiver receiver) {
         receiver.onRegisterReceiveChannelEndpoint(channelEndpoint);
     }
 }

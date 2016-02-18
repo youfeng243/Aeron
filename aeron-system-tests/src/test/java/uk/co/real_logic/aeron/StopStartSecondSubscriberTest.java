@@ -35,8 +35,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * Test that a second subscriber can be stopped and started again while data is being published.
  */
-public class StopStartSecondSubscriberTest
-{
+public class StopStartSecondSubscriberTest {
     public static final String CHANNEL1 = "aeron:udp?remote=localhost:54325";
     public static final String CHANNEL2 = "aeron:udp?remote=localhost:54326";
     private static final int STREAM_ID1 = 1;
@@ -62,8 +61,7 @@ public class StopStartSecondSubscriberTest
     final MediaDriver.Context mediaDriverContext1 = new MediaDriver.Context();
     final MediaDriver.Context mediaDriverContext2 = new MediaDriver.Context();
 
-    private void launch(final String channel1, final int stream1, final String channel2, final int stream2)
-    {
+    private void launch(final String channel1, final int stream1, final String channel2, final int stream2) {
         driver1 = MediaDriver.launchEmbedded(mediaDriverContext1);
         driver2 = MediaDriver.launchEmbedded(mediaDriverContext2);
 
@@ -89,8 +87,7 @@ public class StopStartSecondSubscriberTest
     }
 
     @After
-    public void closeEverything()
-    {
+    public void closeEverything() {
         subscribingClient1.close();
         publishingClient1.close();
         subscribingClient2.close();
@@ -104,84 +101,72 @@ public class StopStartSecondSubscriberTest
     }
 
     @Test(timeout = 10000)
-    public void shouldSpinUpAndShutdown()
-    {
+    public void shouldSpinUpAndShutdown() {
         launch(CHANNEL1, STREAM_ID1, CHANNEL2, STREAM_ID2);
     }
 
     @Test(timeout = 10000)
-    public void shouldReceivePublishedMessage()
-    {
+    public void shouldReceivePublishedMessage() {
         launch(CHANNEL1, STREAM_ID1, CHANNEL2, STREAM_ID2);
 
         buffer.putInt(0, 1);
 
         final int numMessagesPerPublication = 1;
 
-        while (publication1.offer(buffer, 0, BitUtil.SIZE_OF_INT) < 0L)
-        {
+        while (publication1.offer(buffer, 0, BitUtil.SIZE_OF_INT) < 0L) {
             Thread.yield();
         }
 
-        while (publication2.offer(buffer, 0, BitUtil.SIZE_OF_INT) < 0L)
-        {
+        while (publication2.offer(buffer, 0, BitUtil.SIZE_OF_INT) < 0L) {
             Thread.yield();
         }
 
         final int fragmentsRead[] = new int[2];
         SystemTestHelper.executeUntil(
-            () -> fragmentsRead[0] >= numMessagesPerPublication && fragmentsRead[1] >= numMessagesPerPublication,
-            (i) ->
-            {
-                fragmentsRead[0] += subscription1.poll(fragmentHandler1, 10);
-                fragmentsRead[1] += subscription2.poll(fragmentHandler2, 10);
-                Thread.yield();
-            },
-            Integer.MAX_VALUE,
-            TimeUnit.MILLISECONDS.toNanos(9900));
+                () -> fragmentsRead[0] >= numMessagesPerPublication && fragmentsRead[1] >= numMessagesPerPublication,
+                (i) ->
+                {
+                    fragmentsRead[0] += subscription1.poll(fragmentHandler1, 10);
+                    fragmentsRead[1] += subscription2.poll(fragmentHandler2, 10);
+                    Thread.yield();
+                },
+                Integer.MAX_VALUE,
+                TimeUnit.MILLISECONDS.toNanos(9900));
 
         assertEquals(numMessagesPerPublication, subscriber1Count);
         assertEquals(numMessagesPerPublication, subscriber2Count);
     }
 
     @Test(timeout = 10000)
-    public void shouldReceiveMessagesAfterStopStartOnSameChannelSameStream()
-    {
+    public void shouldReceiveMessagesAfterStopStartOnSameChannelSameStream() {
         shouldReceiveMessagesAfterStopStart(CHANNEL1, STREAM_ID1, CHANNEL1, STREAM_ID1);
     }
 
     @Test(timeout = 10000)
-    public void shouldReceiveMessagesAfterStopStartOnSameChannelDifferentStreams()
-    {
+    public void shouldReceiveMessagesAfterStopStartOnSameChannelDifferentStreams() {
         shouldReceiveMessagesAfterStopStart(CHANNEL1, STREAM_ID1, CHANNEL1, STREAM_ID2);
     }
 
     @Test(timeout = 10000)
-    public void shouldReceiveMessagesAfterStopStartOnDifferentChannelsSameStream()
-    {
+    public void shouldReceiveMessagesAfterStopStartOnDifferentChannelsSameStream() {
         shouldReceiveMessagesAfterStopStart(CHANNEL1, STREAM_ID1, CHANNEL2, STREAM_ID1);
     }
 
     @Test(timeout = 10000)
-    public void shouldReceiveMessagesAfterStopStartOnDifferentChannelsDifferentStreams()
-    {
+    public void shouldReceiveMessagesAfterStopStartOnDifferentChannelsDifferentStreams() {
         shouldReceiveMessagesAfterStopStart(CHANNEL1, STREAM_ID1, CHANNEL2, STREAM_ID2);
     }
 
-    private void doPublisherWork(final Publication publication, final AtomicBoolean running)
-    {
-        while (running.get())
-        {
-            while (running.get() && publication.offer(buffer, 0, BitUtil.SIZE_OF_INT) < 0L)
-            {
+    private void doPublisherWork(final Publication publication, final AtomicBoolean running) {
+        while (running.get()) {
+            while (running.get() && publication.offer(buffer, 0, BitUtil.SIZE_OF_INT) < 0L) {
                 Thread.yield();
             }
         }
     }
 
     private void shouldReceiveMessagesAfterStopStart(
-        final String channel1, final int stream1, final String channel2, final int stream2)
-    {
+            final String channel1, final int stream1, final String channel2, final int stream2) {
         final ExecutorService executor = Executors.newFixedThreadPool(2);
         final int numMessages = 1;
         final MutableInteger subscriber2AfterRestartCount = new MutableInteger();
@@ -198,15 +183,15 @@ public class StopStartSecondSubscriberTest
 
         final int fragmentsRead[] = new int[2];
         SystemTestHelper.executeUntil(
-            () -> fragmentsRead[0] >= numMessages && fragmentsRead[1] >= numMessages,
-            (i) ->
-            {
-                fragmentsRead[0] += subscription1.poll(fragmentHandler1, 1);
-                fragmentsRead[1] += subscription2.poll(fragmentHandler2, 1);
-                Thread.yield();
-            },
-            Integer.MAX_VALUE,
-            TimeUnit.MILLISECONDS.toNanos(4900));
+                () -> fragmentsRead[0] >= numMessages && fragmentsRead[1] >= numMessages,
+                (i) ->
+                {
+                    fragmentsRead[0] += subscription1.poll(fragmentHandler1, 1);
+                    fragmentsRead[1] += subscription2.poll(fragmentHandler2, 1);
+                    Thread.yield();
+                },
+                Integer.MAX_VALUE,
+                TimeUnit.MILLISECONDS.toNanos(4900));
 
         assertTrue(subscriber1Count >= numMessages);
         assertTrue(subscriber2Count >= numMessages);
@@ -222,34 +207,30 @@ public class StopStartSecondSubscriberTest
         subscription2 = subscribingClient2.addSubscription(channel2, stream2);
 
         SystemTestHelper.executeUntil(
-            () -> fragmentsRead[0] >= numMessages && fragmentsRead[1] >= numMessages,
-            (i) ->
-            {
-                fragmentsRead[0] += subscription1.poll(fragmentHandler1, 1);
-                fragmentsRead[1] += subscription2.poll(fragmentHandler2b, 1);
-                Thread.yield();
-            },
-            Integer.MAX_VALUE,
-            TimeUnit.MILLISECONDS.toNanos(4900));
+                () -> fragmentsRead[0] >= numMessages && fragmentsRead[1] >= numMessages,
+                (i) ->
+                {
+                    fragmentsRead[0] += subscription1.poll(fragmentHandler1, 1);
+                    fragmentsRead[1] += subscription2.poll(fragmentHandler2b, 1);
+                    Thread.yield();
+                },
+                Integer.MAX_VALUE,
+                TimeUnit.MILLISECONDS.toNanos(4900));
 
         running.set(false);
 
         assertTrue("Expecting subscriber1 to receive messages the entire time", subscriber1Count >= numMessages * 2);
         assertTrue("Expecting subscriber2 to receive messages before being stopped and started", subscriber2Count >= numMessages);
         assertTrue("Expecting subscriber2 to receive messages after being stopped and started",
-            subscriber2AfterRestartCount.value >= numMessages);
+                subscriber2AfterRestartCount.value >= numMessages);
 
         executor.shutdown();
 
-        try
-        {
-            while (!executor.awaitTermination(1, TimeUnit.SECONDS))
-            {
+        try {
+            while (!executor.awaitTermination(1, TimeUnit.SECONDS)) {
                 System.err.println("Still awaiting termination");
             }
-        }
-        catch (final InterruptedException ex)
-        {
+        } catch (final InterruptedException ex) {
             LangUtil.rethrowUnchecked(ex);
         }
     }

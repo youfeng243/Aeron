@@ -23,23 +23,19 @@ import java.util.regex.Pattern;
 import static java.lang.Integer.parseInt;
 import static uk.co.real_logic.aeron.driver.Strings.parseIntOrDefault;
 
-public class SocketAddressUtil
-{
+public class SocketAddressUtil {
     private static final Pattern IPV4_ADDRESS_PATTERN = Pattern.compile("([^:]+)(?::([0-9]+))?");
     private static final Pattern IPV6_ADDRESS_PATTERN = Pattern.compile(
-        "\\[([0-9A-Fa-f:]+)(?:%[a-zA-Z0-9_.~-]+)?\\](?::([0-9]+))?");
+            "\\[([0-9A-Fa-f:]+)(?:%[a-zA-Z0-9_.~-]+)?\\](?::([0-9]+))?");
 
-    private static InetSocketAddress parse(final CharSequence cs, final BiFunction<String, String, InetSocketAddress> consumer)
-    {
-        if (null == cs)
-        {
+    private static InetSocketAddress parse(final CharSequence cs, final BiFunction<String, String, InetSocketAddress> consumer) {
+        if (null == cs) {
             throw new NullPointerException("Input string must not be null");
         }
 
         final Matcher ipV4Matcher = IPV4_ADDRESS_PATTERN.matcher(cs);
 
-        if (ipV4Matcher.matches())
-        {
+        if (ipV4Matcher.matches()) {
             final String host = ipV4Matcher.group(1);
             final String portString = ipV4Matcher.group(2);
 
@@ -48,8 +44,7 @@ public class SocketAddressUtil
 
         final Matcher ipV6Matcher = IPV6_ADDRESS_PATTERN.matcher(cs);
 
-        if (ipV6Matcher.matches())
-        {
+        if (ipV6Matcher.matches()) {
             final String host = ipV6Matcher.group(1);
             final String portString = ipV6Matcher.group(2);
 
@@ -66,12 +61,10 @@ public class SocketAddressUtil
      * @param cs Input string
      * @return An InetSocketAddress parsed from the input.
      */
-    public static InetSocketAddress parse(final CharSequence cs)
-    {
+    public static InetSocketAddress parse(final CharSequence cs) {
         return parse(cs, (hostString, portString) ->
         {
-            if (null == portString)
-            {
+            if (null == portString) {
                 throw new IllegalArgumentException("The 'port' portion of the address is required");
             }
 
@@ -79,8 +72,7 @@ public class SocketAddressUtil
         });
     }
 
-    public static InetSocketAddress parse(final CharSequence cs, final int defaultPort)
-    {
+    public static InetSocketAddress parse(final CharSequence cs, final int defaultPort) {
         return parse(cs, (hostString, portString) ->
         {
             final int port = parseIntOrDefault(portString, defaultPort);

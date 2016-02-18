@@ -18,8 +18,7 @@ package uk.co.real_logic.aeron;
 /**
  * Interface for encapsulating the strategy of mapping {@link LogBuffers} at a giving file location.
  */
-interface LogBuffersFactory
-{
+interface LogBuffersFactory {
     /**
      * Map a log file into memory and wrap each section with a {@link uk.co.real_logic.agrona.concurrent.UnsafeBuffer}.
      *

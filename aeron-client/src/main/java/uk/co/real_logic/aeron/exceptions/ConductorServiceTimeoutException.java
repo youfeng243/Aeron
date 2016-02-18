@@ -18,10 +18,8 @@ package uk.co.real_logic.aeron.exceptions;
 /**
  * A timeout has occurred between service calls for the client conductor.
  */
-public class ConductorServiceTimeoutException extends RuntimeException
-{
-    public ConductorServiceTimeoutException(final String message)
-    {
+public class ConductorServiceTimeoutException extends RuntimeException {
+    public ConductorServiceTimeoutException(final String message) {
         super(message);
     }
 }

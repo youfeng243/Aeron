@@ -18,19 +18,16 @@ package uk.co.real_logic.aeron.driver.cmd;
 import uk.co.real_logic.aeron.driver.Receiver;
 import uk.co.real_logic.aeron.driver.media.ReceiveChannelEndpoint;
 
-public class AddSubscriptionCmd implements ReceiverCmd
-{
+public class AddSubscriptionCmd implements ReceiverCmd {
     private final ReceiveChannelEndpoint channelEndpoint;
     private final int streamId;
 
-    public AddSubscriptionCmd(final ReceiveChannelEndpoint channelEndpoint, final int streamId)
-    {
+    public AddSubscriptionCmd(final ReceiveChannelEndpoint channelEndpoint, final int streamId) {
         this.channelEndpoint = channelEndpoint;
         this.streamId = streamId;
     }
 
-    public void execute(final Receiver receiver)
-    {
+    public void execute(final Receiver receiver) {
         receiver.onAddSubscription(channelEndpoint, streamId);
     }
 }

@@ -33,28 +33,42 @@ import static uk.co.real_logic.agrona.BitUtil.SIZE_OF_SHORT;
  * |  Version    |     Flags     |               Type              |
  * +-------------+---------------+---------------------------------+
  * |                       Depends on Type                        ...
- *
  */
-public class HeaderFlyweight extends UnsafeBuffer
-{
+public class HeaderFlyweight extends UnsafeBuffer {
     public static final byte[] EMPTY_BUFFER = new byte[0];
 
-    /** header type PAD */
+    /**
+     * header type PAD
+     */
     public static final int HDR_TYPE_PAD = 0x00;
-    /** header type DATA */
+    /**
+     * header type DATA
+     */
     public static final int HDR_TYPE_DATA = 0x01;
-    /** header type NAK */
+    /**
+     * header type NAK
+     */
     public static final int HDR_TYPE_NAK = 0x02;
-    /** header type SM */
+    /**
+     * header type SM
+     */
     public static final int HDR_TYPE_SM = 0x03;
-    /** header type ERR */
+    /**
+     * header type ERR
+     */
     public static final int HDR_TYPE_ERR = 0x04;
-    /** header type SETUP */
+    /**
+     * header type SETUP
+     */
     public static final int HDR_TYPE_SETUP = 0x05;
-    /** header type EXT */
+    /**
+     * header type EXT
+     */
     public static final int HDR_TYPE_EXT = 0xFFFF;
 
-    /** default version */
+    /**
+     * default version
+     */
     public static final byte CURRENT_VERSION = 0x0;
 
     public static final int FRAME_LENGTH_FIELD_OFFSET = 0;
@@ -63,18 +77,15 @@ public class HeaderFlyweight extends UnsafeBuffer
     public static final int TYPE_FIELD_OFFSET = 6;
     public static final int HEADER_LENGTH = TYPE_FIELD_OFFSET + SIZE_OF_SHORT;
 
-    public HeaderFlyweight()
-    {
+    public HeaderFlyweight() {
         super(EMPTY_BUFFER);
     }
 
-    public HeaderFlyweight(final UnsafeBuffer buffer)
-    {
+    public HeaderFlyweight(final UnsafeBuffer buffer) {
         super(buffer);
     }
 
-    public HeaderFlyweight(final ByteBuffer buffer)
-    {
+    public HeaderFlyweight(final ByteBuffer buffer) {
         super(buffer);
     }
 
@@ -83,9 +94,8 @@ public class HeaderFlyweight extends UnsafeBuffer
      *
      * @return ver field value
      */
-    public short version()
-    {
-        return (short)(getByte(VERSION_FIELD_OFFSET) & 0xFF);
+    public short version() {
+        return (short) (getByte(VERSION_FIELD_OFFSET) & 0xFF);
     }
 
     /**
@@ -94,9 +104,8 @@ public class HeaderFlyweight extends UnsafeBuffer
      * @param version field value
      * @return flyweight
      */
-    public HeaderFlyweight version(final short version)
-    {
-        putByte(VERSION_FIELD_OFFSET, (byte)version);
+    public HeaderFlyweight version(final short version) {
+        putByte(VERSION_FIELD_OFFSET, (byte) version);
 
         return this;
     }
@@ -106,9 +115,8 @@ public class HeaderFlyweight extends UnsafeBuffer
      *
      * @return flags field value
      */
-    public short flags()
-    {
-        return (short)(getByte(FLAGS_FIELD_OFFSET) & 0xFF);
+    public short flags() {
+        return (short) (getByte(FLAGS_FIELD_OFFSET) & 0xFF);
     }
 
     /**
@@ -117,9 +125,8 @@ public class HeaderFlyweight extends UnsafeBuffer
      * @param flags field value
      * @return flyweight
      */
-    public HeaderFlyweight flags(final short flags)
-    {
-        putByte(FLAGS_FIELD_OFFSET, (byte)flags);
+    public HeaderFlyweight flags(final short flags) {
+        putByte(FLAGS_FIELD_OFFSET, (byte) flags);
 
         return this;
     }
@@ -129,8 +136,7 @@ public class HeaderFlyweight extends UnsafeBuffer
      *
      * @return type field value
      */
-    public int headerType()
-    {
+    public int headerType() {
         return getShort(TYPE_FIELD_OFFSET, LITTLE_ENDIAN) & 0xFFFF;
     }
 
@@ -140,9 +146,8 @@ public class HeaderFlyweight extends UnsafeBuffer
      * @param type field value
      * @return flyweight
      */
-    public HeaderFlyweight headerType(final int type)
-    {
-        putShort(TYPE_FIELD_OFFSET, (short)type, LITTLE_ENDIAN);
+    public HeaderFlyweight headerType(final int type) {
+        putShort(TYPE_FIELD_OFFSET, (short) type, LITTLE_ENDIAN);
 
         return this;
     }
@@ -152,8 +157,7 @@ public class HeaderFlyweight extends UnsafeBuffer
      *
      * @return frame length field
      */
-    public int frameLength()
-    {
+    public int frameLength() {
         return getInt(FRAME_LENGTH_FIELD_OFFSET, LITTLE_ENDIAN);
     }
 
@@ -163,8 +167,7 @@ public class HeaderFlyweight extends UnsafeBuffer
      * @param length field value
      * @return flyweight
      */
-    public HeaderFlyweight frameLength(final int length)
-    {
+    public HeaderFlyweight frameLength(final int length) {
         putInt(FRAME_LENGTH_FIELD_OFFSET, length, LITTLE_ENDIAN);
 
         return this;

@@ -17,15 +17,12 @@ package uk.co.real_logic.aeron.driver.exceptions;
 
 import uk.co.real_logic.aeron.ErrorCode;
 
-public class InvalidChannelException extends ControlProtocolException
-{
-    public InvalidChannelException(final ErrorCode code, final String msg)
-    {
+public class InvalidChannelException extends ControlProtocolException {
+    public InvalidChannelException(final ErrorCode code, final String msg) {
         super(code, msg);
     }
 
-    public InvalidChannelException(final ErrorCode code, final Exception rootCause)
-    {
+    public InvalidChannelException(final ErrorCode code, final Exception rootCause) {
         super(code, rootCause);
     }
 }

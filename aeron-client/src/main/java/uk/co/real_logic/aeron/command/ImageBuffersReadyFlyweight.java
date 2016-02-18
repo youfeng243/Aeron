@@ -54,21 +54,20 @@ import static uk.co.real_logic.agrona.BitUtil.SIZE_OF_LONG;
  * |                                                               |
  * +---------------------------------------------------------------+
  * |                                                              ...
- *...     Up to "Position Indicators Count" entries of this form
+ * ...     Up to "Position Indicators Count" entries of this form
  * +---------------------------------------------------------------+
  * |                         Log File Length                       |
  * +---------------------------------------------------------------+
  * |                          Log File Name                       ...
- *...                                                              |
+ * ...                                                              |
  * +---------------------------------------------------------------+
  * |                     Source identity Length                    |
  * +---------------------------------------------------------------+
  * |                     Source identity Name                     ...
- *...                                                              |
+ * ...                                                              |
  * +---------------------------------------------------------------+
  */
-public class ImageBuffersReadyFlyweight
-{
+public class ImageBuffersReadyFlyweight {
     private static final int CORRELATION_ID_OFFSET = 0;
     private static final int SESSION_ID_OFFSET = CORRELATION_ID_OFFSET + SIZE_OF_LONG;
     private static final int STREAM_ID_FIELD_OFFSET = SESSION_ID_OFFSET + SIZE_OF_INT;
@@ -88,8 +87,7 @@ public class ImageBuffersReadyFlyweight
      * @param offset at which the message begins.
      * @return for fluent API
      */
-    public final ImageBuffersReadyFlyweight wrap(final MutableDirectBuffer buffer, final int offset)
-    {
+    public final ImageBuffersReadyFlyweight wrap(final MutableDirectBuffer buffer, final int offset) {
         this.buffer = buffer;
         this.offset = offset;
 
@@ -101,8 +99,7 @@ public class ImageBuffersReadyFlyweight
      *
      * @return correlation id field
      */
-    public long correlationId()
-    {
+    public long correlationId() {
         return buffer.getLong(offset + CORRELATION_ID_OFFSET);
     }
 
@@ -112,8 +109,7 @@ public class ImageBuffersReadyFlyweight
      * @param correlationId field value
      * @return flyweight
      */
-    public ImageBuffersReadyFlyweight correlationId(final long correlationId)
-    {
+    public ImageBuffersReadyFlyweight correlationId(final long correlationId) {
         buffer.putLong(offset + CORRELATION_ID_OFFSET, correlationId);
 
         return this;
@@ -124,18 +120,17 @@ public class ImageBuffersReadyFlyweight
      *
      * @return session id field
      */
-    public int sessionId()
-    {
+    public int sessionId() {
         return buffer.getInt(offset + SESSION_ID_OFFSET);
     }
 
     /**
      * set session id field
+     *
      * @param sessionId field value
      * @return flyweight
      */
-    public ImageBuffersReadyFlyweight sessionId(final int sessionId)
-    {
+    public ImageBuffersReadyFlyweight sessionId(final int sessionId) {
         buffer.putInt(offset + SESSION_ID_OFFSET, sessionId);
 
         return this;
@@ -146,8 +141,7 @@ public class ImageBuffersReadyFlyweight
      *
      * @return stream id field
      */
-    public int streamId()
-    {
+    public int streamId() {
         return buffer.getInt(offset + STREAM_ID_FIELD_OFFSET);
     }
 
@@ -157,8 +151,7 @@ public class ImageBuffersReadyFlyweight
      * @param streamId field value
      * @return flyweight
      */
-    public ImageBuffersReadyFlyweight streamId(final int streamId)
-    {
+    public ImageBuffersReadyFlyweight streamId(final int streamId) {
         buffer.putInt(offset + STREAM_ID_FIELD_OFFSET, streamId);
 
         return this;
@@ -169,8 +162,7 @@ public class ImageBuffersReadyFlyweight
      *
      * @return the number of position indicators
      */
-    public int subscriberPositionCount()
-    {
+    public int subscriberPositionCount() {
         return buffer.getInt(offset + SUBSCRIBER_POSITION_COUNT_OFFSET);
     }
 
@@ -180,8 +172,7 @@ public class ImageBuffersReadyFlyweight
      * @param value the number of position indicators
      * @return flyweight
      */
-    public ImageBuffersReadyFlyweight subscriberPositionCount(final int value)
-    {
+    public ImageBuffersReadyFlyweight subscriberPositionCount(final int value) {
         buffer.putInt(offset + SUBSCRIBER_POSITION_BLOCK_LENGTH_OFFSET, SUBSCRIBER_POSITION_BLOCK_LENGTH);
         buffer.putInt(offset + SUBSCRIBER_POSITION_COUNT_OFFSET, value);
 
@@ -192,11 +183,10 @@ public class ImageBuffersReadyFlyweight
      * Set the position Id for the subscriber
      *
      * @param index for the subscriber position
-     * @param id for the subscriber position
+     * @param id    for the subscriber position
      * @return flyweight
      */
-    public ImageBuffersReadyFlyweight subscriberPositionId(final int index, final int id)
-    {
+    public ImageBuffersReadyFlyweight subscriberPositionId(final int index, final int id) {
         buffer.putInt(offset + subscriberPositionOffset(index), id);
 
         return this;
@@ -208,8 +198,7 @@ public class ImageBuffersReadyFlyweight
      * @param index for the subscriber position
      * @return position Id for the subscriber
      */
-    public int subscriberPositionId(final int index)
-    {
+    public int subscriberPositionId(final int index) {
         return buffer.getInt(offset + subscriberPositionOffset(index));
     }
 
@@ -217,11 +206,10 @@ public class ImageBuffersReadyFlyweight
      * Set the registration Id for the subscriber position
      *
      * @param index for the subscriber position
-     * @param id for the subscriber position
+     * @param id    for the subscriber position
      * @return flyweight
      */
-    public ImageBuffersReadyFlyweight positionIndicatorRegistrationId(final int index, final long id)
-    {
+    public ImageBuffersReadyFlyweight positionIndicatorRegistrationId(final int index, final long id) {
         buffer.putLong(offset + subscriberPositionOffset(index) + SIZE_OF_INT, id);
 
         return this;
@@ -233,8 +221,7 @@ public class ImageBuffersReadyFlyweight
      * @param index for the subscriber position
      * @return registration Id for the subscriber position
      */
-    public long positionIndicatorRegistrationId(final int index)
-    {
+    public long positionIndicatorRegistrationId(final int index) {
         return buffer.getLong(offset + subscriberPositionOffset(index) + SIZE_OF_INT);
     }
 
@@ -243,8 +230,7 @@ public class ImageBuffersReadyFlyweight
      *
      * @return log filename
      */
-    public String logFileName()
-    {
+    public String logFileName() {
         return buffer.getStringUtf8(offset + logFileNameOffset(), ByteOrder.nativeOrder());
     }
 
@@ -254,8 +240,7 @@ public class ImageBuffersReadyFlyweight
      * @param logFileName for the image
      * @return flyweight
      */
-    public ImageBuffersReadyFlyweight logFileName(final String logFileName)
-    {
+    public ImageBuffersReadyFlyweight logFileName(final String logFileName) {
         buffer.putStringUtf8(offset + logFileNameOffset(), logFileName, ByteOrder.nativeOrder());
         return this;
     }
@@ -265,8 +250,7 @@ public class ImageBuffersReadyFlyweight
      *
      * @return source identity string
      */
-    public String sourceIdentity()
-    {
+    public String sourceIdentity() {
         return buffer.getStringUtf8(offset + sourceIdentityOffset(), ByteOrder.nativeOrder());
     }
 
@@ -276,8 +260,7 @@ public class ImageBuffersReadyFlyweight
      * @param value for the source identity
      * @return flyweight
      */
-    public ImageBuffersReadyFlyweight sourceIdentity(final String value)
-    {
+    public ImageBuffersReadyFlyweight sourceIdentity(final String value) {
         buffer.putStringUtf8(offset + sourceIdentityOffset(), value, ByteOrder.nativeOrder());
         return this;
     }
@@ -289,24 +272,20 @@ public class ImageBuffersReadyFlyweight
      *
      * @return the length of the current message
      */
-    public int length()
-    {
+    public int length() {
         final int sourceIdentityOffset = sourceIdentityOffset();
         return sourceIdentityOffset + buffer.getInt(offset + sourceIdentityOffset) + SIZE_OF_INT;
     }
 
-    private int subscriberPositionOffset(final int index)
-    {
+    private int subscriberPositionOffset(final int index) {
         return SUBSCRIBER_POSITIONS_OFFSET + (index * SUBSCRIBER_POSITION_BLOCK_LENGTH);
     }
 
-    private int logFileNameOffset()
-    {
+    private int logFileNameOffset() {
         return subscriberPositionOffset(subscriberPositionCount());
     }
 
-    private int sourceIdentityOffset()
-    {
+    private int sourceIdentityOffset() {
         final int logFileNameOffset = logFileNameOffset();
         return logFileNameOffset + buffer.getInt(offset + logFileNameOffset) + SIZE_OF_INT;
     }

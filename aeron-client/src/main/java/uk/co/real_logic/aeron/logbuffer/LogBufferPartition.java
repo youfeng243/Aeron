@@ -23,13 +23,11 @@ import static uk.co.real_logic.aeron.logbuffer.LogBufferDescriptor.TERM_TAIL_COU
 /**
  * Log buffer implementation containing common functionality for dealing with log partition terms.
  */
-public class LogBufferPartition
-{
+public class LogBufferPartition {
     private final UnsafeBuffer termBuffer;
     private final UnsafeBuffer metaDataBuffer;
 
-    public LogBufferPartition(final UnsafeBuffer termBuffer, final UnsafeBuffer metaDataBuffer)
-    {
+    public LogBufferPartition(final UnsafeBuffer termBuffer, final UnsafeBuffer metaDataBuffer) {
         this.termBuffer = termBuffer;
         this.metaDataBuffer = metaDataBuffer;
     }
@@ -39,8 +37,7 @@ public class LogBufferPartition
      *
      * @return the log of messages for a term.
      */
-    public UnsafeBuffer termBuffer()
-    {
+    public UnsafeBuffer termBuffer() {
         return termBuffer;
     }
 
@@ -49,17 +46,15 @@ public class LogBufferPartition
      *
      * @return the meta data describing the term.
      */
-    public UnsafeBuffer metaDataBuffer()
-    {
+    public UnsafeBuffer metaDataBuffer() {
         return metaDataBuffer;
     }
 
     /**
      * Clean down the buffers for reuse by zeroing them out.
      */
-    public void clean()
-    {
-        termBuffer.setMemory(0, termBuffer.capacity(), (byte)0);
+    public void clean() {
+        termBuffer.setMemory(0, termBuffer.capacity(), (byte) 0);
         metaDataBuffer.putInt(TERM_STATUS_OFFSET, CLEAN);
     }
 
@@ -68,8 +63,7 @@ public class LogBufferPartition
      *
      * @return the status of buffer as described in {@link LogBufferDescriptor}
      */
-    public int status()
-    {
+    public int status() {
         return metaDataBuffer.getIntVolatile(TERM_STATUS_OFFSET);
     }
 
@@ -78,8 +72,7 @@ public class LogBufferPartition
      *
      * @param status to be set for the log buffer.
      */
-    public void statusOrdered(final int status)
-    {
+    public void statusOrdered(final int status) {
         metaDataBuffer.putIntOrdered(TERM_STATUS_OFFSET, status);
     }
 
@@ -89,11 +82,10 @@ public class LogBufferPartition
      *
      * @return the current tail value.
      */
-    public int tailOffsetVolatile()
-    {
+    public int tailOffsetVolatile() {
         final long tail = metaDataBuffer.getLongVolatile(TERM_TAIL_COUNTER_OFFSET) & 0xFFFF_FFFFL;
 
-        return (int)Math.min(tail, (long)termBuffer.capacity());
+        return (int) Math.min(tail, (long) termBuffer.capacity());
     }
 
     /**
@@ -101,8 +93,7 @@ public class LogBufferPartition
      *
      * @return the raw value for the tail containing both termId and offset.
      */
-    public long rawTailVolatile()
-    {
+    public long rawTailVolatile() {
         return metaDataBuffer.getLongVolatile(TERM_TAIL_COUNTER_OFFSET);
     }
 
@@ -111,9 +102,8 @@ public class LogBufferPartition
      *
      * @param termId for the tail counter
      */
-    public void termId(final int termId)
-    {
-        metaDataBuffer.putLong(TERM_TAIL_COUNTER_OFFSET, ((long)termId) << 32);
+    public void termId(final int termId) {
+        metaDataBuffer.putLong(TERM_TAIL_COUNTER_OFFSET, ((long) termId) << 32);
     }
 
     /**
@@ -121,10 +111,9 @@ public class LogBufferPartition
      *
      * @return the current term id.
      */
-    public int termId()
-    {
+    public int termId() {
         final long rawTail = metaDataBuffer.getLong(TERM_TAIL_COUNTER_OFFSET);
 
-        return (int)(rawTail >>> 32);
+        return (int) (rawTail >>> 32);
     }
 }

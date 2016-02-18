@@ -35,13 +35,11 @@ import uk.co.real_logic.agrona.concurrent.SigInt;
  * memory. This application reads the the cnc file and prints the counters. Layout of the cnc file is described in
  * {@link CncFileDescriptor}.
  */
-public class AeronStat
-{
+public class AeronStat {
     private final AtomicBuffer valuesBuffer;
     private final CountersManager countersManager;
 
-    public AeronStat()
-    {
+    public AeronStat() {
         final File cncFile = CommonContext.newDefaultCncFile();
         System.out.println("Command `n Control file " + cncFile);
 
@@ -49,8 +47,7 @@ public class AeronStat
         final DirectBuffer metaDataBuffer = CncFileDescriptor.createMetaDataBuffer(cncByteBuffer);
         final int cncVersion = metaDataBuffer.getInt(CncFileDescriptor.cncVersionOffset(0));
 
-        if (CncFileDescriptor.CNC_VERSION != cncVersion)
-        {
+        if (CncFileDescriptor.CNC_VERSION != cncVersion) {
             throw new IllegalStateException("CNC version not supported: version=" + cncVersion);
         }
 
@@ -59,42 +56,38 @@ public class AeronStat
         countersManager = new CountersManager(labelsBuffer, valuesBuffer);
     }
 
-    public void output(final PrintStream out)
-    {
+    public void output(final PrintStream out) {
         out.format("%1$tH:%1$tM:%1$tS - Aeron Stat\n", new Date());
         out.println("=========================");
 
         this.countersManager.forEach(
-            (id, label) ->
-            {
-                final int offset = CountersManager.counterOffset(id);
-                final long value = valuesBuffer.getLongVolatile(offset);
-                out.format("%3d: %,20d - %s\n", id, value, label);
-            });
+                (id, label) ->
+                {
+                    final int offset = CountersManager.counterOffset(id);
+                    final long value = valuesBuffer.getLongVolatile(offset);
+                    out.format("%3d: %,20d - %s\n", id, value, label);
+                });
     }
 
-    public void encode(final ByteBuffer buffer)
-    {
+    public void encode(final ByteBuffer buffer) {
         buffer.putLong(System.currentTimeMillis());
 
         countersManager.forEach(
-            (id, label) ->
-            {
-                buffer.putInt(id);
-                buffer.putInt(label.length());
-                buffer.put(label.getBytes());
-                buffer.putLong(valuesBuffer.getLongVolatile(CountersManager.counterOffset(id)));
-            });
+                (id, label) ->
+                {
+                    buffer.putInt(id);
+                    buffer.putInt(label.length());
+                    buffer.put(label.getBytes());
+                    buffer.putLong(valuesBuffer.getLongVolatile(CountersManager.counterOffset(id)));
+                });
     }
 
-    public static void main(final String[] args) throws Exception
-    {
+    public static void main(final String[] args) throws Exception {
         final AeronStat aeronStat = new AeronStat();
         final AtomicBoolean running = new AtomicBoolean(true);
         SigInt.register(() -> running.set(false));
 
-        while (running.get())
-        {
+        while (running.get()) {
             System.out.print("\033[H\033[2J");
             aeronStat.output(System.out);
             Thread.sleep(1000);

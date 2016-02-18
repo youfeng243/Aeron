@@ -33,8 +33,7 @@ import uk.co.real_logic.agrona.concurrent.BusySpinIdleStrategy;
 import uk.co.real_logic.agrona.concurrent.UnsafeBuffer;
 import uk.co.real_logic.agrona.console.ContinueBarrier;
 
-public class EmbeddedThroughput
-{
+public class EmbeddedThroughput {
     private static final String CHANNEL = SampleConfiguration.CHANNEL;
     private static final int STREAM_ID = SampleConfiguration.STREAM_ID;
     private static final int MESSAGE_LENGTH = SampleConfiguration.MESSAGE_LENGTH;
@@ -47,10 +46,8 @@ public class EmbeddedThroughput
 
     private static volatile boolean printingActive = true;
 
-    public static void main(final String[] args) throws Exception
-    {
-        if (1 != args.length)
-        {
+    public static void main(final String[] args) throws Exception {
+        if (1 != args.length) {
             throw new IllegalArgumentException("must specify properties file to use");
         }
 
@@ -67,39 +64,34 @@ public class EmbeddedThroughput
         try (final MediaDriver ignore = MediaDriver.launch();
              final Aeron aeron = Aeron.connect(context);
              final Publication publication = aeron.addPublication(CHANNEL, STREAM_ID);
-             final Subscription subscription = aeron.addSubscription(CHANNEL, STREAM_ID))
-        {
+             final Subscription subscription = aeron.addSubscription(CHANNEL, STREAM_ID)) {
             executor.execute(reporter);
             executor.execute(
-                () -> SamplesUtil.subscriberLoop(rateReporterHandler, FRAGMENT_COUNT_LIMIT, running).accept(subscription));
+                    () -> SamplesUtil.subscriberLoop(rateReporterHandler, FRAGMENT_COUNT_LIMIT, running).accept(subscription));
 
             final ContinueBarrier barrier = new ContinueBarrier("Execute again?");
 
-            do
-            {
+            do {
                 System.out.format(
-                    "\nStreaming %,d messages of size %d bytes to %s on stream Id %d\n",
-                    NUMBER_OF_MESSAGES, MESSAGE_LENGTH, CHANNEL, STREAM_ID);
+                        "\nStreaming %,d messages of size %d bytes to %s on stream Id %d\n",
+                        NUMBER_OF_MESSAGES, MESSAGE_LENGTH, CHANNEL, STREAM_ID);
 
                 printingActive = true;
 
                 long backPressureCount = 0;
-                for (long i = 0; i < NUMBER_OF_MESSAGES; i++)
-                {
+                for (long i = 0; i < NUMBER_OF_MESSAGES; i++) {
                     ATOMIC_BUFFER.putLong(0, i);
 
                     OFFER_IDLE_STRATEGY.reset();
-                    while (publication.offer(ATOMIC_BUFFER, 0, ATOMIC_BUFFER.capacity()) < 0)
-                    {
+                    while (publication.offer(ATOMIC_BUFFER, 0, ATOMIC_BUFFER.capacity()) < 0) {
                         OFFER_IDLE_STRATEGY.idle();
                         backPressureCount++;
                     }
                 }
 
-                System.out.println("Done streaming. backPressureRatio=" + ((double)backPressureCount / NUMBER_OF_MESSAGES));
+                System.out.println("Done streaming. backPressureRatio=" + ((double) backPressureCount / NUMBER_OF_MESSAGES));
 
-                if (0 < LINGER_TIMEOUT_MS)
-                {
+                if (0 < LINGER_TIMEOUT_MS) {
                     System.out.println("Lingering for " + LINGER_TIMEOUT_MS + " milliseconds...");
                     Thread.sleep(LINGER_TIMEOUT_MS);
                 }
@@ -116,13 +108,11 @@ public class EmbeddedThroughput
     }
 
     public static void printRate(
-        final double messagesPerSec, final double bytesPerSec, final long totalFragments, final long totalBytes)
-    {
-        if (printingActive)
-        {
+            final double messagesPerSec, final double bytesPerSec, final long totalFragments, final long totalBytes) {
+        if (printingActive) {
             System.out.format(
-                "%.02g msgs/sec, %.02g bytes/sec, totals %d messages %d MB\n",
-                messagesPerSec, bytesPerSec, totalFragments, totalBytes / (1024 * 1024));
+                    "%.02g msgs/sec, %.02g bytes/sec, totals %d messages %d MB\n",
+                    messagesPerSec, bytesPerSec, totalFragments, totalBytes / (1024 * 1024));
         }
     }
 }

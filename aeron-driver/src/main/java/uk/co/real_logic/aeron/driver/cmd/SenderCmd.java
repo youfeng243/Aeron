@@ -17,7 +17,6 @@ package uk.co.real_logic.aeron.driver.cmd;
 
 import uk.co.real_logic.aeron.driver.Sender;
 
-public interface SenderCmd
-{
+public interface SenderCmd {
     void execute(Sender sender);
 }

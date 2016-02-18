@@ -27,19 +27,16 @@ import static org.mockito.Mockito.when;
 import static uk.co.real_logic.aeron.logbuffer.FrameDescriptor.FRAME_ALIGNMENT;
 import static uk.co.real_logic.aeron.logbuffer.FrameDescriptor.lengthOffset;
 
-public class TermBlockScannerTest
-{
+public class TermBlockScannerTest {
     private final UnsafeBuffer termBuffer = mock(UnsafeBuffer.class);
 
     @Before
-    public void before()
-    {
+    public void before() {
         when(termBuffer.capacity()).thenReturn(LogBufferDescriptor.TERM_MIN_LENGTH);
     }
 
     @Test
-    public void shouldScanEmptyBuffer()
-    {
+    public void shouldScanEmptyBuffer() {
         final int offset = 0;
         final int limit = termBuffer.capacity();
 
@@ -49,8 +46,7 @@ public class TermBlockScannerTest
     }
 
     @Test
-    public void shouldReadFirstMessage()
-    {
+    public void shouldReadFirstMessage() {
         final int offset = 0;
         final int limit = termBuffer.capacity();
         final int messageLength = 50;
@@ -64,8 +60,7 @@ public class TermBlockScannerTest
     }
 
     @Test
-    public void shouldReadBlockOfTwoMessages()
-    {
+    public void shouldReadBlockOfTwoMessages() {
         final int offset = 0;
         final int limit = termBuffer.capacity();
         final int messageLength = 50;
@@ -80,8 +75,7 @@ public class TermBlockScannerTest
     }
 
     @Test
-    public void shouldReadBlockOfThreeMessagesThatFillBuffer()
-    {
+    public void shouldReadBlockOfThreeMessagesThatFillBuffer() {
         final int offset = 0;
         final int limit = termBuffer.capacity();
         final int messageLength = 50;
@@ -98,8 +92,7 @@ public class TermBlockScannerTest
     }
 
     @Test
-    public void shouldReadBlockOfTwoMessagesBecauseOfLimit()
-    {
+    public void shouldReadBlockOfTwoMessagesBecauseOfLimit() {
         final int offset = 0;
         final int messageLength = 50;
         final int alignedMessageLength = BitUtil.align(messageLength, FRAME_ALIGNMENT);
@@ -115,12 +108,11 @@ public class TermBlockScannerTest
     }
 
     @Test
-    public void shouldFailToReadFirstMessageBecauseOfLimit()
-    {
+    public void shouldFailToReadFirstMessageBecauseOfLimit() {
         final int offset = 0;
         final int messageLength = 50;
         final int alignedMessageLength = BitUtil.align(messageLength, FRAME_ALIGNMENT);
-        final int limit = alignedMessageLength  - 1;
+        final int limit = alignedMessageLength - 1;
 
         when(termBuffer.getIntVolatile(lengthOffset(offset))).thenReturn(messageLength);
 
@@ -130,8 +122,7 @@ public class TermBlockScannerTest
     }
 
     @Test
-    public void shouldReadOneMessageOnLimit()
-    {
+    public void shouldReadOneMessageOnLimit() {
         final int offset = 0;
         final int messageLength = 50;
         final int alignedMessageLength = BitUtil.align(messageLength, FRAME_ALIGNMENT);

@@ -32,8 +32,7 @@ import java.nio.channels.SelectionKey;
 import static uk.co.real_logic.aeron.logbuffer.FrameDescriptor.frameLength;
 import static uk.co.real_logic.aeron.logbuffer.FrameDescriptor.frameVersion;
 
-public abstract class UdpChannelTransport implements AutoCloseable
-{
+public abstract class UdpChannelTransport implements AutoCloseable {
     protected final ByteBuffer receiveByteBuffer = ByteBuffer.allocateDirect(Configuration.RECEIVE_BYTE_BUFFER_LENGTH);
     protected final UnsafeBuffer receiveBuffer = new UnsafeBuffer(receiveByteBuffer);
     protected DatagramChannel sendDatagramChannel;
@@ -47,12 +46,11 @@ public abstract class UdpChannelTransport implements AutoCloseable
     protected final EventLogger logger;
 
     public UdpChannelTransport(
-        final UdpChannel udpChannel,
-        final InetSocketAddress endPointSocketAddress,
-        final InetSocketAddress bindSocketAddress,
-        final InetSocketAddress connectAddress,
-        final EventLogger logger)
-    {
+            final UdpChannel udpChannel,
+            final InetSocketAddress endPointSocketAddress,
+            final InetSocketAddress bindSocketAddress,
+            final InetSocketAddress connectAddress,
+            final EventLogger logger) {
         this.udpChannel = udpChannel;
         this.logger = logger;
         this.endPointSocketAddress = endPointSocketAddress;
@@ -63,18 +61,14 @@ public abstract class UdpChannelTransport implements AutoCloseable
     /**
      * Create the underlying channel for reading and writing.
      */
-    public void openDatagramChannel()
-    {
-        try
-        {
+    public void openDatagramChannel() {
+        try {
             sendDatagramChannel = DatagramChannel.open(udpChannel.protocolFamily());
             receiveDatagramChannel = sendDatagramChannel;
-            if (udpChannel.isMulticast())
-            {
+            if (udpChannel.isMulticast()) {
                 final NetworkInterface localInterface = udpChannel.localInterface();
 
-                if (null != connectAddress)
-                {
+                if (null != connectAddress) {
                     receiveDatagramChannel = DatagramChannel.open(udpChannel.protocolFamily());
                 }
 
@@ -83,38 +77,30 @@ public abstract class UdpChannelTransport implements AutoCloseable
                 receiveDatagramChannel.join(endPointSocketAddress.getAddress(), localInterface);
                 sendDatagramChannel.setOption(StandardSocketOptions.IP_MULTICAST_IF, localInterface);
 
-                if (null != connectAddress)
-                {
+                if (null != connectAddress) {
                     sendDatagramChannel.connect(connectAddress);
                 }
-            }
-            else
-            {
+            } else {
                 sendDatagramChannel.bind(bindSocketAddress);
 
-                if (null != connectAddress)
-                {
+                if (null != connectAddress) {
                     sendDatagramChannel.connect(connectAddress);
                 }
             }
 
-            if (0 != Configuration.SOCKET_SNDBUF_LENGTH)
-            {
+            if (0 != Configuration.SOCKET_SNDBUF_LENGTH) {
                 sendDatagramChannel.setOption(StandardSocketOptions.SO_SNDBUF, Configuration.SOCKET_SNDBUF_LENGTH);
             }
 
-            if (0 != Configuration.SOCKET_RCVBUF_LENGTH)
-            {
+            if (0 != Configuration.SOCKET_RCVBUF_LENGTH) {
                 receiveDatagramChannel.setOption(StandardSocketOptions.SO_RCVBUF, Configuration.SOCKET_RCVBUF_LENGTH);
             }
 
             sendDatagramChannel.configureBlocking(false);
             receiveDatagramChannel.configureBlocking(false);
-        }
-        catch (final IOException ex)
-        {
+        } catch (final IOException ex) {
             throw new RuntimeException(String.format(
-                "channel \"%s\" : %s", udpChannel.originalUriString(), ex.toString()), ex);
+                    "channel \"%s\" : %s", udpChannel.originalUriString(), ex.toString()), ex);
         }
     }
 
@@ -123,8 +109,7 @@ public abstract class UdpChannelTransport implements AutoCloseable
      *
      * @param transportPoller to register read with
      */
-    public void registerForRead(final UdpTransportPoller transportPoller)
-    {
+    public void registerForRead(final UdpTransportPoller transportPoller) {
         this.transportPoller = transportPoller;
         selectionKey = transportPoller.registerForRead(this);
     }
@@ -134,8 +119,7 @@ public abstract class UdpChannelTransport implements AutoCloseable
      *
      * @return underlying channel
      */
-    public UdpChannel udpChannel()
-    {
+    public UdpChannel udpChannel() {
         return udpChannel;
     }
 
@@ -144,37 +128,29 @@ public abstract class UdpChannelTransport implements AutoCloseable
      *
      * @return {@link DatagramChannel} for this transport channel.
      */
-    public DatagramChannel receiveDatagramChannel()
-    {
+    public DatagramChannel receiveDatagramChannel() {
         return receiveDatagramChannel;
     }
 
     /**
      * Close transport, canceling any pending read operations and closing channel
      */
-    public void close()
-    {
-        try
-        {
-            if (null != selectionKey)
-            {
+    public void close() {
+        try {
+            if (null != selectionKey) {
                 selectionKey.cancel();
             }
 
-            if (null != transportPoller)
-            {
+            if (null != transportPoller) {
                 transportPoller.cancelRead(this);
             }
 
             sendDatagramChannel.close();
 
-            if (receiveDatagramChannel != sendDatagramChannel)
-            {
+            if (receiveDatagramChannel != sendDatagramChannel) {
                 receiveDatagramChannel.close();
             }
-        }
-        catch (final Exception ex)
-        {
+        } catch (final Exception ex) {
             logger.logException(ex);
         }
     }
@@ -184,8 +160,7 @@ public abstract class UdpChannelTransport implements AutoCloseable
      *
      * @return if transport is multicast media
      */
-    public boolean isMulticast()
-    {
+    public boolean isMulticast() {
         return udpChannel.isMulticast();
     }
 
@@ -196,15 +171,11 @@ public abstract class UdpChannelTransport implements AutoCloseable
      * @param <T>  type of option
      * @return option value
      */
-    public <T> T getOption(final SocketOption<T> name)
-    {
+    public <T> T getOption(final SocketOption<T> name) {
         T option = null;
-        try
-        {
+        try {
             option = sendDatagramChannel.getOption(name);
-        }
-        catch (final IOException ex)
-        {
+        } catch (final IOException ex) {
             LangUtil.rethrowUnchecked(ex);
         }
 
@@ -216,8 +187,7 @@ public abstract class UdpChannelTransport implements AutoCloseable
      *
      * @return capacity of receiving byte buffer
      */
-    public int receiveBufferCapacity()
-    {
+    public int receiveBufferCapacity() {
         return receiveByteBuffer.capacity();
     }
 
@@ -228,17 +198,13 @@ public abstract class UdpChannelTransport implements AutoCloseable
      */
     public abstract int pollForData();
 
-    public boolean isValidFrame(final UnsafeBuffer receiveBuffer, final int length)
-    {
+    public boolean isValidFrame(final UnsafeBuffer receiveBuffer, final int length) {
         boolean isFrameValid = true;
 
-        if (frameVersion(receiveBuffer, 0) != HeaderFlyweight.CURRENT_VERSION)
-        {
+        if (frameVersion(receiveBuffer, 0) != HeaderFlyweight.CURRENT_VERSION) {
             logger.log(EventCode.INVALID_VERSION, receiveBuffer, 0, frameLength(receiveBuffer, 0));
             isFrameValid = false;
-        }
-        else if (length < HeaderFlyweight.HEADER_LENGTH)
-        {
+        } else if (length < HeaderFlyweight.HEADER_LENGTH) {
             logger.log(EventCode.MALFORMED_FRAME_LENGTH, receiveBuffer, 0, length);
             isFrameValid = false;
         }
@@ -246,21 +212,15 @@ public abstract class UdpChannelTransport implements AutoCloseable
         return isFrameValid;
     }
 
-    protected final InetSocketAddress receive()
-    {
+    protected final InetSocketAddress receive() {
         receiveByteBuffer.clear();
 
         InetSocketAddress address = null;
-        try
-        {
-            address = (InetSocketAddress)receiveDatagramChannel.receive(receiveByteBuffer);
-        }
-        catch (final PortUnreachableException | ClosedChannelException ignored)
-        {
+        try {
+            address = (InetSocketAddress) receiveDatagramChannel.receive(receiveByteBuffer);
+        } catch (final PortUnreachableException | ClosedChannelException ignored) {
             // do nothing
-        }
-        catch (final Exception ex)
-        {
+        } catch (final Exception ex) {
             LangUtil.rethrowUnchecked(ex);
         }
 

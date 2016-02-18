@@ -20,14 +20,11 @@ import org.junit.Test;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
-public class ErrorCodeTest
-{
+public class ErrorCodeTest {
     @Test
-    public void errorCodesShouldBeIndexes()
-    {
+    public void errorCodesShouldBeIndexes() {
         final ErrorCode[] values = ErrorCode.values();
-        for (int i = 0; i < values.length; i++)
-        {
+        for (int i = 0; i < values.length; i++) {
             assertThat(ErrorCode.get(i).value(), is(i));
         }
     }

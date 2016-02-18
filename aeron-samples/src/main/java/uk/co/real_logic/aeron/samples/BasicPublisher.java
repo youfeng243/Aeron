@@ -35,8 +35,7 @@ import java.util.concurrent.TimeUnit;
  * setting their corresponding properties via the command-line; e.g.:
  * -Daeron.sample.channel=udp://localhost:5555 -Daeron.sample.streamId=20
  */
-public class BasicPublisher
-{
+public class BasicPublisher {
     private static final int STREAM_ID = SampleConfiguration.STREAM_ID;
     private static final String CHANNEL = SampleConfiguration.CHANNEL;
     private static final long NUMBER_OF_MESSAGES = SampleConfiguration.NUMBER_OF_MESSAGES;
@@ -44,8 +43,7 @@ public class BasicPublisher
     private static final boolean EMBEDDED_MEDIA_DRIVER = SampleConfiguration.EMBEDDED_MEDIA_DRIVER;
     private static final UnsafeBuffer BUFFER = new UnsafeBuffer(ByteBuffer.allocateDirect(256));
 
-    public static void main(final String[] args) throws Exception
-    {
+    public static void main(final String[] args) throws Exception {
         System.out.println("Publishing to " + CHANNEL + " on stream Id " + STREAM_ID);
 
         // If configured to do so, create an embedded media driver within this application rather
@@ -53,8 +51,7 @@ public class BasicPublisher
         final MediaDriver driver = EMBEDDED_MEDIA_DRIVER ? MediaDriver.launchEmbedded() : null;
 
         final Aeron.Context ctx = new Aeron.Context();
-        if (EMBEDDED_MEDIA_DRIVER)
-        {
+        if (EMBEDDED_MEDIA_DRIVER) {
             ctx.aeronDirectoryName(driver.aeronDirectoryName());
         }
 
@@ -63,10 +60,8 @@ public class BasicPublisher
         // The Aeron and Publication classes implement "AutoCloseable" and will automatically
         // clean up resources when this try block is finished
         try (final Aeron aeron = Aeron.connect(ctx);
-             final Publication publication = aeron.addPublication(CHANNEL, STREAM_ID))
-        {
-            for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
-            {
+             final Publication publication = aeron.addPublication(CHANNEL, STREAM_ID)) {
+            for (int i = 0; i < NUMBER_OF_MESSAGES; i++) {
                 final String message = "Hello World! " + i;
                 final byte[] messageBytes = message.getBytes();
                 BUFFER.putBytes(0, messageBytes);
@@ -75,32 +70,20 @@ public class BasicPublisher
 
                 final long result = publication.offer(BUFFER, 0, messageBytes.length);
 
-                if (result < 0L)
-                {
-                    if (result == Publication.BACK_PRESSURED)
-                    {
+                if (result < 0L) {
+                    if (result == Publication.BACK_PRESSURED) {
                         System.out.println("Offer failed due to back pressure");
-                    }
-                    else if (result == Publication.NOT_CONNECTED)
-                    {
+                    } else if (result == Publication.NOT_CONNECTED) {
                         System.out.println("Offer failed because publisher is not yet connected to subscriber");
-                    }
-                    else if (result == Publication.ADMIN_ACTION)
-                    {
+                    } else if (result == Publication.ADMIN_ACTION) {
                         System.out.println("Offer failed because of an administration action in the system");
-                    }
-                    else if (result == Publication.CLOSED)
-                    {
+                    } else if (result == Publication.CLOSED) {
                         System.out.println("Offer failed publication is closed");
                         break;
-                    }
-                    else
-                    {
+                    } else {
                         System.out.println("Offer failed due to unknown reason");
                     }
-                }
-                else
-                {
+                } else {
                     System.out.println("yay!");
                 }
 
@@ -109,8 +92,7 @@ public class BasicPublisher
 
             System.out.println("Done sending.");
 
-            if (0 < LINGER_TIMEOUT_MS)
-            {
+            if (0 < LINGER_TIMEOUT_MS) {
                 System.out.println("Lingering for " + LINGER_TIMEOUT_MS + " milliseconds...");
                 Thread.sleep(LINGER_TIMEOUT_MS);
             }

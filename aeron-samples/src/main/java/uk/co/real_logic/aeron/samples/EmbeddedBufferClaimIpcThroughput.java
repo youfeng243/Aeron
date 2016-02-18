@@ -30,18 +30,15 @@ import java.util.concurrent.locks.LockSupport;
 
 import static uk.co.real_logic.agrona.UnsafeAccess.UNSAFE;
 
-public class EmbeddedBufferClaimIpcThroughput
-{
+public class EmbeddedBufferClaimIpcThroughput {
     public static final int BURST_SIZE = 1_000_000;
     public static final int MESSAGE_LENGTH = SampleConfiguration.MESSAGE_LENGTH;
     public static final int MESSAGE_COUNT_LIMIT = SampleConfiguration.FRAGMENT_COUNT_LIMIT;
     public static final String CHANNEL = CommonContext.IPC_CHANNEL;
     public static final int STREAM_ID = SampleConfiguration.STREAM_ID;
 
-    public static void main(final String[] args) throws Exception
-    {
-        if (1 == args.length)
-        {
+    public static void main(final String[] args) throws Exception {
+        if (1 == args.length) {
             MediaDriver.loadPropertiesFile(args[0]);
         }
 
@@ -49,14 +46,13 @@ public class EmbeddedBufferClaimIpcThroughput
         SigInt.register(() -> running.set(false));
 
         final MediaDriver.Context ctx = new MediaDriver.Context()
-            .threadingMode(ThreadingMode.SHARED)
-            .sharedIdleStrategy(new NoOpIdleStrategy());
+                .threadingMode(ThreadingMode.SHARED)
+                .sharedIdleStrategy(new NoOpIdleStrategy());
 
         try (final MediaDriver ignore = MediaDriver.launch(ctx);
              final Aeron aeron = Aeron.connect();
              final Publication publication = aeron.addPublication(CHANNEL, STREAM_ID);
-             final Subscription subscription = aeron.addSubscription(CHANNEL, STREAM_ID))
-        {
+             final Subscription subscription = aeron.addSubscription(CHANNEL, STREAM_ID)) {
             final Subscriber subscriber = new Subscriber(running, subscription);
             final Thread subscriberThread = new Thread(subscriber);
             subscriberThread.setName("subscriber");
@@ -75,24 +71,20 @@ public class EmbeddedBufferClaimIpcThroughput
         }
     }
 
-    public static final class RateReporter implements Runnable
-    {
+    public static final class RateReporter implements Runnable {
         private final AtomicBoolean running;
         private final Subscriber subscriber;
 
-        public RateReporter(final AtomicBoolean running, final Subscriber subscriber)
-        {
+        public RateReporter(final AtomicBoolean running, final Subscriber subscriber) {
             this.running = running;
             this.subscriber = subscriber;
         }
 
-        public void run()
-        {
+        public void run() {
             long lastTimeStamp = System.currentTimeMillis();
             long lastTotalBytes = subscriber.totalBytes();
 
-            while (running.get())
-            {
+            while (running.get()) {
                 LockSupport.parkNanos(1_000_000_000);
 
                 final long newTimeStamp = System.currentTimeMillis();
@@ -102,8 +94,8 @@ public class EmbeddedBufferClaimIpcThroughput
                 final long bytesTransferred = newTotalBytes - lastTotalBytes;
 
                 System.out.format(
-                    "Duration %dms - %,d messages - %,d bytes\n",
-                    duration, bytesTransferred / MESSAGE_LENGTH, bytesTransferred);
+                        "Duration %dms - %,d messages - %,d bytes\n",
+                        duration, bytesTransferred / MESSAGE_LENGTH, bytesTransferred);
 
                 lastTimeStamp = newTimeStamp;
                 lastTotalBytes = newTotalBytes;
@@ -111,34 +103,27 @@ public class EmbeddedBufferClaimIpcThroughput
         }
     }
 
-    public static final class Publisher implements Runnable
-    {
+    public static final class Publisher implements Runnable {
         private final AtomicBoolean running;
         private final Publication publication;
 
-        public Publisher(final AtomicBoolean running, final Publication publication)
-        {
+        public Publisher(final AtomicBoolean running, final Publication publication) {
             this.running = running;
             this.publication = publication;
         }
 
-        public void run()
-        {
+        public void run() {
             final Publication publication = this.publication;
             final BufferClaim bufferClaim = new BufferClaim();
             long backPressureCount = 0;
             long totalMessageCount = 0;
 
             outputResults:
-            while (running.get())
-            {
-                for (int i = 0; i < BURST_SIZE; i++)
-                {
-                    while (publication.tryClaim(MESSAGE_LENGTH, bufferClaim) <= 0)
-                    {
+            while (running.get()) {
+                for (int i = 0; i < BURST_SIZE; i++) {
+                    while (publication.tryClaim(MESSAGE_LENGTH, bufferClaim) <= 0) {
                         ++backPressureCount;
-                        if (!running.get())
-                        {
+                        if (!running.get()) {
                             break outputResults;
                         }
                     }
@@ -153,22 +138,18 @@ public class EmbeddedBufferClaimIpcThroughput
                 }
             }
 
-            final double backPressureRatio = backPressureCount / (double)totalMessageCount;
+            final double backPressureRatio = backPressureCount / (double) totalMessageCount;
             System.out.format("Publisher back pressure ratio: %f\n", backPressureRatio);
         }
     }
 
-    public static final class Subscriber implements Runnable, FragmentHandler
-    {
+    public static final class Subscriber implements Runnable, FragmentHandler {
         private static final long TOTAL_BYTES_OFFSET;
-        static
-        {
-            try
-            {
+
+        static {
+            try {
                 TOTAL_BYTES_OFFSET = UNSAFE.objectFieldOffset(Subscriber.class.getDeclaredField("totalBytes"));
-            }
-            catch (final Exception ex)
-            {
+            } catch (final Exception ex) {
                 throw new RuntimeException(ex);
             }
         }
@@ -178,21 +159,17 @@ public class EmbeddedBufferClaimIpcThroughput
 
         private volatile long totalBytes = 0;
 
-        public Subscriber(final AtomicBoolean running, final Subscription subscription)
-        {
+        public Subscriber(final AtomicBoolean running, final Subscription subscription) {
             this.running = running;
             this.subscription = subscription;
         }
 
-        public long totalBytes()
-        {
+        public long totalBytes() {
             return totalBytes;
         }
 
-        public void run()
-        {
-            while (subscription.imageCount() == 0)
-            {
+        public void run() {
+            while (subscription.imageCount() == 0) {
                 // wait for an image to be ready
                 Thread.yield();
             }
@@ -202,25 +179,20 @@ public class EmbeddedBufferClaimIpcThroughput
             long failedPolls = 0;
             long successfulPolls = 0;
 
-            while (running.get())
-            {
+            while (running.get()) {
                 final int fragmentsRead = image.poll(this, MESSAGE_COUNT_LIMIT);
-                if (0 == fragmentsRead)
-                {
+                if (0 == fragmentsRead) {
                     ++failedPolls;
-                }
-                else
-                {
+                } else {
                     ++successfulPolls;
                 }
             }
 
-            final double failureRatio = failedPolls / (double)(successfulPolls + failedPolls);
+            final double failureRatio = failedPolls / (double) (successfulPolls + failedPolls);
             System.out.format("Subscriber poll failure ratio: %f\n", failureRatio);
         }
 
-        public void onFragment(final DirectBuffer buffer, final int offset, final int length, final Header header)
-        {
+        public void onFragment(final DirectBuffer buffer, final int offset, final int length, final Header header) {
             UNSAFE.putOrderedLong(this, TOTAL_BYTES_OFFSET, totalBytes + length);
         }
     }

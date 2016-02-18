@@ -39,17 +39,14 @@ import static uk.co.real_logic.aeron.logbuffer.LogBufferDescriptor.*;
 import static uk.co.real_logic.aeron.protocol.DataHeaderFlyweight.HEADER_LENGTH;
 import static uk.co.real_logic.agrona.BitUtil.align;
 
-public class ImageTest
-{
+public class ImageTest {
     private static final int TERM_BUFFER_LENGTH = LogBufferDescriptor.TERM_MIN_LENGTH;
     private static final int POSITION_BITS_TO_SHIFT = Integer.numberOfTrailingZeros(TERM_BUFFER_LENGTH);
     private static final byte[] DATA = new byte[36];
 
-    static
-    {
-        for (int i = 0; i < DATA.length; i++)
-        {
-            DATA[i] = (byte)i;
+    static {
+        for (int i = 0; i < DATA.length; i++) {
+            DATA[i] = (byte) i;
         }
     }
 
@@ -74,12 +71,10 @@ public class ImageTest
     private UnsafeBuffer[] termBuffers = new UnsafeBuffer[PARTITION_COUNT];
 
     @Before
-    public void setUp()
-    {
+    public void setUp() {
         dataHeader.wrap(rcvBuffer);
 
-        for (int i = 0; i < PARTITION_COUNT; i++)
-        {
+        for (int i = 0; i < PARTITION_COUNT; i++) {
             atomicBuffers[i] = new UnsafeBuffer(allocateDirect(TERM_BUFFER_LENGTH));
             termBuffers[i] = atomicBuffers[i];
 
@@ -93,8 +88,7 @@ public class ImageTest
     }
 
     @Test
-    public void shouldHandleClosedImage()
-    {
+    public void shouldHandleClosedImage() {
         final Image image = createImage();
 
         image.managedResource();
@@ -104,8 +98,7 @@ public class ImageTest
     }
 
     @Test
-    public void shouldReportCorrectPositionOnReception()
-    {
+    public void shouldReportCorrectPositionOnReception() {
         final long initialPosition = computePosition(INITIAL_TERM_ID, 0, POSITION_BITS_TO_SHIFT, INITIAL_TERM_ID);
         position.setOrdered(initialPosition);
         final Image image = createImage();
@@ -116,10 +109,10 @@ public class ImageTest
         assertThat(messages, is(1));
 
         verify(mockFragmentHandler).onFragment(
-            any(UnsafeBuffer.class),
-            eq(HEADER_LENGTH),
-            eq(DATA.length),
-            any(Header.class));
+                any(UnsafeBuffer.class),
+                eq(HEADER_LENGTH),
+                eq(DATA.length),
+                any(Header.class));
 
         final InOrder inOrder = Mockito.inOrder(position);
         inOrder.verify(position).setOrdered(initialPosition);
@@ -127,12 +120,11 @@ public class ImageTest
     }
 
     @Test
-    public void shouldReportCorrectPositionOnReceptionWithNonZeroPositionInInitialTermId()
-    {
+    public void shouldReportCorrectPositionOnReceptionWithNonZeroPositionInInitialTermId() {
         final int initialMessageIndex = 5;
         final int initialTermOffset = offsetForFrame(initialMessageIndex);
         final long initialPosition = computePosition(
-            INITIAL_TERM_ID, initialTermOffset, POSITION_BITS_TO_SHIFT, INITIAL_TERM_ID);
+                INITIAL_TERM_ID, initialTermOffset, POSITION_BITS_TO_SHIFT, INITIAL_TERM_ID);
 
         position.setOrdered(initialPosition);
         final Image image = createImage();
@@ -143,10 +135,10 @@ public class ImageTest
         assertThat(messages, is(1));
 
         verify(mockFragmentHandler).onFragment(
-            any(UnsafeBuffer.class),
-            eq(initialTermOffset + HEADER_LENGTH),
-            eq(DATA.length),
-            any(Header.class));
+                any(UnsafeBuffer.class),
+                eq(initialTermOffset + HEADER_LENGTH),
+                eq(DATA.length),
+                any(Header.class));
 
         final InOrder inOrder = Mockito.inOrder(position);
         inOrder.verify(position).setOrdered(initialPosition);
@@ -154,13 +146,12 @@ public class ImageTest
     }
 
     @Test
-    public void shouldReportCorrectPositionOnReceptionWithNonZeroPositionInNonInitialTermId()
-    {
+    public void shouldReportCorrectPositionOnReceptionWithNonZeroPositionInNonInitialTermId() {
         final int activeTermId = INITIAL_TERM_ID + 1;
         final int initialMessageIndex = 5;
         final int initialTermOffset = offsetForFrame(initialMessageIndex);
         final long initialPosition =
-            computePosition(activeTermId, initialTermOffset, POSITION_BITS_TO_SHIFT, INITIAL_TERM_ID);
+                computePosition(activeTermId, initialTermOffset, POSITION_BITS_TO_SHIFT, INITIAL_TERM_ID);
 
         position.setOrdered(initialPosition);
         final Image image = createImage();
@@ -171,10 +162,10 @@ public class ImageTest
         assertThat(messages, is(1));
 
         verify(mockFragmentHandler).onFragment(
-            any(UnsafeBuffer.class),
-            eq(initialTermOffset + HEADER_LENGTH),
-            eq(DATA.length),
-            any(Header.class));
+                any(UnsafeBuffer.class),
+                eq(initialTermOffset + HEADER_LENGTH),
+                eq(DATA.length),
+                any(Header.class));
 
         final InOrder inOrder = Mockito.inOrder(position);
         inOrder.verify(position).setOrdered(initialPosition);
@@ -182,20 +173,18 @@ public class ImageTest
     }
 
     @Test
-    public void shouldPollNoFragmentsToControlledFragmentHandler()
-    {
+    public void shouldPollNoFragmentsToControlledFragmentHandler() {
         final Image image = createImage();
         final int fragmentsRead = image.controlledPoll(mockControlledFragmentHandler, Integer.MAX_VALUE);
 
         assertThat(fragmentsRead, is(0));
         verify(position, never()).setOrdered(anyLong());
         verify(mockControlledFragmentHandler, never()).onFragment(
-            any(UnsafeBuffer.class), anyInt(), anyInt(), any(Header.class));
+                any(UnsafeBuffer.class), anyInt(), anyInt(), any(Header.class));
     }
 
     @Test
-    public void shouldPollOneFragmentToControlledFragmentHandlerOnContinue()
-    {
+    public void shouldPollOneFragmentToControlledFragmentHandlerOnContinue() {
         final long initialPosition = computePosition(INITIAL_TERM_ID, 0, POSITION_BITS_TO_SHIFT, INITIAL_TERM_ID);
         position.setOrdered(initialPosition);
         final Image image = createImage();
@@ -203,7 +192,7 @@ public class ImageTest
         insertDataFrame(INITIAL_TERM_ID, offsetForFrame(0));
 
         when(mockControlledFragmentHandler.onFragment(any(DirectBuffer.class), anyInt(), anyInt(), any(Header.class)))
-            .thenReturn(ControlledFragmentHandler.Action.CONTINUE);
+                .thenReturn(ControlledFragmentHandler.Action.CONTINUE);
 
         final int fragmentsRead = image.controlledPoll(mockControlledFragmentHandler, Integer.MAX_VALUE);
 
@@ -211,13 +200,12 @@ public class ImageTest
 
         final InOrder inOrder = Mockito.inOrder(position, mockControlledFragmentHandler);
         inOrder.verify(mockControlledFragmentHandler).onFragment(
-            any(UnsafeBuffer.class), eq(HEADER_LENGTH), eq(DATA.length), any(Header.class));
+                any(UnsafeBuffer.class), eq(HEADER_LENGTH), eq(DATA.length), any(Header.class));
         inOrder.verify(position).setOrdered(initialPosition + ALIGNED_FRAME_LENGTH);
     }
 
     @Test
-    public void shouldNotPollOneFragmentToControlledFragmentHandlerOnAbort()
-    {
+    public void shouldNotPollOneFragmentToControlledFragmentHandlerOnAbort() {
         final long initialPosition = computePosition(INITIAL_TERM_ID, 0, POSITION_BITS_TO_SHIFT, INITIAL_TERM_ID);
         position.setOrdered(initialPosition);
         final Image image = createImage();
@@ -225,7 +213,7 @@ public class ImageTest
         insertDataFrame(INITIAL_TERM_ID, offsetForFrame(0));
 
         when(mockControlledFragmentHandler.onFragment(any(DirectBuffer.class), anyInt(), anyInt(), any(Header.class)))
-            .thenReturn(ControlledFragmentHandler.Action.ABORT);
+                .thenReturn(ControlledFragmentHandler.Action.ABORT);
 
         final int fragmentsRead = image.controlledPoll(mockControlledFragmentHandler, Integer.MAX_VALUE);
 
@@ -233,12 +221,11 @@ public class ImageTest
         assertThat(image.position(), is(initialPosition));
 
         verify(mockControlledFragmentHandler).onFragment(
-            any(UnsafeBuffer.class), eq(HEADER_LENGTH), eq(DATA.length), any(Header.class));
+                any(UnsafeBuffer.class), eq(HEADER_LENGTH), eq(DATA.length), any(Header.class));
     }
 
     @Test
-    public void shouldPollOneFragmentToControlledFragmentHandlerOnBreak()
-    {
+    public void shouldPollOneFragmentToControlledFragmentHandlerOnBreak() {
         final long initialPosition = computePosition(INITIAL_TERM_ID, 0, POSITION_BITS_TO_SHIFT, INITIAL_TERM_ID);
         position.setOrdered(initialPosition);
         final Image image = createImage();
@@ -247,7 +234,7 @@ public class ImageTest
         insertDataFrame(INITIAL_TERM_ID, offsetForFrame(1));
 
         when(mockControlledFragmentHandler.onFragment(any(DirectBuffer.class), anyInt(), anyInt(), any(Header.class)))
-            .thenReturn(ControlledFragmentHandler.Action.BREAK);
+                .thenReturn(ControlledFragmentHandler.Action.BREAK);
 
         final int fragmentsRead = image.controlledPoll(mockControlledFragmentHandler, Integer.MAX_VALUE);
 
@@ -255,13 +242,12 @@ public class ImageTest
 
         final InOrder inOrder = Mockito.inOrder(position, mockControlledFragmentHandler);
         inOrder.verify(mockControlledFragmentHandler).onFragment(
-            any(UnsafeBuffer.class), eq(HEADER_LENGTH), eq(DATA.length), any(Header.class));
+                any(UnsafeBuffer.class), eq(HEADER_LENGTH), eq(DATA.length), any(Header.class));
         inOrder.verify(position).setOrdered(initialPosition + ALIGNED_FRAME_LENGTH);
     }
 
     @Test
-    public void shouldPollFragmentsToControlledFragmentHandlerOnCommit()
-    {
+    public void shouldPollFragmentsToControlledFragmentHandlerOnCommit() {
         final long initialPosition = computePosition(INITIAL_TERM_ID, 0, POSITION_BITS_TO_SHIFT, INITIAL_TERM_ID);
         position.setOrdered(initialPosition);
         final Image image = createImage();
@@ -270,7 +256,7 @@ public class ImageTest
         insertDataFrame(INITIAL_TERM_ID, offsetForFrame(1));
 
         when(mockControlledFragmentHandler.onFragment(any(DirectBuffer.class), anyInt(), anyInt(), any(Header.class)))
-            .thenReturn(ControlledFragmentHandler.Action.COMMIT);
+                .thenReturn(ControlledFragmentHandler.Action.COMMIT);
 
         final int fragmentsRead = image.controlledPoll(mockControlledFragmentHandler, Integer.MAX_VALUE);
 
@@ -278,17 +264,16 @@ public class ImageTest
 
         final InOrder inOrder = Mockito.inOrder(position, mockControlledFragmentHandler);
         inOrder.verify(mockControlledFragmentHandler).onFragment(
-            any(UnsafeBuffer.class), eq(HEADER_LENGTH), eq(DATA.length), any(Header.class));
+                any(UnsafeBuffer.class), eq(HEADER_LENGTH), eq(DATA.length), any(Header.class));
         inOrder.verify(position).setOrdered(initialPosition + ALIGNED_FRAME_LENGTH);
 
         inOrder.verify(mockControlledFragmentHandler).onFragment(
-            any(UnsafeBuffer.class), eq(ALIGNED_FRAME_LENGTH + HEADER_LENGTH), eq(DATA.length), any(Header.class));
+                any(UnsafeBuffer.class), eq(ALIGNED_FRAME_LENGTH + HEADER_LENGTH), eq(DATA.length), any(Header.class));
         inOrder.verify(position).setOrdered(initialPosition + (ALIGNED_FRAME_LENGTH * 2));
     }
 
     @Test
-    public void shouldPollFragmentsToControlledFragmentHandlerOnContinue()
-    {
+    public void shouldPollFragmentsToControlledFragmentHandlerOnContinue() {
         final long initialPosition = computePosition(INITIAL_TERM_ID, 0, POSITION_BITS_TO_SHIFT, INITIAL_TERM_ID);
         position.setOrdered(initialPosition);
         final Image image = createImage();
@@ -297,7 +282,7 @@ public class ImageTest
         insertDataFrame(INITIAL_TERM_ID, offsetForFrame(1));
 
         when(mockControlledFragmentHandler.onFragment(any(DirectBuffer.class), anyInt(), anyInt(), any(Header.class)))
-            .thenReturn(ControlledFragmentHandler.Action.CONTINUE);
+                .thenReturn(ControlledFragmentHandler.Action.CONTINUE);
 
         final int fragmentsRead = image.controlledPoll(mockControlledFragmentHandler, Integer.MAX_VALUE);
 
@@ -305,28 +290,26 @@ public class ImageTest
 
         final InOrder inOrder = Mockito.inOrder(position, mockControlledFragmentHandler);
         inOrder.verify(mockControlledFragmentHandler).onFragment(
-            any(UnsafeBuffer.class), eq(HEADER_LENGTH), eq(DATA.length), any(Header.class));
+                any(UnsafeBuffer.class), eq(HEADER_LENGTH), eq(DATA.length), any(Header.class));
         inOrder.verify(mockControlledFragmentHandler).onFragment(
-            any(UnsafeBuffer.class), eq(ALIGNED_FRAME_LENGTH + HEADER_LENGTH), eq(DATA.length), any(Header.class));
+                any(UnsafeBuffer.class), eq(ALIGNED_FRAME_LENGTH + HEADER_LENGTH), eq(DATA.length), any(Header.class));
         inOrder.verify(position).setOrdered(initialPosition + (ALIGNED_FRAME_LENGTH * 2));
     }
 
-    private Image createImage()
-    {
+    private Image createImage() {
         return new Image(subscription, SESSION_ID, position, logBuffers, errorHandler, SOURCE_IDENTITY, CORRELATION_ID);
     }
 
-    private void insertDataFrame(final int activeTermId, final int termOffset)
-    {
+    private void insertDataFrame(final int activeTermId, final int termOffset) {
         dataHeader
-            .termId(INITIAL_TERM_ID)
-            .streamId(STREAM_ID)
-            .sessionId(SESSION_ID)
-            .termOffset(termOffset)
-            .frameLength(DATA.length + HEADER_LENGTH)
-            .headerType(HeaderFlyweight.HDR_TYPE_DATA)
-            .flags(DataHeaderFlyweight.BEGIN_AND_END_FLAGS)
-            .version(HeaderFlyweight.CURRENT_VERSION);
+                .termId(INITIAL_TERM_ID)
+                .streamId(STREAM_ID)
+                .sessionId(SESSION_ID)
+                .termOffset(termOffset)
+                .frameLength(DATA.length + HEADER_LENGTH)
+                .headerType(HeaderFlyweight.HDR_TYPE_DATA)
+                .flags(DataHeaderFlyweight.BEGIN_AND_END_FLAGS)
+                .version(HeaderFlyweight.CURRENT_VERSION);
 
         rcvBuffer.putBytes(dataHeader.dataOffset(), DATA);
 
@@ -334,8 +317,7 @@ public class ImageTest
         TermRebuilder.insert(termBuffers[activeIndex], termOffset, rcvBuffer, ALIGNED_FRAME_LENGTH);
     }
 
-    private static int offsetForFrame(final int index)
-    {
+    private static int offsetForFrame(final int index) {
         return index * ALIGNED_FRAME_LENGTH;
     }
 }

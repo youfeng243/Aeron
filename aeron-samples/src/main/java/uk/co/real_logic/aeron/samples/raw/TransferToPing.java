@@ -32,12 +32,10 @@ import static uk.co.real_logic.aeron.driver.Configuration.MTU_LENGTH_DEFAULT;
 import static uk.co.real_logic.aeron.samples.raw.Common.init;
 import static uk.co.real_logic.agrona.BitUtil.SIZE_OF_LONG;
 
-public class TransferToPing
-{
+public class TransferToPing {
     private static final String LOCALHOST = "localhost";
 
-    public static void main(final String[] args) throws IOException
-    {
+    public static void main(final String[] args) throws IOException {
         final Histogram histogram = new Histogram(TimeUnit.SECONDS.toNanos(10), 3);
 
         final FileChannel sendFileChannel = Common.createTmpFileChannel();
@@ -57,17 +55,16 @@ public class TransferToPing
         final AtomicBoolean running = new AtomicBoolean(true);
         SigInt.register(() -> running.set(false));
 
-        while (running.get())
-        {
+        while (running.get()) {
             measureRoundTrip(
-                histogram,
-                receiveFileChannel,
-                receiveDatagramChannel,
-                receiveByteBuffer,
-                sendFileChannel,
-                sendDatagramChannel,
-                sendByteBuffer,
-                running);
+                    histogram,
+                    receiveFileChannel,
+                    receiveDatagramChannel,
+                    receiveByteBuffer,
+                    sendFileChannel,
+                    sendDatagramChannel,
+                    sendByteBuffer,
+                    running);
 
             histogram.reset();
             System.gc();
@@ -76,49 +73,42 @@ public class TransferToPing
     }
 
     private static void measureRoundTrip(
-        final Histogram histogram,
-        final FileChannel receiveFileChannel,
-        final DatagramChannel receiveDatagramChannel,
-        final ByteBuffer receiveByteBuffer,
-        final FileChannel sendFileChannel,
-        final DatagramChannel sendDatagramChannel,
-        final ByteBuffer sendByteBuffer,
-        final AtomicBoolean running)
-        throws IOException
-    {
+            final Histogram histogram,
+            final FileChannel receiveFileChannel,
+            final DatagramChannel receiveDatagramChannel,
+            final ByteBuffer receiveByteBuffer,
+            final FileChannel sendFileChannel,
+            final DatagramChannel sendDatagramChannel,
+            final ByteBuffer sendByteBuffer,
+            final AtomicBoolean running)
+            throws IOException {
         final int packetSize = SIZE_OF_LONG * 2;
 
-        for (int sequenceNumber = 0; sequenceNumber < Common.NUM_MESSAGES; sequenceNumber++)
-        {
+        for (int sequenceNumber = 0; sequenceNumber < Common.NUM_MESSAGES; sequenceNumber++) {
             final long timestamp = System.nanoTime();
 
             sendByteBuffer.putLong(0, sequenceNumber);
             sendByteBuffer.putLong(SIZE_OF_LONG, timestamp);
 
             final long bytesSent = sendFileChannel.transferTo(0, packetSize, sendDatagramChannel);
-            if (packetSize != bytesSent)
-            {
+            if (packetSize != bytesSent) {
                 throw new IllegalStateException("Invalid bytes sent " + bytesSent);
             }
 
             boolean available = false;
-            while (!available)
-            {
-                if (!running.get())
-                {
+            while (!available) {
+                if (!running.get()) {
                     return;
                 }
 
                 final long bytesReceived = receiveFileChannel.transferFrom(receiveDatagramChannel, 0, packetSize);
-                if (packetSize == bytesReceived)
-                {
+                if (packetSize == bytesReceived) {
                     available = true;
                 }
             }
 
             final long receivedSequenceNumber = receiveByteBuffer.getLong(0);
-            if (receivedSequenceNumber != sequenceNumber)
-            {
+            if (receivedSequenceNumber != sequenceNumber) {
                 throw new IllegalStateException("Data Loss:" + sequenceNumber + " to " + receivedSequenceNumber);
             }
 

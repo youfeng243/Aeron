@@ -19,8 +19,7 @@ package uk.co.real_logic.aeron.driver;
  * Handler for transmitting NAK messages
  */
 @FunctionalInterface
-public interface NakMessageSender
-{
+public interface NakMessageSender {
     /**
      * Called when a gap has not been filled.
      *

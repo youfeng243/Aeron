@@ -31,13 +31,12 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
-public class SubscriptionTest
-{
+public class SubscriptionTest {
     private static final String CHANNEL = "udp://localhost:40124";
     private static final int STREAM_ID_1 = 2;
     private static final long SUBSCRIPTION_CORRELATION_ID = 100;
     private static final int READ_BUFFER_CAPACITY = 1024;
-    private static final byte FLAGS = (byte)FrameDescriptor.UNFRAGMENTED;
+    private static final byte FLAGS = (byte) FrameDescriptor.UNFRAGMENTED;
     private static final int FRAGMENT_COUNT_LIMIT = Integer.MAX_VALUE;
     private static final int HEADER_LENGTH = DataHeaderFlyweight.HEADER_LENGTH;
 
@@ -51,79 +50,73 @@ public class SubscriptionTest
     private Subscription subscription;
 
     @Before
-    public void setUp()
-    {
+    public void setUp() {
         when(header.flags()).thenReturn(FLAGS);
 
         subscription = new Subscription(conductor, CHANNEL, STREAM_ID_1, SUBSCRIPTION_CORRELATION_ID);
     }
 
     @Test
-    public void shouldEnsureTheSubscriptionIsOpenWhenPolling()
-    {
+    public void shouldEnsureTheSubscriptionIsOpenWhenPolling() {
         subscription.close();
         assertTrue(subscription.isClosed());
     }
 
     @Test
-    public void shouldReadNothingWhenNoImages()
-    {
+    public void shouldReadNothingWhenNoImages() {
         assertThat(subscription.poll(fragmentHandler, 1), is(0));
     }
 
     @Test
-    public void shouldReadNothingWhenThereIsNoData()
-    {
+    public void shouldReadNothingWhenThereIsNoData() {
         subscription.addImage(imageOneMock);
 
         assertThat(subscription.poll(fragmentHandler, 1), is(0));
     }
 
     @Test
-    public void shouldReadData()
-    {
+    public void shouldReadData() {
         subscription.addImage(imageOneMock);
 
         when(imageOneMock.poll(any(FragmentHandler.class), anyInt())).then(
-            (invocation) ->
-            {
-                final FragmentHandler handler = (FragmentHandler)invocation.getArguments()[0];
-                handler.onFragment(atomicReadBuffer, HEADER_LENGTH, READ_BUFFER_CAPACITY - HEADER_LENGTH, header);
+                (invocation) ->
+                {
+                    final FragmentHandler handler = (FragmentHandler) invocation.getArguments()[0];
+                    handler.onFragment(atomicReadBuffer, HEADER_LENGTH, READ_BUFFER_CAPACITY - HEADER_LENGTH, header);
 
-                return 1;
-            });
+                    return 1;
+                });
 
         assertThat(subscription.poll(fragmentHandler, FRAGMENT_COUNT_LIMIT), is(1));
         verify(fragmentHandler).onFragment(
-            eq(atomicReadBuffer),
-            eq(HEADER_LENGTH),
-            eq(READ_BUFFER_CAPACITY - HEADER_LENGTH),
-            any(Header.class));
+                eq(atomicReadBuffer),
+                eq(HEADER_LENGTH),
+                eq(READ_BUFFER_CAPACITY - HEADER_LENGTH),
+                any(Header.class));
     }
 
     @Test
-    public void shouldReadDataFromMultipleSources()
-    {
+    public void shouldReadDataFromMultipleSources() {
         subscription.addImage(imageOneMock);
         subscription.addImage(imageTwoMock);
 
         when(imageOneMock.poll(any(FragmentHandler.class), anyInt())).then(
-            (invocation) ->
-            {
-                final FragmentHandler handler = (FragmentHandler)invocation.getArguments()[0];
-                handler.onFragment(atomicReadBuffer, HEADER_LENGTH, READ_BUFFER_CAPACITY - HEADER_LENGTH, header);
+                (invocation) ->
+                {
+                    final FragmentHandler handler = (FragmentHandler) invocation.getArguments()[0];
+                    handler.onFragment(atomicReadBuffer, HEADER_LENGTH, READ_BUFFER_CAPACITY - HEADER_LENGTH, header);
 
-                return 1;
-            });
+                    return 1;
+                });
 
         when(imageTwoMock.poll(any(FragmentHandler.class), anyInt())).then(
-            (invocation) ->
-            {
-                final FragmentHandler handler = (FragmentHandler)invocation.getArguments()[0];
-                handler.onFragment(atomicReadBuffer, HEADER_LENGTH, READ_BUFFER_CAPACITY - HEADER_LENGTH, header);
+                (invocation) ->
+                {
+                    final FragmentHandler handler = (FragmentHandler) invocation.getArguments()[0];
+                    handler.onFragment(atomicReadBuffer, HEADER_LENGTH, READ_BUFFER_CAPACITY - HEADER_LENGTH, header);
 
-                return 1;
-            });
+                    return 1;
+                });
 
         assertThat(subscription.poll(fragmentHandler, FRAGMENT_COUNT_LIMIT), is(2));
     }

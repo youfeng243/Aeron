@@ -31,8 +31,7 @@ import static org.junit.Assert.*;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
-public class FragmentAssemblerTest
-{
+public class FragmentAssemblerTest {
     private static final int SESSION_ID = 777;
     private static final int INITIAL_TERM_ID = 3;
 
@@ -42,15 +41,13 @@ public class FragmentAssemblerTest
     private final FragmentAssembler adapter = new FragmentAssembler(delegateFragmentHandler);
 
     @Before
-    public void setUp()
-    {
+    public void setUp() {
         header.buffer(termBuffer);
         when(termBuffer.getInt(anyInt(), any(ByteOrder.class))).thenReturn(SESSION_ID);
     }
 
     @Test
-    public void shouldPassThroughUnfragmentedMessage()
-    {
+    public void shouldPassThroughUnfragmentedMessage() {
         when(header.flags()).thenReturn(FrameDescriptor.UNFRAGMENTED);
         final UnsafeBuffer srcBuffer = new UnsafeBuffer(new byte[128]);
         final int offset = 8;
@@ -62,18 +59,17 @@ public class FragmentAssemblerTest
     }
 
     @Test
-    public void shouldAssembleTwoPartMessage()
-    {
+    public void shouldAssembleTwoPartMessage() {
         when(header.flags())
-            .thenReturn(FrameDescriptor.BEGIN_FRAG_FLAG)
-            .thenReturn(FrameDescriptor.END_FRAG_FLAG);
+                .thenReturn(FrameDescriptor.BEGIN_FRAG_FLAG)
+                .thenReturn(FrameDescriptor.END_FRAG_FLAG);
 
         final UnsafeBuffer srcBuffer = new UnsafeBuffer(new byte[1024]);
         final int offset = 0;
         final int length = srcBuffer.capacity() / 2;
 
-        srcBuffer.setMemory(0, length, (byte)65);
-        srcBuffer.setMemory(length, length, (byte)66);
+        srcBuffer.setMemory(0, length, (byte) 65);
+        srcBuffer.setMemory(length, length, (byte) 66);
 
         adapter.onFragment(srcBuffer, offset, length, header);
         adapter.onFragment(srcBuffer, length, length, header);
@@ -82,11 +78,10 @@ public class FragmentAssemblerTest
         final ArgumentCaptor<Header> headerArg = ArgumentCaptor.forClass(Header.class);
 
         verify(delegateFragmentHandler, times(1)).onFragment(
-            bufferArg.capture(), eq(offset), eq(length * 2), headerArg.capture());
+                bufferArg.capture(), eq(offset), eq(length * 2), headerArg.capture());
 
         final UnsafeBuffer capturedBuffer = bufferArg.getValue();
-        for (int i = 0; i < srcBuffer.capacity(); i++)
-        {
+        for (int i = 0; i < srcBuffer.capacity(); i++) {
             assertThat("same at i=" + i, capturedBuffer.getByte(i), is(srcBuffer.getByte(i)));
         }
 
@@ -96,21 +91,19 @@ public class FragmentAssemblerTest
     }
 
     @Test
-    public void shouldAssembleFourPartMessage()
-    {
+    public void shouldAssembleFourPartMessage() {
         when(header.flags())
-            .thenReturn(FrameDescriptor.BEGIN_FRAG_FLAG)
-            .thenReturn((byte)0)
-            .thenReturn((byte)0)
-            .thenReturn(FrameDescriptor.END_FRAG_FLAG);
+                .thenReturn(FrameDescriptor.BEGIN_FRAG_FLAG)
+                .thenReturn((byte) 0)
+                .thenReturn((byte) 0)
+                .thenReturn(FrameDescriptor.END_FRAG_FLAG);
 
         final UnsafeBuffer srcBuffer = new UnsafeBuffer(new byte[1024]);
         final int offset = 0;
         final int length = srcBuffer.capacity() / 4;
 
-        for (int i = 0; i < 4; i++)
-        {
-            srcBuffer.setMemory(i * length, length, (byte)(65 + i));
+        for (int i = 0; i < 4; i++) {
+            srcBuffer.setMemory(i * length, length, (byte) (65 + i));
         }
 
         adapter.onFragment(srcBuffer, offset, length, header);
@@ -122,11 +115,10 @@ public class FragmentAssemblerTest
         final ArgumentCaptor<Header> headerArg = ArgumentCaptor.forClass(Header.class);
 
         verify(delegateFragmentHandler, times(1)).onFragment(
-            bufferArg.capture(), eq(offset), eq(length * 4), headerArg.capture());
+                bufferArg.capture(), eq(offset), eq(length * 4), headerArg.capture());
 
         final UnsafeBuffer capturedBuffer = bufferArg.getValue();
-        for (int i = 0; i < srcBuffer.capacity(); i++)
-        {
+        for (int i = 0; i < srcBuffer.capacity(); i++) {
             assertThat("same at i=" + i, capturedBuffer.getByte(i), is(srcBuffer.getByte(i)));
         }
 
@@ -136,18 +128,17 @@ public class FragmentAssemblerTest
     }
 
     @Test
-    public void shouldFreeSessionBuffer()
-    {
+    public void shouldFreeSessionBuffer() {
         when(header.flags())
-            .thenReturn(FrameDescriptor.BEGIN_FRAG_FLAG)
-            .thenReturn(FrameDescriptor.END_FRAG_FLAG);
+                .thenReturn(FrameDescriptor.BEGIN_FRAG_FLAG)
+                .thenReturn(FrameDescriptor.END_FRAG_FLAG);
 
         final UnsafeBuffer srcBuffer = new UnsafeBuffer(new byte[1024]);
         final int offset = 0;
         final int length = srcBuffer.capacity() / 2;
 
-        srcBuffer.setMemory(0, length, (byte)65);
-        srcBuffer.setMemory(length, length, (byte)66);
+        srcBuffer.setMemory(0, length, (byte) 65);
+        srcBuffer.setMemory(length, length, (byte) 66);
 
         assertFalse(adapter.freeSessionBuffer(SESSION_ID));
 
@@ -159,8 +150,7 @@ public class FragmentAssemblerTest
     }
 
     @Test
-    public void shouldDoNotingIfEndArrivesWithoutBegin()
-    {
+    public void shouldDoNotingIfEndArrivesWithoutBegin() {
         when(header.flags()).thenReturn(FrameDescriptor.END_FRAG_FLAG);
         final UnsafeBuffer srcBuffer = new UnsafeBuffer(new byte[1024]);
         final int offset = 0;
@@ -172,11 +162,10 @@ public class FragmentAssemblerTest
     }
 
     @Test
-    public void shouldDoNotingIfMidArrivesWithoutBegin()
-    {
+    public void shouldDoNotingIfMidArrivesWithoutBegin() {
         when(header.flags())
-            .thenReturn((byte)0)
-            .thenReturn(FrameDescriptor.END_FRAG_FLAG);
+                .thenReturn((byte) 0)
+                .thenReturn(FrameDescriptor.END_FRAG_FLAG);
 
         final UnsafeBuffer srcBuffer = new UnsafeBuffer(new byte[1024]);
         final int offset = 0;

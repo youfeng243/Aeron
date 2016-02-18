@@ -31,14 +31,12 @@ import java.util.List;
 import static uk.co.real_logic.aeron.driver.PublicationImage.Status.ACTIVE;
 import static uk.co.real_logic.aeron.logbuffer.LogBufferDescriptor.*;
 
-class PublicationImagePadding1
-{
+class PublicationImagePadding1 {
     @SuppressWarnings("unused")
     protected long p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15;
 }
 
-class PublicationImageConductorFields extends PublicationImagePadding1
-{
+class PublicationImageConductorFields extends PublicationImagePadding1 {
     protected long timeOfLastStatusChange;
     protected long rebuildPosition;
 
@@ -49,34 +47,29 @@ class PublicationImageConductorFields extends PublicationImagePadding1
     protected int lossLength;
 }
 
-class PublicationImagePadding2 extends PublicationImageConductorFields
-{
+class PublicationImagePadding2 extends PublicationImageConductorFields {
     @SuppressWarnings("unused")
     protected long p16, p17, p18, p19, p20, p21, p22, p23, p24, p25, p26, p27, p28, p29, p30;
 }
 
-class PublicationImageHotFields extends PublicationImagePadding2
-{
+class PublicationImageHotFields extends PublicationImagePadding2 {
     protected long lastPacketTimestamp;
     protected long lastStatusMessageTimestamp;
     protected long lastStatusMessagePosition;
     protected long lastChangeNumber = -1;
 }
 
-class PublicationImagePadding3 extends PublicationImageHotFields
-{
+class PublicationImagePadding3 extends PublicationImageHotFields {
     @SuppressWarnings("unused")
     protected long p31, p32, p33, p34, p35, p36, p37, p38, p39, p40, p41, p42, p43, p44, p45;
 }
 
-class PublicationImageStatusFields extends PublicationImagePadding3
-{
+class PublicationImageStatusFields extends PublicationImagePadding3 {
     protected volatile long newStatusMessagePosition;
     protected volatile PublicationImage.Status status = PublicationImage.Status.INIT;
 }
 
-class PublicationImagePadding4 extends PublicationImageStatusFields
-{
+class PublicationImagePadding4 extends PublicationImageStatusFields {
     @SuppressWarnings("unused")
     protected long p46, p47, p48, p49, p50, p51, p52, p53, p54, p55, p56, p57, p58, p59, p60;
 }
@@ -85,11 +78,9 @@ class PublicationImagePadding4 extends PublicationImageStatusFields
  * State maintained for active sessionIds within a channel for receiver processing
  */
 public class PublicationImage
-    extends PublicationImagePadding4
-    implements AutoCloseable, NakMessageSender, DriverManagedResource
-{
-    public enum Status
-    {
+        extends PublicationImagePadding4
+        implements AutoCloseable, NakMessageSender, DriverManagedResource {
+    public enum Status {
         INIT, ACTIVE, INACTIVE, LINGER
     }
 
@@ -117,24 +108,23 @@ public class PublicationImage
     private boolean reachedEndOfLife = false;
 
     public PublicationImage(
-        final long correlationId,
-        final long imageLivenessTimeoutNs,
-        final ReceiveChannelEndpoint channelEndpoint,
-        final InetSocketAddress controlAddress,
-        final int sessionId,
-        final int streamId,
-        final int initialTermId,
-        final int activeTermId,
-        final int initialTermOffset,
-        final int initialWindowLength,
-        final RawLog rawLog,
-        final FeedbackDelayGenerator lossFeedbackDelayGenerator,
-        final List<ReadablePosition> subscriberPositions,
-        final Position hwmPosition,
-        final NanoClock clock,
-        final SystemCounters systemCounters,
-        final InetSocketAddress sourceAddress)
-    {
+            final long correlationId,
+            final long imageLivenessTimeoutNs,
+            final ReceiveChannelEndpoint channelEndpoint,
+            final InetSocketAddress controlAddress,
+            final int sessionId,
+            final int streamId,
+            final int initialTermId,
+            final int activeTermId,
+            final int initialTermOffset,
+            final int initialWindowLength,
+            final RawLog rawLog,
+            final FeedbackDelayGenerator lossFeedbackDelayGenerator,
+            final List<ReadablePosition> subscriberPositions,
+            final Position hwmPosition,
+            final NanoClock clock,
+            final SystemCounters systemCounters,
+            final InetSocketAddress sourceAddress) {
         this.correlationId = correlationId;
         this.imageLivenessTimeoutNs = imageLivenessTimeoutNs;
         this.channelEndpoint = channelEndpoint;
@@ -152,8 +142,7 @@ public class PublicationImage
         this.timeOfLastStatusChange = time;
         this.lastPacketTimestamp = time;
 
-        for (int i = 0; i < PARTITION_COUNT; i++)
-        {
+        for (int i = 0; i < PARTITION_COUNT; i++) {
             termBuffers[i] = rawLog.partitions()[i].termBuffer();
         }
 
@@ -178,15 +167,13 @@ public class PublicationImage
     /**
      * {@inheritDoc}
      */
-    public void close()
-    {
+    public void close() {
         rawLog.close();
         hwmPosition.close();
         subscriberPositions.forEach(ReadablePosition::close);
     }
 
-    public long correlationId()
-    {
+    public long correlationId() {
         return correlationId;
     }
 
@@ -195,8 +182,7 @@ public class PublicationImage
      *
      * @return session id of the channel from a publisher.
      */
-    public int sessionId()
-    {
+    public int sessionId() {
         return sessionId;
     }
 
@@ -205,8 +191,7 @@ public class PublicationImage
      *
      * @return stream id of this image within a channel.
      */
-    public int streamId()
-    {
+    public int streamId() {
         return streamId;
     }
 
@@ -215,8 +200,7 @@ public class PublicationImage
      *
      * @return the string representation of the channel URI.
      */
-    public String channelUriString()
-    {
+    public String channelUriString() {
         return channelEndpoint.originalUriString();
     }
 
@@ -225,8 +209,7 @@ public class PublicationImage
      *
      * @return source address
      */
-    public InetSocketAddress sourceAddress()
-    {
+    public InetSocketAddress sourceAddress() {
         return sourceAddress;
     }
 
@@ -235,8 +218,7 @@ public class PublicationImage
      *
      * @return {@link ReceiveChannelEndpoint} that the image is attached to.
      */
-    public ReceiveChannelEndpoint channelEndpoint()
-    {
+    public ReceiveChannelEndpoint channelEndpoint() {
         return channelEndpoint;
     }
 
@@ -244,8 +226,7 @@ public class PublicationImage
      * Remove this image from the {@link DataPacketDispatcher} so it will process no further packets from the network.
      * Called from the {@link Receiver} thread.
      */
-    public void removeFromDispatcher()
-    {
+    public void removeFromDispatcher() {
         channelEndpoint.dispatcher().removePublicationImage(this);
     }
 
@@ -256,8 +237,7 @@ public class PublicationImage
      * @param streamId        to match on value.
      * @return true on a match otherwise false.
      */
-    public boolean matches(final ReceiveChannelEndpoint channelEndpoint, final int streamId)
-    {
+    public boolean matches(final ReceiveChannelEndpoint channelEndpoint, final int streamId) {
         return this.streamId == streamId && this.channelEndpoint == channelEndpoint;
     }
 
@@ -266,8 +246,7 @@ public class PublicationImage
      *
      * @return the {@link uk.co.real_logic.aeron.driver.buffer.RawLog} the back this image.
      */
-    public RawLog rawLog()
-    {
+    public RawLog rawLog() {
         return rawLog;
     }
 
@@ -276,22 +255,20 @@ public class PublicationImage
      *
      * @return status of the image
      */
-    public Status status()
-    {
+    public Status status() {
         return status;
     }
 
     /**
      * Set status of the image.
-     * <p>
+     *
      * Set by {@link Receiver} for INIT to ACTIVE to INACTIVE
-     * <p>
+     *
      * Set by {@link DriverConductor} for INACTIVE to LINGER
      *
      * @param status of the image
      */
-    public void status(final Status status)
-    {
+    public void status(final Status status) {
         timeOfLastStatusChange = clock.nanoTime();
         this.status = status;
     }
@@ -299,10 +276,8 @@ public class PublicationImage
     /**
      * Set status to INACTIVE, but only if currently ACTIVE. Set by {@link Receiver}.
      */
-    public void ifActiveGoInactive()
-    {
-        if (Status.ACTIVE == status)
-        {
+    public void ifActiveGoInactive() {
+        if (Status.ACTIVE == status) {
             status(Status.INACTIVE);
         }
     }
@@ -312,8 +287,7 @@ public class PublicationImage
      *
      * @see NakMessageSender
      */
-    public void onLossDetected(final int termId, final int termOffset, final int length)
-    {
+    public void onLossDetected(final int termId, final int termOffset, final int length) {
         final long changeNumber = beginLossChange + 1;
 
         beginLossChange = changeNumber;
@@ -331,14 +305,12 @@ public class PublicationImage
      * @param now in nanoseconds
      * @return if work has been done or not
      */
-    public int trackRebuild(final long now)
-    {
+    public int trackRebuild(final long now) {
         long minSubscriberPosition = Long.MAX_VALUE;
         long maxSubscriberPosition = Long.MIN_VALUE;
 
         final List<ReadablePosition> subscriberPositions = this.subscriberPositions;
-        for (int i = 0, size = subscriberPositions.size(); i < size; i++)
-        {
+        for (int i = 0, size = subscriberPositions.size(); i < size; i++) {
             final long position = subscriberPositions.get(i).getVolatile();
             minSubscriberPosition = Math.min(minSubscriberPosition, position);
             maxSubscriberPosition = Math.max(maxSubscriberPosition, position);
@@ -351,29 +323,27 @@ public class PublicationImage
         final int index = indexByPosition(rebuildPosition, positionBitsToShift);
 
         final int workCount = lossDetector.scan(
-            termBuffers[index],
-            rebuildPosition,
-            hwmPosition.getVolatile(),
-            now,
-            termLengthMask,
-            positionBitsToShift,
-            initialTermId);
+                termBuffers[index],
+                rebuildPosition,
+                hwmPosition.getVolatile(),
+                now,
+                termLengthMask,
+                positionBitsToShift,
+                initialTermId);
 
-        final int rebuildTermOffset = (int)rebuildPosition & termLengthMask;
+        final int rebuildTermOffset = (int) rebuildPosition & termLengthMask;
         final long newRebuildPosition = (rebuildPosition - rebuildTermOffset) + lossDetector.rebuildOffset();
         this.rebuildPosition = newRebuildPosition;
 
-        final int newTermCount = (int)(newRebuildPosition >>> positionBitsToShift);
-        final int oldTermCount = (int)(oldRebuildPosition >>> positionBitsToShift);
-        if (newTermCount > oldTermCount)
-        {
+        final int newTermCount = (int) (newRebuildPosition >>> positionBitsToShift);
+        final int oldTermCount = (int) (oldRebuildPosition >>> positionBitsToShift);
+        if (newTermCount > oldTermCount) {
             final int oldTermCountIndex = indexByTermCount(oldTermCount);
             final UnsafeBuffer termBuffer = termBuffers[previousPartitionIndex(oldTermCountIndex)];
-            termBuffer.setMemory(0, termBuffer.capacity(), (byte)0);
+            termBuffer.setMemory(0, termBuffer.capacity(), (byte) 0);
         }
 
-        if (minSubscriberPosition > (newStatusMessagePosition + currentGain))
-        {
+        if (minSubscriberPosition > (newStatusMessagePosition + currentGain)) {
             newStatusMessagePosition = minSubscriberPosition;
         }
 
@@ -383,31 +353,25 @@ public class PublicationImage
     /**
      * Insert frame into term buffer.
      *
-     * @param termId  for the data packet to insert into the appropriate term.
+     * @param termId     for the data packet to insert into the appropriate term.
      * @param termOffset for the start of the packet in the term.
-     * @param buffer for the data packet to insert into the appropriate term.
-     * @param length of the data packet
+     * @param buffer     for the data packet to insert into the appropriate term.
+     * @param length     of the data packet
      * @return number of bytes applied as a result of this insertion.
      */
-    public int insertPacket(final int termId, final int termOffset, final UnsafeBuffer buffer, final int length)
-    {
+    public int insertPacket(final int termId, final int termOffset, final UnsafeBuffer buffer, final int length) {
         int bytesReceived = length;
         final int positionBitsToShift = this.positionBitsToShift;
         final long packetPosition = computePosition(termId, termOffset, positionBitsToShift, initialTermId);
         final long proposedPosition = packetPosition + length;
         final long windowPosition = lastStatusMessagePosition;
 
-        if (isHeartbeat(buffer, length))
-        {
+        if (isHeartbeat(buffer, length)) {
             hwmCandidate(packetPosition);
             systemCounters.heartbeatsReceived().orderedIncrement();
-        }
-        else if (isFlowControlUnderRun(windowPosition, packetPosition) || isFlowControlOverRun(windowPosition, proposedPosition))
-        {
+        } else if (isFlowControlUnderRun(windowPosition, packetPosition) || isFlowControlOverRun(windowPosition, proposedPosition)) {
             bytesReceived = 0;
-        }
-        else
-        {
+        } else {
             final UnsafeBuffer termBuffer = termBuffers[indexByPosition(packetPosition, positionBitsToShift)];
             TermRebuilder.insert(termBuffer, termOffset, buffer, length);
 
@@ -423,12 +387,10 @@ public class PublicationImage
      * @param now current time to check against.
      * @return true if still active otherwise false.
      */
-    public boolean checkForActivity(final long now)
-    {
+    public boolean checkForActivity(final long now) {
         boolean activity = true;
 
-        if (now > (lastPacketTimestamp + imageLivenessTimeoutNs))
-        {
+        if (now > (lastPacketTimestamp + imageLivenessTimeoutNs)) {
             activity = false;
         }
 
@@ -442,20 +404,17 @@ public class PublicationImage
      * @param statusMessageTimeout for sending of Status Messages.
      * @return number of work items processed.
      */
-    public int sendPendingStatusMessage(final long now, final long statusMessageTimeout)
-    {
+    public int sendPendingStatusMessage(final long now, final long statusMessageTimeout) {
         int workCount = 0;
 
-        if (ACTIVE == status)
-        {
+        if (ACTIVE == status) {
             final long statusMessagePosition = this.newStatusMessagePosition;
-            if (statusMessagePosition != lastStatusMessagePosition || now > (lastStatusMessageTimestamp + statusMessageTimeout))
-            {
+            if (statusMessagePosition != lastStatusMessagePosition || now > (lastStatusMessageTimestamp + statusMessageTimeout)) {
                 final int termId = computeTermIdFromPosition(statusMessagePosition, positionBitsToShift, initialTermId);
-                final int termOffset = (int)statusMessagePosition & termLengthMask;
+                final int termOffset = (int) statusMessagePosition & termLengthMask;
 
                 channelEndpoint.sendStatusMessage(
-                    controlAddress, sessionId, streamId, termId, termOffset, currentWindowLength, (byte)0);
+                        controlAddress, sessionId, streamId, termId, termOffset, currentWindowLength, (byte) 0);
 
                 lastStatusMessageTimestamp = now;
                 lastStatusMessagePosition = statusMessagePosition;
@@ -472,21 +431,18 @@ public class PublicationImage
      *
      * @return number of work items processed.
      */
-    public int sendPendingNak()
-    {
+    public int sendPendingNak() {
         int workCount = 0;
         final long changeNumber = endLossChange;
 
-        if (changeNumber != lastChangeNumber)
-        {
+        if (changeNumber != lastChangeNumber) {
             final int termId = lossTermId;
             final int termOffset = lossTermOffset;
             final int length = lossLength;
 
             UnsafeAccess.UNSAFE.loadFence(); // LoadLoad required so value loads don't move past version check below.
 
-            if (changeNumber == beginLossChange)
-            {
+            if (changeNumber == beginLossChange) {
                 channelEndpoint.sendNakMessage(controlAddress, sessionId, streamId, termId, termOffset, length);
                 lastChangeNumber = changeNumber;
                 systemCounters.nakMessagesSent().orderedIncrement();
@@ -502,8 +458,7 @@ public class PublicationImage
      *
      * @param subscriberPosition for the subscriber that has been removed.
      */
-    public void removeSubscriber(final ReadablePosition subscriberPosition)
-    {
+    public void removeSubscriber(final ReadablePosition subscriberPosition) {
         subscriberPositions.remove(subscriberPosition);
         subscriberPosition.close();
     }
@@ -513,8 +468,7 @@ public class PublicationImage
      *
      * @param subscriberPosition for the subscriber to be added.
      */
-    public void addSubscriber(final ReadablePosition subscriberPosition)
-    {
+    public void addSubscriber(final ReadablePosition subscriberPosition) {
         subscriberPositions.add(subscriberPosition);
     }
 
@@ -523,8 +477,7 @@ public class PublicationImage
      *
      * @return number of subscribers
      */
-    public int subscriberCount()
-    {
+    public int subscriberCount() {
         return subscriberPositions.size();
     }
 
@@ -533,26 +486,21 @@ public class PublicationImage
      *
      * @return the position up to which the current stream rebuild is complete for reception.
      */
-    public long rebuildPosition()
-    {
+    public long rebuildPosition() {
         return rebuildPosition;
     }
 
-    public void onTimeEvent(final long time, final DriverConductor conductor)
-    {
-        switch (status)
-        {
+    public void onTimeEvent(final long time, final DriverConductor conductor) {
+        switch (status) {
             case INACTIVE:
-                if (isDrained() || time > (timeOfLastStatusChange + imageLivenessTimeoutNs))
-                {
+                if (isDrained() || time > (timeOfLastStatusChange + imageLivenessTimeoutNs)) {
                     status(PublicationImage.Status.LINGER);
                     conductor.imageTransitionToLinger(this);
                 }
                 break;
 
             case LINGER:
-                if (time > (timeOfLastStatusChange + imageLivenessTimeoutNs))
-                {
+                if (time > (timeOfLastStatusChange + imageLivenessTimeoutNs)) {
                     reachedEndOfLife = true;
                     conductor.cleanupImage(this);
                 }
@@ -560,66 +508,54 @@ public class PublicationImage
         }
     }
 
-    public boolean hasReachedEndOfLife()
-    {
+    public boolean hasReachedEndOfLife() {
         return reachedEndOfLife;
     }
 
-    public void timeOfLastStateChange(final long time)
-    {
+    public void timeOfLastStateChange(final long time) {
     }
 
-    public long timeOfLastStateChange()
-    {
+    public long timeOfLastStateChange() {
         return timeOfLastStatusChange;
     }
 
-    public void delete()
-    {
+    public void delete() {
         close();
     }
 
-    private boolean isDrained()
-    {
+    private boolean isDrained() {
         long minSubscriberPosition = Long.MAX_VALUE;
         final List<ReadablePosition> subscriberPositions = this.subscriberPositions;
-        for (int i = 0, size = subscriberPositions.size(); i < size; i++)
-        {
+        for (int i = 0, size = subscriberPositions.size(); i < size; i++) {
             minSubscriberPosition = Math.min(minSubscriberPosition, subscriberPositions.get(i).getVolatile());
         }
 
         return minSubscriberPosition >= rebuildPosition;
     }
 
-    private boolean isHeartbeat(final UnsafeBuffer buffer, final int length)
-    {
+    private boolean isHeartbeat(final UnsafeBuffer buffer, final int length) {
         return length == DataHeaderFlyweight.HEADER_LENGTH && buffer.getInt(0) == 0;
     }
 
-    private void hwmCandidate(final long proposedPosition)
-    {
+    private void hwmCandidate(final long proposedPosition) {
         lastPacketTimestamp = clock.nanoTime();
         hwmPosition.proposeMaxOrdered(proposedPosition);
     }
 
-    private boolean isFlowControlUnderRun(final long windowPosition, final long packetPosition)
-    {
+    private boolean isFlowControlUnderRun(final long windowPosition, final long packetPosition) {
         final boolean isFlowControlUnderRun = packetPosition < windowPosition;
 
-        if (isFlowControlUnderRun)
-        {
+        if (isFlowControlUnderRun) {
             systemCounters.flowControlUnderRuns().orderedIncrement();
         }
 
         return isFlowControlUnderRun;
     }
 
-    private boolean isFlowControlOverRun(final long windowPosition, final long proposedPosition)
-    {
+    private boolean isFlowControlOverRun(final long windowPosition, final long proposedPosition) {
         final boolean isFlowControlOverRun = proposedPosition > (windowPosition + currentWindowLength);
 
-        if (isFlowControlOverRun)
-        {
+        if (isFlowControlOverRun) {
             systemCounters.flowControlOverRuns().orderedIncrement();
         }
 

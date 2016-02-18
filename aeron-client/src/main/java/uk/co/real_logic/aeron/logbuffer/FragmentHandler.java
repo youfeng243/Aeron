@@ -22,8 +22,7 @@ import uk.co.real_logic.agrona.DirectBuffer;
  * or a fragment of a message to be reassembled. Messages are fragmented if greater than the frame for MTU in length.
  */
 @FunctionalInterface
-public interface FragmentHandler
-{
+public interface FragmentHandler {
     /**
      * Callback for handling fragments of data being read from a log.
      *

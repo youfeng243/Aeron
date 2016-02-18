@@ -24,12 +24,11 @@ import static uk.co.real_logic.aeron.logbuffer.LogBufferDescriptor.computePositi
 
 /**
  * Tracking and handling of retransmit request, NAKs, for senders and receivers
- * <p>
+ *
  * A max number of retransmits is permitted by {@link #MAX_RETRANSMITS}. Additional received NAKs will be
  * ignored if this maximum is reached.
  */
-public class RetransmitHandler
-{
+public class RetransmitHandler {
     /**
      * Maximum number of concurrent retransmits
      */
@@ -56,13 +55,12 @@ public class RetransmitHandler
      * @param capacity               of the term buffer
      */
     public RetransmitHandler(
-        final NanoClock nanoClock,
-        final SystemCounters systemCounters,
-        final FeedbackDelayGenerator delayGenerator,
-        final FeedbackDelayGenerator lingerTimeoutGenerator,
-        final int initialTermId,
-        final int capacity)
-    {
+            final NanoClock nanoClock,
+            final SystemCounters systemCounters,
+            final FeedbackDelayGenerator delayGenerator,
+            final FeedbackDelayGenerator lingerTimeoutGenerator,
+            final int initialTermId,
+            final int capacity) {
         this.nanoClock = nanoClock;
         this.invalidPackets = systemCounters.invalidPackets();
         this.delayGenerator = delayGenerator;
@@ -71,8 +69,7 @@ public class RetransmitHandler
         this.capacity = capacity;
         this.positionBitsToShift = Integer.numberOfTrailingZeros(capacity);
 
-        for (int i = 0; i < MAX_RETRANSMITS; i++)
-        {
+        for (int i = 0; i < MAX_RETRANSMITS; i++) {
             retransmitActionPool[i] = new RetransmitAction();
         }
     }
@@ -85,15 +82,12 @@ public class RetransmitHandler
      * @param length           of the missing data
      * @param retransmitSender to call if an immediate retransmit is required
      */
-    public void onNak(final int termId, final int termOffset, final int length, final RetransmitSender retransmitSender)
-    {
-        if (!isInvalid(termOffset))
-        {
+    public void onNak(final int termId, final int termOffset, final int length, final RetransmitSender retransmitSender) {
+        if (!isInvalid(termOffset)) {
             final long position = computePosition(termId, termOffset, positionBitsToShift, initialTermId);
 
             if (activeRetransmitByPositionMap.size() < MAX_RETRANSMITS &&
-                null == activeRetransmitByPositionMap.get(position))
-            {
+                    null == activeRetransmitByPositionMap.get(position)) {
                 final RetransmitAction action = assignRetransmitAction();
                 action.termId = termId;
                 action.termOffset = termOffset;
@@ -101,13 +95,10 @@ public class RetransmitHandler
                 action.position = position;
 
                 final long delay = determineRetransmitDelay();
-                if (0 == delay)
-                {
+                if (0 == delay) {
                     perform(action, retransmitSender);
                     action.linger(determineLingerTimeout());
-                }
-                else
-                {
+                } else {
                     action.delay(delay);
                 }
 
@@ -118,19 +109,17 @@ public class RetransmitHandler
 
     /**
      * Called to indicate a retransmission is received that may obviate the need to send one ourselves.
-     * <p>
+     *
      * NOTE: Currently only called from unit tests. Would be used for retransmitting from receivers for NAK suppression
      *
      * @param termId     of the data
      * @param termOffset of the data
      */
-    public void onRetransmitReceived(final int termId, final int termOffset)
-    {
+    public void onRetransmitReceived(final int termId, final int termOffset) {
         final long position = computePosition(termId, termOffset, positionBitsToShift, initialTermId);
         final RetransmitAction action = activeRetransmitByPositionMap.get(position);
 
-        if (null != action && State.DELAYED == action.state)
-        {
+        if (null != action && State.DELAYED == action.state) {
             action.cancel();
             // do not go into linger
         }
@@ -143,27 +132,21 @@ public class RetransmitHandler
      * @param retransmitSender to call on retransmissions
      * @return count of expired actions performed
      */
-    public int processTimeouts(final long now, final RetransmitSender retransmitSender)
-    {
+    public int processTimeouts(final long now, final RetransmitSender retransmitSender) {
         int result = 0;
 
-        if (activeRetransmitByPositionMap.size() > 0)
-        {
-            for (final RetransmitAction action : retransmitActionPool)
-            {
-                switch (action.state)
-                {
+        if (activeRetransmitByPositionMap.size() > 0) {
+            for (final RetransmitAction action : retransmitActionPool) {
+                switch (action.state) {
                     case DELAYED:
-                        if (now > action.expire)
-                        {
+                        if (now > action.expire) {
                             action.onDelayTimeout(retransmitSender);
                             result++;
                         }
                         break;
 
                     case LINGERING:
-                        if (now > action.expire)
-                        {
+                        if (now > action.expire) {
                             action.onLingerTimeout();
                             result++;
                         }
@@ -175,39 +158,31 @@ public class RetransmitHandler
         return result;
     }
 
-    private boolean isInvalid(final int termOffset)
-    {
+    private boolean isInvalid(final int termOffset) {
         final boolean isInvalid = termOffset >= (capacity - DataHeaderFlyweight.HEADER_LENGTH);
 
-        if (isInvalid)
-        {
+        if (isInvalid) {
             invalidPackets.orderedIncrement();
         }
 
         return isInvalid;
     }
 
-    private long determineRetransmitDelay()
-    {
+    private long determineRetransmitDelay() {
         return delayGenerator.generateDelay();
     }
 
-    private long determineLingerTimeout()
-    {
+    private long determineLingerTimeout() {
         return lingerTimeoutGenerator.generateDelay();
     }
 
-    private void perform(final RetransmitAction action, final RetransmitSender retransmitSender)
-    {
+    private void perform(final RetransmitAction action, final RetransmitSender retransmitSender) {
         retransmitSender.resend(action.termId, action.termOffset, action.length);
     }
 
-    private RetransmitAction assignRetransmitAction()
-    {
-        for (final RetransmitAction action : retransmitActionPool)
-        {
-            if (State.INACTIVE == action.state)
-            {
+    private RetransmitAction assignRetransmitAction() {
+        for (final RetransmitAction action : retransmitActionPool) {
+            if (State.INACTIVE == action.state) {
                 return action;
             }
         }
@@ -215,15 +190,13 @@ public class RetransmitHandler
         throw new IllegalStateException("no more INACTIVE RetransmitActions");
     }
 
-    private enum State
-    {
+    private enum State {
         DELAYED,
         LINGERING,
         INACTIVE
     }
 
-    final class RetransmitAction
-    {
+    final class RetransmitAction {
         long expire;
         long position;
         int termId;
@@ -231,32 +204,27 @@ public class RetransmitHandler
         int length;
         State state = State.INACTIVE;
 
-        public void delay(final long delay)
-        {
+        public void delay(final long delay) {
             state = State.DELAYED;
             expire = nanoClock.nanoTime() + delay;
         }
 
-        public void linger(final long timeout)
-        {
+        public void linger(final long timeout) {
             state = State.LINGERING;
             expire = nanoClock.nanoTime() + timeout;
         }
 
-        public void onDelayTimeout(final RetransmitSender retransmitSender)
-        {
+        public void onDelayTimeout(final RetransmitSender retransmitSender) {
             perform(this, retransmitSender);
             linger(determineLingerTimeout());
         }
 
-        public void onLingerTimeout()
-        {
+        public void onLingerTimeout() {
             activeRetransmitByPositionMap.remove(position);
             state = State.INACTIVE;
         }
 
-        public void cancel()
-        {
+        public void cancel() {
             activeRetransmitByPositionMap.remove(position);
             state = State.INACTIVE;
         }

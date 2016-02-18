@@ -26,9 +26,10 @@ import static java.nio.ByteOrder.LITTLE_ENDIAN;
  *
  * <a href="https://github.com/real-logic/Aeron/wiki/Protocol-Specification#stream-setup">Stream Setup</a>
  */
-public class SetupFlyweight extends HeaderFlyweight
-{
-    /** Size of the Setup Header */
+public class SetupFlyweight extends HeaderFlyweight {
+    /**
+     * Size of the Setup Header
+     */
     public static final int HEADER_LENGTH = 36;
 
     private static final int TERM_OFFSET_FIELD_OFFSET = 8;
@@ -39,17 +40,14 @@ public class SetupFlyweight extends HeaderFlyweight
     private static final int TERM_LENGTH_FIELD_OFFSET = 28;
     private static final int MTU_LENGTH_FIELD_OFFSET = 32;
 
-    public SetupFlyweight()
-    {
+    public SetupFlyweight() {
     }
 
-    public SetupFlyweight(final UnsafeBuffer buffer)
-    {
+    public SetupFlyweight(final UnsafeBuffer buffer) {
         super(buffer);
     }
 
-    public SetupFlyweight(final ByteBuffer buffer)
-    {
+    public SetupFlyweight(final ByteBuffer buffer) {
         super(buffer);
     }
 
@@ -58,8 +56,7 @@ public class SetupFlyweight extends HeaderFlyweight
      *
      * @return term offset field
      */
-    public int termOffset()
-    {
+    public int termOffset() {
         return getInt(TERM_OFFSET_FIELD_OFFSET, LITTLE_ENDIAN);
     }
 
@@ -69,8 +66,7 @@ public class SetupFlyweight extends HeaderFlyweight
      * @param termOffset field value
      * @return flyweight
      */
-    public SetupFlyweight termOffset(final int termOffset)
-    {
+    public SetupFlyweight termOffset(final int termOffset) {
         putInt(TERM_OFFSET_FIELD_OFFSET, termOffset, LITTLE_ENDIAN);
 
         return this;
@@ -78,20 +74,20 @@ public class SetupFlyweight extends HeaderFlyweight
 
     /**
      * return session id field
+     *
      * @return session id field
      */
-    public int sessionId()
-    {
+    public int sessionId() {
         return getInt(SESSION_ID_FIELD_OFFSET, LITTLE_ENDIAN);
     }
 
     /**
      * set session id field
+     *
      * @param sessionId field value
      * @return flyweight
      */
-    public SetupFlyweight sessionId(final int sessionId)
-    {
+    public SetupFlyweight sessionId(final int sessionId) {
         putInt(SESSION_ID_FIELD_OFFSET, sessionId, LITTLE_ENDIAN);
 
         return this;
@@ -102,8 +98,7 @@ public class SetupFlyweight extends HeaderFlyweight
      *
      * @return stream id field
      */
-    public int streamId()
-    {
+    public int streamId() {
         return getInt(STREAM_ID_FIELD_OFFSET, LITTLE_ENDIAN);
     }
 
@@ -113,8 +108,7 @@ public class SetupFlyweight extends HeaderFlyweight
      * @param streamId field value
      * @return flyweight
      */
-    public SetupFlyweight streamId(final int streamId)
-    {
+    public SetupFlyweight streamId(final int streamId) {
         putInt(STREAM_ID_FIELD_OFFSET, streamId, LITTLE_ENDIAN);
 
         return this;
@@ -125,8 +119,7 @@ public class SetupFlyweight extends HeaderFlyweight
      *
      * @return initial term id field
      */
-    public int initialTermId()
-    {
+    public int initialTermId() {
         return getInt(INITIAL_TERM_ID_FIELD_OFFSET, LITTLE_ENDIAN);
     }
 
@@ -136,8 +129,7 @@ public class SetupFlyweight extends HeaderFlyweight
      * @param termId field value
      * @return flyweight
      */
-    public SetupFlyweight initialTermId(final int termId)
-    {
+    public SetupFlyweight initialTermId(final int termId) {
         putInt(INITIAL_TERM_ID_FIELD_OFFSET, termId, LITTLE_ENDIAN);
 
         return this;
@@ -148,8 +140,7 @@ public class SetupFlyweight extends HeaderFlyweight
      *
      * @return term id field
      */
-    public int activeTermId()
-    {
+    public int activeTermId() {
         return getInt(ACTIVE_TERM_ID_FIELD_OFFSET, LITTLE_ENDIAN);
     }
 
@@ -159,8 +150,7 @@ public class SetupFlyweight extends HeaderFlyweight
      * @param termId field value
      * @return flyweight
      */
-    public SetupFlyweight activeTermId(final int termId)
-    {
+    public SetupFlyweight activeTermId(final int termId) {
         putInt(ACTIVE_TERM_ID_FIELD_OFFSET, termId, LITTLE_ENDIAN);
 
         return this;
@@ -171,8 +161,7 @@ public class SetupFlyweight extends HeaderFlyweight
      *
      * @return term length field value
      */
-    public int termLength()
-    {
+    public int termLength() {
         return getInt(TERM_LENGTH_FIELD_OFFSET, LITTLE_ENDIAN);
     }
 
@@ -182,8 +171,7 @@ public class SetupFlyweight extends HeaderFlyweight
      * @param termLength field value
      * @return flyweight
      */
-    public SetupFlyweight termLength(final int termLength)
-    {
+    public SetupFlyweight termLength(final int termLength) {
         putInt(TERM_LENGTH_FIELD_OFFSET, termLength, LITTLE_ENDIAN);
 
         return this;
@@ -194,8 +182,7 @@ public class SetupFlyweight extends HeaderFlyweight
      *
      * @return MTU length field value
      */
-    public int mtuLength()
-    {
+    public int mtuLength() {
         return getInt(MTU_LENGTH_FIELD_OFFSET, LITTLE_ENDIAN);
     }
 
@@ -205,8 +192,7 @@ public class SetupFlyweight extends HeaderFlyweight
      * @param mtuLength field value
      * @return flyweight
      */
-    public SetupFlyweight mtuLength(final int mtuLength)
-    {
+    public SetupFlyweight mtuLength(final int mtuLength) {
         putInt(MTU_LENGTH_FIELD_OFFSET, mtuLength, LITTLE_ENDIAN);
 
         return this;

@@ -39,8 +39,7 @@ import uk.co.real_logic.agrona.concurrent.NoOpIdleStrategy;
 import uk.co.real_logic.agrona.concurrent.UnsafeBuffer;
 import uk.co.real_logic.agrona.console.ContinueBarrier;
 
-public class EmbeddedPingPong
-{
+public class EmbeddedPingPong {
     private static final int PING_STREAM_ID = SampleConfiguration.PING_STREAM_ID;
     private static final int PONG_STREAM_ID = SampleConfiguration.PONG_STREAM_ID;
     private static final String PING_CHANNEL = SampleConfiguration.PING_CHANNEL;
@@ -58,21 +57,18 @@ public class EmbeddedPingPong
     private static final BusySpinIdleStrategy PING_HANDLER_IDLE_STRATEGY = new BusySpinIdleStrategy();
     private static final AtomicBoolean RUNNING = new AtomicBoolean(true);
 
-    public static void main(final String[] args) throws Exception
-    {
-        if (1 == args.length)
-        {
+    public static void main(final String[] args) throws Exception {
+        if (1 == args.length) {
             MediaDriver.loadPropertiesFile(args[0]);
         }
 
         final MediaDriver.Context ctx = new MediaDriver.Context()
-            .threadingMode(ThreadingMode.DEDICATED)
-            .conductorIdleStrategy(new BackoffIdleStrategy(1, 1, 1, 1))
-            .receiverIdleStrategy(new NoOpIdleStrategy())
-            .senderIdleStrategy(new NoOpIdleStrategy());
+                .threadingMode(ThreadingMode.DEDICATED)
+                .conductorIdleStrategy(new BackoffIdleStrategy(1, 1, 1, 1))
+                .receiverIdleStrategy(new NoOpIdleStrategy())
+                .senderIdleStrategy(new NoOpIdleStrategy());
 
-        try (final MediaDriver ignored = MediaDriver.launch(ctx))
-        {
+        try (final MediaDriver ignored = MediaDriver.launch(ctx)) {
             final Thread pongThread = startPong(ignored.aeronDirectoryName());
             pongThread.start();
 
@@ -84,11 +80,10 @@ public class EmbeddedPingPong
         }
     }
 
-    private static void runPing(final String embeddedDirName) throws InterruptedException
-    {
+    private static void runPing(final String embeddedDirName) throws InterruptedException {
         final Aeron.Context ctx = new Aeron.Context()
-            .availableImageHandler(EmbeddedPingPong::availablePongImageHandler)
-            .aeronDirectoryName(embeddedDirName);
+                .availableImageHandler(EmbeddedPingPong::availablePongImageHandler)
+                .aeronDirectoryName(embeddedDirName);
 
         System.out.println("Publishing Ping at " + PING_CHANNEL + " on stream Id " + PING_STREAM_ID);
         System.out.println("Subscribing Pong at " + PONG_CHANNEL + " on stream Id " + PONG_STREAM_ID);
@@ -98,25 +93,22 @@ public class EmbeddedPingPong
 
         try (final Aeron aeron = Aeron.connect(ctx);
              final Publication pingPublication = aeron.addPublication(PING_CHANNEL, PING_STREAM_ID);
-             final Subscription pongSubscription = aeron.addSubscription(PONG_CHANNEL, PONG_STREAM_ID))
-        {
+             final Subscription pongSubscription = aeron.addSubscription(PONG_CHANNEL, PONG_STREAM_ID)) {
             System.out.println("Waiting for new image from Pong...");
 
             PONG_IMAGE_LATCH.await();
 
             System.out.println(
-                "Warming up... " + WARMUP_NUMBER_OF_ITERATIONS + " iterations of " + WARMUP_NUMBER_OF_MESSAGES + " messages");
+                    "Warming up... " + WARMUP_NUMBER_OF_ITERATIONS + " iterations of " + WARMUP_NUMBER_OF_MESSAGES + " messages");
 
-            for (int i = 0; i < WARMUP_NUMBER_OF_ITERATIONS; i++)
-            {
+            for (int i = 0; i < WARMUP_NUMBER_OF_ITERATIONS; i++) {
                 roundTripMessages(dataHandler, pingPublication, pongSubscription, WARMUP_NUMBER_OF_MESSAGES);
             }
 
             Thread.sleep(100);
             final ContinueBarrier barrier = new ContinueBarrier("Execute again?");
 
-            do
-            {
+            do {
                 HISTOGRAM.reset();
                 System.out.println("Pinging " + NUMBER_OF_MESSAGES + " messages");
 
@@ -129,12 +121,9 @@ public class EmbeddedPingPong
         }
     }
 
-    private static Thread startPong(final String embeddedDirName)
-    {
-        return new Thread()
-        {
-            public void run()
-            {
+    private static Thread startPong(final String embeddedDirName) {
+        return new Thread() {
+            public void run() {
                 System.out.println("Subscribing Ping at " + PING_CHANNEL + " on stream Id " + PING_STREAM_ID);
                 System.out.println("Publishing Pong at " + PONG_CHANNEL + " on stream Id " + PONG_STREAM_ID);
 
@@ -142,13 +131,11 @@ public class EmbeddedPingPong
 
                 try (final Aeron aeron = Aeron.connect(ctx);
                      final Publication pongPublication = aeron.addPublication(PONG_CHANNEL, PONG_STREAM_ID);
-                     final Subscription pingSubscription = aeron.addSubscription(PING_CHANNEL, PING_STREAM_ID))
-                {
+                     final Subscription pingSubscription = aeron.addSubscription(PING_CHANNEL, PING_STREAM_ID)) {
                     final FragmentAssembler dataHandler = new FragmentAssembler(
-                        (buffer, offset, length, header) -> pingHandler(pongPublication, buffer, offset, length));
+                            (buffer, offset, length, header) -> pingHandler(pongPublication, buffer, offset, length));
 
-                    while (RUNNING.get())
-                    {
+                    while (RUNNING.get()) {
                         PING_HANDLER_IDLE_STRATEGY.idle(pingSubscription.poll(dataHandler, FRAME_COUNT_LIMIT));
                     }
 
@@ -159,58 +146,48 @@ public class EmbeddedPingPong
     }
 
     private static void roundTripMessages(
-        final FragmentHandler fragmentHandler,
-        final Publication pingPublication,
-        final Subscription pongSubscription,
-        final int numMessages)
-    {
+            final FragmentHandler fragmentHandler,
+            final Publication pingPublication,
+            final Subscription pongSubscription,
+            final int numMessages) {
         final IdleStrategy idleStrategy = new BusySpinIdleStrategy();
 
-        for (int i = 0; i < numMessages; i++)
-        {
-            do
-            {
+        for (int i = 0; i < numMessages; i++) {
+            do {
                 ATOMIC_BUFFER.putLong(0, System.nanoTime());
             }
             while (pingPublication.offer(ATOMIC_BUFFER, 0, MESSAGE_LENGTH) < 0L);
 
             idleStrategy.reset();
-            while (pongSubscription.poll(fragmentHandler, FRAGMENT_COUNT_LIMIT) <= 0)
-            {
+            while (pongSubscription.poll(fragmentHandler, FRAGMENT_COUNT_LIMIT) <= 0) {
                 idleStrategy.idle();
             }
         }
     }
 
-    private static void pongHandler(final DirectBuffer buffer, final int offset, final int length, final Header header)
-    {
+    private static void pongHandler(final DirectBuffer buffer, final int offset, final int length, final Header header) {
         final long pingTimestamp = buffer.getLong(offset);
         final long rttNs = System.nanoTime() - pingTimestamp;
 
         HISTOGRAM.recordValue(rttNs);
     }
 
-    private static void availablePongImageHandler(final Image image)
-    {
+    private static void availablePongImageHandler(final Image image) {
         final Subscription subscription = image.subscription();
-        if (PONG_STREAM_ID == subscription.streamId() && PONG_CHANNEL.equals(subscription.channel()))
-        {
+        if (PONG_STREAM_ID == subscription.streamId() && PONG_CHANNEL.equals(subscription.channel())) {
             PONG_IMAGE_LATCH.countDown();
         }
     }
 
     public static void pingHandler(
-        final Publication pongPublication, final DirectBuffer buffer, final int offset, final int length)
-    {
-        if (pongPublication.offer(buffer, offset, length) < 0L)
-        {
+            final Publication pongPublication, final DirectBuffer buffer, final int offset, final int length) {
+        if (pongPublication.offer(buffer, offset, length) < 0L) {
             return;
         }
 
         PING_HANDLER_IDLE_STRATEGY.reset();
 
-        while (pongPublication.offer(buffer, offset, length) < 0L)
-        {
+        while (pongPublication.offer(buffer, offset, length) < 0L) {
             PING_HANDLER_IDLE_STRATEGY.idle();
         }
     }

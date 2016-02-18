@@ -45,8 +45,7 @@ import static uk.co.real_logic.agrona.BitUtil.SIZE_OF_INT;
  *  +----------------------------+
  * </pre>
  */
-public class LogBufferDescriptor
-{
+public class LogBufferDescriptor {
     /**
      * The number of partitions the log is divided into with pairs of term and term meta data buffers.
      */
@@ -86,8 +85,7 @@ public class LogBufferDescriptor
      */
     public static final int TERM_META_DATA_LENGTH;
 
-    static
-    {
+    static {
         int offset = (CACHE_LINE_LENGTH * 2);
         TERM_TAIL_COUNTER_OFFSET = offset;
 
@@ -137,8 +135,7 @@ public class LogBufferDescriptor
      */
     public static final int LOG_DEFAULT_FRAME_HEADER_MAX_LENGTH = CACHE_LINE_LENGTH * 2;
 
-    static
-    {
+    static {
         int offset = 0;
         LOG_ACTIVE_PARTITION_INDEX_OFFSET = offset;
 
@@ -187,21 +184,18 @@ public class LogBufferDescriptor
      * @param termLength to be checked.
      * @throws IllegalStateException if the length is not as expected.
      */
-    public static void checkTermLength(final int termLength)
-    {
-        if (termLength < TERM_MIN_LENGTH)
-        {
+    public static void checkTermLength(final int termLength) {
+        if (termLength < TERM_MIN_LENGTH) {
             final String s = String.format(
-                "Term length less than min length of %d, length=%d",
-                TERM_MIN_LENGTH, termLength);
+                    "Term length less than min length of %d, length=%d",
+                    TERM_MIN_LENGTH, termLength);
             throw new IllegalStateException(s);
         }
 
-        if ((termLength & (FRAME_ALIGNMENT - 1)) != 0)
-        {
+        if ((termLength & (FRAME_ALIGNMENT - 1)) != 0) {
             final String s = String.format(
-                "Term length not a multiple of %d, length=%d",
-                FRAME_ALIGNMENT, termLength);
+                    "Term length not a multiple of %d, length=%d",
+                    FRAME_ALIGNMENT, termLength);
             throw new IllegalStateException(s);
         }
     }
@@ -212,14 +206,12 @@ public class LogBufferDescriptor
      * @param buffer to be checked.
      * @throws IllegalStateException if the buffer is not as expected.
      */
-    public static void checkMetaDataBuffer(final UnsafeBuffer buffer)
-    {
+    public static void checkMetaDataBuffer(final UnsafeBuffer buffer) {
         final int capacity = buffer.capacity();
-        if (capacity < TERM_META_DATA_LENGTH)
-        {
+        if (capacity < TERM_META_DATA_LENGTH) {
             final String s = String.format(
-                "Meta data buffer capacity less than min length of %d, capacity=%d",
-                TERM_META_DATA_LENGTH, capacity);
+                    "Meta data buffer capacity less than min length of %d, capacity=%d",
+                    TERM_META_DATA_LENGTH, capacity);
             throw new IllegalStateException(s);
         }
     }
@@ -230,8 +222,7 @@ public class LogBufferDescriptor
      * @param logMetaDataBuffer containing the meta data.
      * @return the value of the initial Term id used for this log.
      */
-    public static int initialTermId(final UnsafeBuffer logMetaDataBuffer)
-    {
+    public static int initialTermId(final UnsafeBuffer logMetaDataBuffer) {
         return logMetaDataBuffer.getInt(LOG_INITIAL_TERM_ID_OFFSET);
     }
 
@@ -242,8 +233,7 @@ public class LogBufferDescriptor
      * @param logMetaDataBuffer containing the meta data.
      * @param initialTermId     value to be set.
      */
-    public static void initialTermId(final UnsafeBuffer logMetaDataBuffer, final int initialTermId)
-    {
+    public static void initialTermId(final UnsafeBuffer logMetaDataBuffer, final int initialTermId) {
         logMetaDataBuffer.putInt(LOG_INITIAL_TERM_ID_OFFSET, initialTermId);
     }
 
@@ -253,8 +243,7 @@ public class LogBufferDescriptor
      * @param logMetaDataBuffer containing the meta data.
      * @return the value of the MTU length used for this log.
      */
-    public static int mtuLength(final UnsafeBuffer logMetaDataBuffer)
-    {
+    public static int mtuLength(final UnsafeBuffer logMetaDataBuffer) {
         return logMetaDataBuffer.getInt(LOG_MTU_LENGTH_OFFSET);
     }
 
@@ -264,8 +253,7 @@ public class LogBufferDescriptor
      * @param logMetaDataBuffer containing the meta data.
      * @param mtuLength         value to be set.
      */
-    public static void mtuLength(final UnsafeBuffer logMetaDataBuffer, final int mtuLength)
-    {
+    public static void mtuLength(final UnsafeBuffer logMetaDataBuffer, final int mtuLength) {
         logMetaDataBuffer.putInt(LOG_MTU_LENGTH_OFFSET, mtuLength);
     }
 
@@ -276,8 +264,7 @@ public class LogBufferDescriptor
      * @param logMetaDataBuffer containing the meta data.
      * @return the value of the active partition index used by the producer of this log.
      */
-    public static int activePartitionIndex(final UnsafeBuffer logMetaDataBuffer)
-    {
+    public static int activePartitionIndex(final UnsafeBuffer logMetaDataBuffer) {
         return logMetaDataBuffer.getIntVolatile(LOG_ACTIVE_PARTITION_INDEX_OFFSET);
     }
 
@@ -287,8 +274,7 @@ public class LogBufferDescriptor
      * @param logMetaDataBuffer    containing the meta data.
      * @param activePartitionIndex value of the active partition index used by the producer of this log.
      */
-    public static void activePartitionIndex(final UnsafeBuffer logMetaDataBuffer, final int activePartitionIndex)
-    {
+    public static void activePartitionIndex(final UnsafeBuffer logMetaDataBuffer, final int activePartitionIndex) {
         logMetaDataBuffer.putIntOrdered(LOG_ACTIVE_PARTITION_INDEX_OFFSET, activePartitionIndex);
     }
 
@@ -298,8 +284,7 @@ public class LogBufferDescriptor
      * @param currentIndex partition index
      * @return the next partition index
      */
-    public static int nextPartitionIndex(final int currentIndex)
-    {
+    public static int nextPartitionIndex(final int currentIndex) {
         return (currentIndex + 1) % PARTITION_COUNT;
     }
 
@@ -309,8 +294,7 @@ public class LogBufferDescriptor
      * @param currentIndex partition index
      * @return the previous partition index
      */
-    public static int previousPartitionIndex(final int currentIndex)
-    {
+    public static int previousPartitionIndex(final int currentIndex) {
         return (currentIndex + (PARTITION_COUNT - 1)) % PARTITION_COUNT;
     }
 
@@ -321,8 +305,7 @@ public class LogBufferDescriptor
      * @param activeTermId  that is in current usage
      * @return the index of which buffer should be used
      */
-    public static int indexByTerm(final int initialTermId, final int activeTermId)
-    {
+    public static int indexByTerm(final int initialTermId, final int activeTermId) {
         return (activeTermId - initialTermId) % PARTITION_COUNT;
     }
 
@@ -332,21 +315,19 @@ public class LogBufferDescriptor
      * @param termCount for the number of terms that have passed.
      * @return the partition index for the term count.
      */
-    public static int indexByTermCount(final int termCount)
-    {
+    public static int indexByTermCount(final int termCount) {
         return termCount % PARTITION_COUNT;
     }
 
     /**
      * Determine the partition index given a stream position.
      *
-     * @param position in the stream in bytes.
+     * @param position            in the stream in bytes.
      * @param positionBitsToShift number of times to right shift the position for term count
      * @return the partition index for the position
      */
-    public static int indexByPosition(final long position, final int positionBitsToShift)
-    {
-        return (int)((position >>> positionBitsToShift) % PARTITION_COUNT);
+    public static int indexByPosition(final long position, final int positionBitsToShift) {
+        return (int) ((position >>> positionBitsToShift) % PARTITION_COUNT);
     }
 
     /**
@@ -359,8 +340,7 @@ public class LogBufferDescriptor
      * @return the absolute position in bytes
      */
     public static long computePosition(
-        final int activeTermId, final int termOffset, final int positionBitsToShift, final int initialTermId)
-    {
+            final int activeTermId, final int termOffset, final int positionBitsToShift, final int initialTermId) {
         final long termCount = activeTermId - initialTermId; // copes with negative activeTermId on rollover
 
         return (termCount << positionBitsToShift) + termOffset;
@@ -375,8 +355,7 @@ public class LogBufferDescriptor
      * @return the absolute position in bytes
      */
     public static long computeTermBeginPosition(
-        final int activeTermId, final int positionBitsToShift, final int initialTermId)
-    {
+            final int activeTermId, final int positionBitsToShift, final int initialTermId) {
         final long termCount = activeTermId - initialTermId; // copes with negative activeTermId on rollover
 
         return termCount << positionBitsToShift;
@@ -390,9 +369,8 @@ public class LogBufferDescriptor
      * @param initialTermId       the initial term id that this stream started on
      * @return the term id according to the position
      */
-    public static int computeTermIdFromPosition(final long position, final int positionBitsToShift, final int initialTermId)
-    {
-        return ((int)(position >>> positionBitsToShift) + initialTermId);
+    public static int computeTermIdFromPosition(final long position, final int positionBitsToShift, final int initialTermId) {
+        return ((int) (position >>> positionBitsToShift) + initialTermId);
     }
 
     /**
@@ -402,11 +380,10 @@ public class LogBufferDescriptor
      * @param positionBitsToShift number of times to right shift the position
      * @return the offset within the term that represents the position
      */
-    public static int computeTermOffsetFromPosition(final long position, final int positionBitsToShift)
-    {
+    public static int computeTermOffsetFromPosition(final long position, final int positionBitsToShift) {
         final long mask = (1L << positionBitsToShift) - 1L;
 
-        return (int)(position & mask);
+        return (int) (position & mask);
     }
 
     /**
@@ -415,12 +392,11 @@ public class LogBufferDescriptor
      * @param termLength on which to base the calculation.
      * @return the total length of the log file.
      */
-    public static long computeLogLength(final int termLength)
-    {
+    public static long computeLogLength(final int termLength) {
         return
-            (termLength * PARTITION_COUNT) +
-            (TERM_META_DATA_LENGTH * PARTITION_COUNT) +
-            LOG_META_DATA_LENGTH;
+                (termLength * PARTITION_COUNT) +
+                        (TERM_META_DATA_LENGTH * PARTITION_COUNT) +
+                        LOG_META_DATA_LENGTH;
     }
 
     /**
@@ -429,11 +405,10 @@ public class LogBufferDescriptor
      * @param logLength the total length of the log.
      * @return length of an individual term buffer in the log.
      */
-    public static int computeTermLength(final long logLength)
-    {
-        final long metaDataSectionLength = (TERM_META_DATA_LENGTH * (long)PARTITION_COUNT) + LOG_META_DATA_LENGTH;
+    public static int computeTermLength(final long logLength) {
+        final long metaDataSectionLength = (TERM_META_DATA_LENGTH * (long) PARTITION_COUNT) + LOG_META_DATA_LENGTH;
 
-        return (int)((logLength - metaDataSectionLength) / PARTITION_COUNT);
+        return (int) ((logLength - metaDataSectionLength) / PARTITION_COUNT);
     }
 
     /**
@@ -443,12 +418,10 @@ public class LogBufferDescriptor
      * @param defaultHeader     to be stored.
      * @throws IllegalArgumentException if the default header is larger than {@link #LOG_DEFAULT_FRAME_HEADER_MAX_LENGTH}
      */
-    public static void storeDefaultFrameHeader(final UnsafeBuffer logMetaDataBuffer, final DirectBuffer defaultHeader)
-    {
-        if (defaultHeader.capacity() != HEADER_LENGTH)
-        {
+    public static void storeDefaultFrameHeader(final UnsafeBuffer logMetaDataBuffer, final DirectBuffer defaultHeader) {
+        if (defaultHeader.capacity() != HEADER_LENGTH) {
             throw new IllegalArgumentException(String.format(
-                "Default header of %d not equal to %d", defaultHeader.capacity(), HEADER_LENGTH));
+                    "Default header of %d not equal to %d", defaultHeader.capacity(), HEADER_LENGTH));
         }
 
         logMetaDataBuffer.putInt(LOG_DEFAULT_FRAME_HEADER_LENGTH_OFFSET, HEADER_LENGTH);
@@ -461,8 +434,7 @@ public class LogBufferDescriptor
      * @param logMetaDataBuffer containing the raw bytes for the default frame header.
      * @return a buffer wrapping the raw bytes.
      */
-    public static UnsafeBuffer defaultFrameHeader(final UnsafeBuffer logMetaDataBuffer)
-    {
+    public static UnsafeBuffer defaultFrameHeader(final UnsafeBuffer logMetaDataBuffer) {
         return new UnsafeBuffer(logMetaDataBuffer, LOG_DEFAULT_FRAME_HEADER_OFFSET, HEADER_LENGTH);
     }
 
@@ -474,8 +446,7 @@ public class LogBufferDescriptor
      * @param termOffset        at which the default should be applied.
      */
     public static void applyDefaultHeader(
-        final UnsafeBuffer logMetaDataBuffer, final UnsafeBuffer termBuffer, final int termOffset)
-    {
+            final UnsafeBuffer logMetaDataBuffer, final UnsafeBuffer termBuffer, final int termOffset) {
         termBuffer.putBytes(termOffset, logMetaDataBuffer, LOG_DEFAULT_FRAME_HEADER_OFFSET, HEADER_LENGTH);
     }
 
@@ -488,11 +459,10 @@ public class LogBufferDescriptor
      * @param newTermId         to be used in the default headers.
      */
     public static void rotateLog(
-        final LogBufferPartition[] logPartitions,
-        final UnsafeBuffer logMetaDataBuffer,
-        final int activeIndex,
-        final int newTermId)
-    {
+            final LogBufferPartition[] logPartitions,
+            final UnsafeBuffer logMetaDataBuffer,
+            final int activeIndex,
+            final int newTermId) {
         final int nextIndex = nextPartitionIndex(activeIndex);
         final int nextNextIndex = nextPartitionIndex(nextIndex);
 
@@ -507,9 +477,8 @@ public class LogBufferDescriptor
      * @param termMetaData  contain the tail counter.
      * @param initialTermId to be set.
      */
-    public static void initialiseTailWithTermId(final UnsafeBuffer termMetaData, final int initialTermId)
-    {
-        termMetaData.putLong(TERM_TAIL_COUNTER_OFFSET, ((long)initialTermId) << 32);
+    public static void initialiseTailWithTermId(final UnsafeBuffer termMetaData, final int initialTermId) {
+        termMetaData.putLong(TERM_TAIL_COUNTER_OFFSET, ((long) initialTermId) << 32);
     }
 
     /**
@@ -518,9 +487,8 @@ public class LogBufferDescriptor
      * @param rawTail containing the termId
      * @return the termId from a packed raw tail value.
      */
-    public static int termId(final long rawTail)
-    {
-        return (int)(rawTail >>> 32);
+    public static int termId(final long rawTail) {
+        return (int) (rawTail >>> 32);
     }
 
     /**
@@ -530,10 +498,9 @@ public class LogBufferDescriptor
      * @param termLength that the offset cannot exceed.
      * @return the termOffset value.
      */
-    public static int termOffset(final long rawTail, final long termLength)
-    {
+    public static int termOffset(final long rawTail, final long termLength) {
         final long tail = rawTail & 0xFFFF_FFFFL;
 
-        return (int)Math.min(tail, termLength);
+        return (int) Math.min(tail, termLength);
     }
 }

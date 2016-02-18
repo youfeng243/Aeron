@@ -22,21 +22,19 @@ import java.util.concurrent.locks.LockSupport;
  *
  * Uses volatile semantics for counters.
  */
-public class RateReporter implements Runnable
-{
+public class RateReporter implements Runnable {
     /**
      * Interface for reporting of rate information
      */
     @FunctionalInterface
-    public interface Reporter
-    {
+    public interface Reporter {
         /**
          * Called for a rate report.
          *
          * @param messagesPerSec since last report
-         * @param bytesPerSec since last report
-         * @param totalMessages since beginning of reporting
-         * @param totalBytes since beginning of reporting
+         * @param bytesPerSec    since last report
+         * @param totalMessages  since beginning of reporting
+         * @param totalBytes     since beginning of reporting
          */
         void onReport(double messagesPerSec, double bytesPerSec, long totalMessages, long totalBytes);
     }
@@ -56,10 +54,9 @@ public class RateReporter implements Runnable
      * Create a rate reporter with the given report interval in nanoseconds and the reporting function.
      *
      * @param reportInterval in nanoseconds
-     * @param reportingFunc to call for reporting rates
+     * @param reportingFunc  to call for reporting rates
      */
-    public RateReporter(final long reportInterval, final Reporter reportingFunc)
-    {
+    public RateReporter(final long reportInterval, final Reporter reportingFunc) {
         this.reportIntervalNs = reportInterval;
         this.parkNs = reportInterval;
         this.reportingFunc = reportingFunc;
@@ -69,10 +66,8 @@ public class RateReporter implements Runnable
     /**
      * Run loop for the rate reporter
      */
-    public void run()
-    {
-        do
-        {
+    public void run() {
+        do {
             LockSupport.parkNanos(parkNs);
 
             // These are not transacted, so they could be off from one another.
@@ -81,8 +76,8 @@ public class RateReporter implements Runnable
             final long currentTimestamp = System.nanoTime();
 
             final long timeSpanNs = currentTimestamp - lastTimestamp;
-            final double messagesPerSec = ((currentTotalMessages - lastTotalMessages) * reportIntervalNs) / (double)timeSpanNs;
-            final double bytesPerSec = ((currentTotalBytes - lastTotalBytes) * reportIntervalNs) / (double)timeSpanNs;
+            final double messagesPerSec = ((currentTotalMessages - lastTotalMessages) * reportIntervalNs) / (double) timeSpanNs;
+            final double bytesPerSec = ((currentTotalBytes - lastTotalBytes) * reportIntervalNs) / (double) timeSpanNs;
 
             reportingFunc.onReport(messagesPerSec, bytesPerSec, currentTotalMessages, currentTotalBytes);
 
@@ -96,8 +91,7 @@ public class RateReporter implements Runnable
     /**
      * Signal the run loop to exit. Does not block.
      */
-    public void halt()
-    {
+    public void halt() {
         halt = true;
     }
 
@@ -105,10 +99,9 @@ public class RateReporter implements Runnable
      * Tell rate reporter of number of messages and bytes received, sent, etc.
      *
      * @param messages received, sent, etc.
-     * @param bytes received, sent, etc.
+     * @param bytes    received, sent, etc.
      */
-    public void onMessage(final long messages, final long bytes)
-    {
+    public void onMessage(final long messages, final long bytes) {
         totalBytes += bytes;
         totalMessages += messages;
     }

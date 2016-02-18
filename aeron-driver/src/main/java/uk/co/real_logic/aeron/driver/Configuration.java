@@ -33,8 +33,7 @@ import static uk.co.real_logic.aeron.driver.ThreadingMode.DEDICATED;
 /**
  * Configuration options for the media driver.
  */
-public class Configuration
-{
+public class Configuration {
     private static final String DEFAULT_IDLE_STRATEGY = "uk.co.real_logic.agrona.concurrent.BackoffIdleStrategy";
 
     /**
@@ -149,14 +148,14 @@ public class Configuration
      */
     public static final String IPC_PUBLICATION_TERM_WINDOW_LENGTH_PROP_NAME = "aeron.ipc.publication.term.window.length";
     public static final int IPC_PUBLICATION_TERM_WINDOW_LENGTH = getInteger(
-        IPC_PUBLICATION_TERM_WINDOW_LENGTH_PROP_NAME, 0);
+            IPC_PUBLICATION_TERM_WINDOW_LENGTH_PROP_NAME, 0);
 
     /**
      * Default byte buffer length for reads
      */
     public static final int RECEIVE_BYTE_BUFFER_LENGTH_DEFAULT = 4096;
     public static final int RECEIVE_BYTE_BUFFER_LENGTH = getInteger(
-        RECEIVE_BUFFER_LENGTH_PROP_NAME, RECEIVE_BYTE_BUFFER_LENGTH_DEFAULT);
+            RECEIVE_BUFFER_LENGTH_PROP_NAME, RECEIVE_BYTE_BUFFER_LENGTH_DEFAULT);
 
     /**
      * Default term buffer length.
@@ -173,21 +172,21 @@ public class Configuration
      */
     public static final int CONDUCTOR_BUFFER_LENGTH_DEFAULT = 1024 * 1024 + RingBufferDescriptor.TRAILER_LENGTH;
     public static final int CONDUCTOR_BUFFER_LENGTH = getInteger(
-        CONDUCTOR_BUFFER_LENGTH_PROP_NAME, CONDUCTOR_BUFFER_LENGTH_DEFAULT);
+            CONDUCTOR_BUFFER_LENGTH_PROP_NAME, CONDUCTOR_BUFFER_LENGTH_DEFAULT);
 
     /**
      * Default buffer length for broadcast buffers from the media driver to the clients
      */
     public static final int TO_CLIENTS_BUFFER_LENGTH_DEFAULT = 1024 * 1024 + BroadcastBufferDescriptor.TRAILER_LENGTH;
     public static final int TO_CLIENTS_BUFFER_LENGTH = getInteger(
-        TO_CLIENTS_BUFFER_LENGTH_PROP_NAME, TO_CLIENTS_BUFFER_LENGTH_DEFAULT);
+            TO_CLIENTS_BUFFER_LENGTH_PROP_NAME, TO_CLIENTS_BUFFER_LENGTH_DEFAULT);
 
     /**
      * Length of the memory mapped buffers for the counters file
      */
     public static final int COUNTER_VALUES_BUFFER_LENGTH_DEFAULT = 1024 * 1024;
     public static final int COUNTER_VALUES_BUFFER_LENGTH = getInteger(
-        COUNTER_VALUES_BUFFER_LENGTH_PROP_NAME, COUNTER_VALUES_BUFFER_LENGTH_DEFAULT);
+            COUNTER_VALUES_BUFFER_LENGTH_PROP_NAME, COUNTER_VALUES_BUFFER_LENGTH_DEFAULT);
 
     public static final int COUNTER_LABELS_BUFFER_LENGTH = COUNTER_VALUES_BUFFER_LENGTH;
 
@@ -209,7 +208,7 @@ public class Configuration
      * Multicast NAK delay is immediate initial with delayed subsequent delay
      */
     public static final OptimalMulticastDelayGenerator NAK_MULTICAST_DELAY_GENERATOR = new OptimalMulticastDelayGenerator(
-        NAK_MAX_BACKOFF_DEFAULT, NAK_GROUPSIZE_DEFAULT, NAK_GRTT_DEFAULT);
+            NAK_MAX_BACKOFF_DEFAULT, NAK_GROUPSIZE_DEFAULT, NAK_GRTT_DEFAULT);
 
     /**
      * Default Unicast NAK delay in nanoseconds
@@ -219,7 +218,7 @@ public class Configuration
      * Unicast NAK delay is immediate initial with delayed subsequent delay
      */
     public static final StaticDelayGenerator NAK_UNICAST_DELAY_GENERATOR = new StaticDelayGenerator(
-        NAK_UNICAST_DELAY_DEFAULT_NS, true);
+            NAK_UNICAST_DELAY_DEFAULT_NS, true);
 
     /**
      * Default delay for retransmission of data for unicast
@@ -243,12 +242,12 @@ public class Configuration
 
     /**
      * Default initial window length for flow control sender to receiver purposes
-     * <p>
+     *
      * Length of Initial Window
-     * <p>
+     *
      * RTT (LAN) = 100 usec
      * Throughput = 10 Gbps
-     * <p>
+     *
      * Buffer = Throughput * RTT
      * Buffer = (10*1000*1000*1000/8) * 0.0001 = 125000
      * Round to 128KB
@@ -283,20 +282,20 @@ public class Configuration
      */
     public static final long CLIENT_LIVENESS_TIMEOUT_DEFAULT_NS = TimeUnit.MILLISECONDS.toNanos(5000);
     public static final long CLIENT_LIVENESS_TIMEOUT_NS = getLong(
-        CLIENT_LIVENESS_TIMEOUT_PROP_NAME, CLIENT_LIVENESS_TIMEOUT_DEFAULT_NS);
+            CLIENT_LIVENESS_TIMEOUT_PROP_NAME, CLIENT_LIVENESS_TIMEOUT_DEFAULT_NS);
     /**
      * Timeout for connection liveness in nanoseconds
      */
     public static final long IMAGE_LIVENESS_TIMEOUT_DEFAULT_NS = TimeUnit.SECONDS.toNanos(10);
     public static final long IMAGE_LIVENESS_TIMEOUT_NS = getLong(
-        IMAGE_LIVENESS_TIMEOUT_PROP_NAME, IMAGE_LIVENESS_TIMEOUT_DEFAULT_NS);
+            IMAGE_LIVENESS_TIMEOUT_PROP_NAME, IMAGE_LIVENESS_TIMEOUT_DEFAULT_NS);
 
     /**
      * Timeout for publication unblock in nanoseconds
      */
     public static final long PUBLICATION_UNBLOCK_TIMEOUT_DEFAULT_NS = TimeUnit.SECONDS.toNanos(10);
     public static final long PUBLICATION_UNBLOCK_TIMEOUT_NS = getLong(
-        PUBLICATION_UNBLOCK_TIMEOUT_PROP_NAME, PUBLICATION_UNBLOCK_TIMEOUT_DEFAULT_NS);
+            PUBLICATION_UNBLOCK_TIMEOUT_PROP_NAME, PUBLICATION_UNBLOCK_TIMEOUT_DEFAULT_NS);
 
     public static final long AGENT_IDLE_MAX_SPINS = 20;
     public static final long AGENT_IDLE_MAX_YIELDS = 50;
@@ -308,7 +307,7 @@ public class Configuration
      */
     public static final String SENDER_IDLE_STRATEGY_PROP_NAME = "aeron.sender.idle.strategy";
     public static final String SENDER_IDLE_STRATEGY = getProperty(
-        SENDER_IDLE_STRATEGY_PROP_NAME, DEFAULT_IDLE_STRATEGY);
+            SENDER_IDLE_STRATEGY_PROP_NAME, DEFAULT_IDLE_STRATEGY);
 
     /**
      * {@link IdleStrategy} to be employed by {@link DriverConductor} for {@link ThreadingMode#DEDICATED}
@@ -316,14 +315,14 @@ public class Configuration
      */
     public static final String CONDUCTOR_IDLE_STRATEGY_PROP_NAME = "aeron.conductor.idle.strategy";
     public static final String CONDUCTOR_IDLE_STRATEGY = getProperty(
-        CONDUCTOR_IDLE_STRATEGY_PROP_NAME, DEFAULT_IDLE_STRATEGY);
+            CONDUCTOR_IDLE_STRATEGY_PROP_NAME, DEFAULT_IDLE_STRATEGY);
 
     /**
      * {@link IdleStrategy} to be employed by {@link Receiver} for {@link ThreadingMode#DEDICATED}.
      */
     public static final String RECEIVER_IDLE_STRATEGY_PROP_NAME = "aeron.receiver.idle.strategy";
     public static final String RECEIVER_IDLE_STRATEGY = getProperty(
-        RECEIVER_IDLE_STRATEGY_PROP_NAME, DEFAULT_IDLE_STRATEGY);
+            RECEIVER_IDLE_STRATEGY_PROP_NAME, DEFAULT_IDLE_STRATEGY);
 
     /**
      * {@link IdleStrategy} to be employed by {@link Sender} and {@link Receiver} for
@@ -331,7 +330,7 @@ public class Configuration
      */
     public static final String SHARED_NETWORK_IDLE_STRATEGY_PROP_NAME = "aeron.sharednetwork.idle.strategy";
     public static final String SHARED_NETWORK_IDLE_STRATEGY = getProperty(
-        SHARED_NETWORK_IDLE_STRATEGY_PROP_NAME, DEFAULT_IDLE_STRATEGY);
+            SHARED_NETWORK_IDLE_STRATEGY_PROP_NAME, DEFAULT_IDLE_STRATEGY);
 
     /**
      * {@link IdleStrategy} to be employed by {@link Sender}, {@link Receiver}, and {@link DriverConductor}
@@ -339,37 +338,47 @@ public class Configuration
      */
     public static final String SHARED_IDLE_STRATEGY_PROP_NAME = "aeron.shared.idle.strategy";
     public static final String SHARED_IDLE_STRATEGY = getProperty(
-        SHARED_IDLE_STRATEGY_PROP_NAME, DEFAULT_IDLE_STRATEGY);
+            SHARED_IDLE_STRATEGY_PROP_NAME, DEFAULT_IDLE_STRATEGY);
 
-    /** Capacity for the command queues used between driver agents. */
+    /**
+     * Capacity for the command queues used between driver agents.
+     */
     public static final int CMD_QUEUE_CAPACITY = 1024;
 
-    /** Timeout on cleaning up pending SETUP state on subscriber */
+    /**
+     * Timeout on cleaning up pending SETUP state on subscriber
+     */
     public static final long PENDING_SETUPS_TIMEOUT_NS = TimeUnit.MILLISECONDS.toNanos(1000);
 
-    /** Timeout between SETUP frames for publications during initial setup phase */
+    /**
+     * Timeout between SETUP frames for publications during initial setup phase
+     */
     public static final long PUBLICATION_SETUP_TIMEOUT_NS = TimeUnit.MILLISECONDS.toNanos(100);
 
-    /** Timeout between heartbeats for publications */
+    /**
+     * Timeout between heartbeats for publications
+     */
     public static final long PUBLICATION_HEARTBEAT_TIMEOUT_NS = TimeUnit.MILLISECONDS.toNanos(100);
 
     /**
      * {@link FlowControl} to be employed for unicast channels.
      */
     public static final String UNICAST_FLOW_CONTROL_STRATEGY_PROP_NAME =
-        "aeron.unicast.flow.control.strategy";
+            "aeron.unicast.flow.control.strategy";
     public static final String UNICAST_FLOW_CONTROL_STRATEGY = getProperty(
-        UNICAST_FLOW_CONTROL_STRATEGY_PROP_NAME, "uk.co.real_logic.aeron.driver.UnicastFlowControl");
+            UNICAST_FLOW_CONTROL_STRATEGY_PROP_NAME, "uk.co.real_logic.aeron.driver.UnicastFlowControl");
 
     /**
      * {@link FlowControl} to be employed for multicast channels.
      */
     public static final String MULTICAST_FLOW_CONTROL_STRATEGY_PROP_NAME =
-        "aeron.multicast.flow.control.strategy";
+            "aeron.multicast.flow.control.strategy";
     public static final String MULTICAST_FLOW_CONTROL_STRATEGY = getProperty(
-        MULTICAST_FLOW_CONTROL_STRATEGY_PROP_NAME, "uk.co.real_logic.aeron.driver.MaxMulticastFlowControl");
+            MULTICAST_FLOW_CONTROL_STRATEGY_PROP_NAME, "uk.co.real_logic.aeron.driver.MaxMulticastFlowControl");
 
-    /** Length of the maximum transport unit of the media driver's protocol */
+    /**
+     * Length of the maximum transport unit of the media driver's protocol
+     */
     public static final String MTU_LENGTH_PROP_NAME = "aeron.mtu.length";
     public static final int MTU_LENGTH_DEFAULT = 4096;
     public static final int MTU_LENGTH = getInteger(MTU_LENGTH_PROP_NAME, MTU_LENGTH_DEFAULT);
@@ -385,22 +394,22 @@ public class Configuration
     public static final String SEND_CHANNEL_ENDPOINT_SUPPLIER_PROP_NAME = "aeron.SendChannelEndpoint.supplier";
 
     public static final String SEND_CHANNEL_ENDPOINT_SUPPLIER_DEFAULT =
-        EventLogger.IS_FRAME_LOGGING_ENABLED ?
-            "uk.co.real_logic.aeron.driver.DebugSendChannelEndpointSupplier" :
-            "uk.co.real_logic.aeron.driver.DefaultSendChannelEndpointSupplier";
+            EventLogger.IS_FRAME_LOGGING_ENABLED ?
+                    "uk.co.real_logic.aeron.driver.DebugSendChannelEndpointSupplier" :
+                    "uk.co.real_logic.aeron.driver.DefaultSendChannelEndpointSupplier";
 
     public static final String SEND_CHANNEL_ENDPOINT_SUPPLIER = getProperty(
-        SEND_CHANNEL_ENDPOINT_SUPPLIER_PROP_NAME, SEND_CHANNEL_ENDPOINT_SUPPLIER_DEFAULT);
+            SEND_CHANNEL_ENDPOINT_SUPPLIER_PROP_NAME, SEND_CHANNEL_ENDPOINT_SUPPLIER_DEFAULT);
 
     public static final String RECEIVE_CHANNEL_ENDPOINT_SUPPLIER_PROP_NAME = "aeron.ReceiveChannelEndpoint.supplier";
 
     public static final String RECEIVE_CHANNEL_ENDPOINT_SUPPLIER_DEFAULT =
-        EventLogger.IS_FRAME_LOGGING_ENABLED ?
-            "uk.co.real_logic.aeron.driver.DebugReceiveChannelEndpointSupplier" :
-            "uk.co.real_logic.aeron.driver.DefaultReceiveChannelEndpointSupplier";
+            EventLogger.IS_FRAME_LOGGING_ENABLED ?
+                    "uk.co.real_logic.aeron.driver.DebugReceiveChannelEndpointSupplier" :
+                    "uk.co.real_logic.aeron.driver.DefaultReceiveChannelEndpointSupplier";
 
     public static final String RECEIVE_CHANNEL_ENDPOINT_SUPPLIER = getProperty(
-        RECEIVE_CHANNEL_ENDPOINT_SUPPLIER_PROP_NAME, RECEIVE_CHANNEL_ENDPOINT_SUPPLIER_DEFAULT);
+            RECEIVE_CHANNEL_ENDPOINT_SUPPLIER_PROP_NAME, RECEIVE_CHANNEL_ENDPOINT_SUPPLIER_DEFAULT);
 
     /**
      * How far ahead the publisher can get from the sender position.
@@ -408,8 +417,7 @@ public class Configuration
      * @param termBufferLength to be used when {@link #PUBLICATION_TERM_WINDOW_LENGTH} is not set.
      * @return the length to be used for the publication window.
      */
-    public static int publicationTermWindowLength(final int termBufferLength)
-    {
+    public static int publicationTermWindowLength(final int termBufferLength) {
         return 0 != PUBLICATION_TERM_WINDOW_LENGTH ? PUBLICATION_TERM_WINDOW_LENGTH : termBufferLength / 2;
     }
 
@@ -418,10 +426,8 @@ public class Configuration
      *
      * @param length of the term buffer
      */
-    public static void validateTermBufferLength(final int length)
-    {
-        if (!BitUtil.isPowerOfTwo(length))
-        {
+    public static void validateTermBufferLength(final int length) {
+        if (!BitUtil.isPowerOfTwo(length)) {
             throw new IllegalStateException("Term buffer length must be a positive power of 2: " + length);
         }
     }
@@ -430,33 +436,24 @@ public class Configuration
      * Validate that the initial window length is suitably greater than MTU.
      *
      * @param initialWindowLength to be validated.
-     * @param mtuLength against which to validate.
+     * @param mtuLength           against which to validate.
      */
-    public static void validateInitialWindowLength(final int initialWindowLength, final int mtuLength)
-    {
-        if (mtuLength > initialWindowLength)
-        {
+    public static void validateInitialWindowLength(final int initialWindowLength, final int mtuLength) {
+        if (mtuLength > initialWindowLength) {
             throw new IllegalStateException("Initial window length must be >= to MTU length: " + mtuLength);
         }
     }
 
-    public static IdleStrategy agentIdleStrategy(final String name)
-    {
+    public static IdleStrategy agentIdleStrategy(final String name) {
         IdleStrategy idleStrategy = null;
 
-        if (name.equals(DEFAULT_IDLE_STRATEGY))
-        {
+        if (name.equals(DEFAULT_IDLE_STRATEGY)) {
             idleStrategy = new BackoffIdleStrategy(
-                AGENT_IDLE_MAX_SPINS, AGENT_IDLE_MAX_YIELDS, AGENT_IDLE_MIN_PARK_NS, AGENT_IDLE_MAX_PARK_NS);
-        }
-        else
-        {
-            try
-            {
-                idleStrategy = (IdleStrategy)Class.forName(name).newInstance();
-            }
-            catch (final Exception ex)
-            {
+                    AGENT_IDLE_MAX_SPINS, AGENT_IDLE_MAX_YIELDS, AGENT_IDLE_MIN_PARK_NS, AGENT_IDLE_MAX_PARK_NS);
+        } else {
+            try {
+                idleStrategy = (IdleStrategy) Class.forName(name).newInstance();
+            } catch (final Exception ex) {
                 LangUtil.rethrowUnchecked(ex);
             }
         }
@@ -464,113 +461,89 @@ public class Configuration
         return idleStrategy;
     }
 
-    public static IdleStrategy senderIdleStrategy()
-    {
+    public static IdleStrategy senderIdleStrategy() {
         return agentIdleStrategy(SENDER_IDLE_STRATEGY);
     }
 
-    public static IdleStrategy conductorIdleStrategy()
-    {
+    public static IdleStrategy conductorIdleStrategy() {
         return agentIdleStrategy(CONDUCTOR_IDLE_STRATEGY);
     }
 
-    public static IdleStrategy receiverIdleStrategy()
-    {
+    public static IdleStrategy receiverIdleStrategy() {
         return agentIdleStrategy(RECEIVER_IDLE_STRATEGY);
     }
 
-    public static IdleStrategy sharedNetworkIdleStrategy()
-    {
+    public static IdleStrategy sharedNetworkIdleStrategy() {
         return agentIdleStrategy(SHARED_NETWORK_IDLE_STRATEGY);
     }
 
-    public static IdleStrategy sharedIdleStrategy()
-    {
+    public static IdleStrategy sharedIdleStrategy() {
         return agentIdleStrategy(SHARED_IDLE_STRATEGY);
     }
 
-    public static FlowControl unicastFlowControlStrategy()
-    {
+    public static FlowControl unicastFlowControlStrategy() {
         FlowControl flowControl = null;
-        try
-        {
-            flowControl = (FlowControl)Class.forName(UNICAST_FLOW_CONTROL_STRATEGY).newInstance();
-        }
-        catch (final Exception ex)
-        {
+        try {
+            flowControl = (FlowControl) Class.forName(UNICAST_FLOW_CONTROL_STRATEGY).newInstance();
+        } catch (final Exception ex) {
             LangUtil.rethrowUnchecked(ex);
         }
 
         return flowControl;
     }
 
-    public static FlowControl multicastFlowControlStrategy()
-    {
+    public static FlowControl multicastFlowControlStrategy() {
         FlowControl flowControl = null;
-        try
-        {
-            flowControl = (FlowControl)Class.forName(MULTICAST_FLOW_CONTROL_STRATEGY).newInstance();
-        }
-        catch (final Exception ex)
-        {
+        try {
+            flowControl = (FlowControl) Class.forName(MULTICAST_FLOW_CONTROL_STRATEGY).newInstance();
+        } catch (final Exception ex) {
             LangUtil.rethrowUnchecked(ex);
         }
 
         return flowControl;
     }
 
-    public static int termBufferLength()
-    {
+    public static int termBufferLength() {
         return getInteger(TERM_BUFFER_LENGTH_PROP_NAME, TERM_BUFFER_LENGTH_DEFAULT);
     }
 
-    public static int termBufferLengthMax()
-    {
+    public static int termBufferLengthMax() {
         return getInteger(TERM_BUFFER_MAX_LENGTH_PROP_NAME, TERM_BUFFER_LENGTH_MAX_DEFAULT);
     }
 
-    public static int initialWindowLength()
-    {
+    public static int initialWindowLength() {
         return getInteger(INITIAL_WINDOW_LENGTH_PROP_NAME, INITIAL_WINDOW_LENGTH_DEFAULT);
     }
 
-    public static long statusMessageTimeout()
-    {
+    public static long statusMessageTimeout() {
         return getLong(STATUS_MESSAGE_TIMEOUT_PROP_NAME, STATUS_MESSAGE_TIMEOUT_DEFAULT_NS);
     }
 
-    public static long dataLossSeed()
-    {
+    public static long dataLossSeed() {
         return getLong(DATA_LOSS_SEED_PROP_NAME, -1);
     }
 
-    public static long controlLossSeed()
-    {
+    public static long controlLossSeed() {
         return getLong(CONTROL_LOSS_SEED_PROP_NAME, -1);
     }
 
-    public static double dataLossRate()
-    {
+    public static double dataLossRate() {
         return Double.parseDouble(getProperty(DATA_LOSS_RATE_PROP_NAME, "0.0"));
     }
 
-    public static double controlLossRate()
-    {
+    public static double controlLossRate() {
         return Double.parseDouble(getProperty(CONTROL_LOSS_RATE_PROP_NAME, "0.0"));
     }
 
-    public static LossGenerator createLossGenerator(final double lossRate, final long lossSeed)
-    {
-        if (0 == lossRate)
-        {
+    public static LossGenerator createLossGenerator(final double lossRate, final long lossSeed) {
+        if (0 == lossRate) {
             return (address, buffer, length) -> false;
         }
 
         return new RandomLossGenerator(lossRate, lossSeed);
     }
 
-    public static ThreadingMode threadingMode()
-    {
+    public static ThreadingMode threadingMode() {
         return ThreadingMode.valueOf(getProperty(THREADING_MODE_PROP_NAME, THREADING_MODE_DEFAULT));
     }
 
@@ -580,8 +553,7 @@ public class Configuration
      * @param termBufferLength to be used when {@link #IPC_TERM_BUFFER_LENGTH} is not set.
      * @return the length to be used for the term buffer in bytes
      */
-    public static int ipcTermBufferLength(final int termBufferLength)
-    {
+    public static int ipcTermBufferLength(final int termBufferLength) {
         return 0 != IPC_TERM_BUFFER_LENGTH ? IPC_TERM_BUFFER_LENGTH : termBufferLength;
     }
 
@@ -591,8 +563,7 @@ public class Configuration
      * @param termBufferLength to be used when {@link #IPC_PUBLICATION_TERM_WINDOW_LENGTH} is not set.
      * @return the length to be used for the publication window.
      */
-    public static int ipcPublicationTermWindowLength(final int termBufferLength)
-    {
+    public static int ipcPublicationTermWindowLength(final int termBufferLength) {
         return 0 != IPC_PUBLICATION_TERM_WINDOW_LENGTH ? IPC_PUBLICATION_TERM_WINDOW_LENGTH : termBufferLength / 2;
     }
 
@@ -602,15 +573,11 @@ public class Configuration
      *
      * @return the {@link SendChannelEndpointSupplier}.
      */
-    public static SendChannelEndpointSupplier sendChannelEndpointSupplier()
-    {
+    public static SendChannelEndpointSupplier sendChannelEndpointSupplier() {
         SendChannelEndpointSupplier supplier = null;
-        try
-        {
-            supplier = (SendChannelEndpointSupplier)Class.forName(SEND_CHANNEL_ENDPOINT_SUPPLIER).newInstance();
-        }
-        catch (final Exception ex)
-        {
+        try {
+            supplier = (SendChannelEndpointSupplier) Class.forName(SEND_CHANNEL_ENDPOINT_SUPPLIER).newInstance();
+        } catch (final Exception ex) {
             LangUtil.rethrowUnchecked(ex);
         }
 
@@ -623,15 +590,11 @@ public class Configuration
      *
      * @return the {@link SendChannelEndpointSupplier}.
      */
-    public static ReceiveChannelEndpointSupplier receiveChannelEndpointSupplier()
-    {
+    public static ReceiveChannelEndpointSupplier receiveChannelEndpointSupplier() {
         ReceiveChannelEndpointSupplier supplier = null;
-        try
-        {
-            supplier = (ReceiveChannelEndpointSupplier)Class.forName(RECEIVE_CHANNEL_ENDPOINT_SUPPLIER).newInstance();
-        }
-        catch (final Exception ex)
-        {
+        try {
+            supplier = (ReceiveChannelEndpointSupplier) Class.forName(RECEIVE_CHANNEL_ENDPOINT_SUPPLIER).newInstance();
+        } catch (final Exception ex) {
             LangUtil.rethrowUnchecked(ex);
         }
 

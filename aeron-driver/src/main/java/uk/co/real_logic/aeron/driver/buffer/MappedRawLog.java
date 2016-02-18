@@ -35,8 +35,7 @@ import static uk.co.real_logic.aeron.logbuffer.LogBufferDescriptor.*;
 /**
  * Encapsulates responsibility for mapping the files into memory used by the log partitions.
  */
-class MappedRawLog implements RawLog
-{
+class MappedRawLog implements RawLog {
     private static final int ONE_GIG = 1 << 30;
 
     private final int termLength;
@@ -46,117 +45,95 @@ class MappedRawLog implements RawLog
     private final MappedByteBuffer[] mappedBuffers;
     private final UnsafeBuffer logMetaDataBuffer;
 
-    MappedRawLog(final File location, final FileChannel blankTemplate, final int termLength, final EventLogger logger)
-    {
+    MappedRawLog(final File location, final FileChannel blankTemplate, final int termLength, final EventLogger logger) {
         this.termLength = termLength;
         this.logger = logger;
         this.logFile = location;
         partitions = new LogBufferPartition[PARTITION_COUNT];
 
         try (final RandomAccessFile raf = new RandomAccessFile(logFile, "rw");
-             final FileChannel logChannel = raf.getChannel())
-        {
+             final FileChannel logChannel = raf.getChannel()) {
             final long logLength = computeLogLength(termLength);
             raf.setLength(logLength);
             blankTemplate.transferTo(0, logLength, logChannel);
 
-            if (logLength <= Integer.MAX_VALUE)
-            {
+            if (logLength <= Integer.MAX_VALUE) {
                 final MappedByteBuffer mappedBuffer = logChannel.map(READ_WRITE, 0, logLength);
-                mappedBuffers = new MappedByteBuffer[]{ mappedBuffer };
+                mappedBuffers = new MappedByteBuffer[]{mappedBuffer};
                 final int metaDataSectionOffset = termLength * PARTITION_COUNT;
 
-                for (int i = 0; i < PARTITION_COUNT; i++)
-                {
+                for (int i = 0; i < PARTITION_COUNT; i++) {
                     final int metaDataOffset = metaDataSectionOffset + (i * TERM_META_DATA_LENGTH);
 
                     partitions[i] = new LogBufferPartition(
-                        new UnsafeBuffer(mappedBuffer, i * termLength, termLength),
-                        new UnsafeBuffer(mappedBuffer, metaDataOffset, TERM_META_DATA_LENGTH));
+                            new UnsafeBuffer(mappedBuffer, i * termLength, termLength),
+                            new UnsafeBuffer(mappedBuffer, metaDataOffset, TERM_META_DATA_LENGTH));
                 }
 
-                logMetaDataBuffer = new UnsafeBuffer(mappedBuffer, (int)(logLength - LOG_META_DATA_LENGTH), LOG_META_DATA_LENGTH);
-            }
-            else
-            {
+                logMetaDataBuffer = new UnsafeBuffer(mappedBuffer, (int) (logLength - LOG_META_DATA_LENGTH), LOG_META_DATA_LENGTH);
+            } else {
                 mappedBuffers = new MappedByteBuffer[PARTITION_COUNT + 1];
-                final long metaDataSectionOffset = termLength * (long)PARTITION_COUNT;
-                final int metaDataSectionLength = (int)(logLength - metaDataSectionOffset);
+                final long metaDataSectionOffset = termLength * (long) PARTITION_COUNT;
+                final int metaDataSectionLength = (int) (logLength - metaDataSectionOffset);
 
                 final MappedByteBuffer metaDataMappedBuffer = logChannel.map(
-                    READ_WRITE, metaDataSectionOffset, metaDataSectionLength);
+                        READ_WRITE, metaDataSectionOffset, metaDataSectionLength);
                 mappedBuffers[mappedBuffers.length - 1] = metaDataMappedBuffer;
 
-                for (int i = 0; i < PARTITION_COUNT; i++)
-                {
-                    mappedBuffers[i] = logChannel.map(READ_WRITE, termLength * (long)i, termLength);
+                for (int i = 0; i < PARTITION_COUNT; i++) {
+                    mappedBuffers[i] = logChannel.map(READ_WRITE, termLength * (long) i, termLength);
 
                     partitions[i] = new LogBufferPartition(
-                        new UnsafeBuffer(mappedBuffers[i]),
-                        new UnsafeBuffer(metaDataMappedBuffer, i * TERM_META_DATA_LENGTH, TERM_META_DATA_LENGTH));
+                            new UnsafeBuffer(mappedBuffers[i]),
+                            new UnsafeBuffer(metaDataMappedBuffer, i * TERM_META_DATA_LENGTH, TERM_META_DATA_LENGTH));
                 }
 
                 logMetaDataBuffer = new UnsafeBuffer(
-                    metaDataMappedBuffer, metaDataSectionLength - LOG_META_DATA_LENGTH, LOG_META_DATA_LENGTH);
+                        metaDataMappedBuffer, metaDataSectionLength - LOG_META_DATA_LENGTH, LOG_META_DATA_LENGTH);
             }
-        }
-        catch (final IOException ex)
-        {
+        } catch (final IOException ex) {
             throw new IllegalStateException(ex);
         }
     }
 
-    public int termLength()
-    {
+    public int termLength() {
         return termLength;
     }
 
-    public void close()
-    {
-        for (final MappedByteBuffer buffer : mappedBuffers)
-        {
+    public void close() {
+        for (final MappedByteBuffer buffer : mappedBuffers) {
             IoUtil.unmap(buffer);
         }
 
-        if (!logFile.delete())
-        {
+        if (!logFile.delete()) {
             logger.log(EventCode.ERROR_DELETING_FILE, logFile);
         }
     }
 
-    public Stream<LogBufferPartition> stream()
-    {
+    public Stream<LogBufferPartition> stream() {
         return Stream.of(partitions);
     }
 
-    public LogBufferPartition[] partitions()
-    {
+    public LogBufferPartition[] partitions() {
         return partitions;
     }
 
-    public UnsafeBuffer logMetaData()
-    {
+    public UnsafeBuffer logMetaData() {
         return logMetaDataBuffer;
     }
 
-    public ByteBuffer[] sliceTerms()
-    {
+    public ByteBuffer[] sliceTerms() {
         final ByteBuffer[] terms = new ByteBuffer[PARTITION_COUNT];
         final int termLength = partitions[0].termBuffer().capacity();
 
-        if (termLength < ONE_GIG)
-        {
+        if (termLength < ONE_GIG) {
             final MappedByteBuffer buffer = mappedBuffers[0];
-            for (int i = 0; i < PARTITION_COUNT; i++)
-            {
+            for (int i = 0; i < PARTITION_COUNT; i++) {
                 buffer.limit((termLength * i) + termLength).position(termLength * i);
                 terms[i] = buffer.slice();
             }
-        }
-        else
-        {
-            for (int i = 0; i < PARTITION_COUNT; i++)
-            {
+        } else {
+            for (int i = 0; i < PARTITION_COUNT; i++) {
                 terms[i] = mappedBuffers[i].duplicate();
             }
         }
@@ -164,8 +141,7 @@ class MappedRawLog implements RawLog
         return terms;
     }
 
-    public String logFileName()
-    {
+    public String logFileName() {
         return logFile.getAbsolutePath();
     }
 }

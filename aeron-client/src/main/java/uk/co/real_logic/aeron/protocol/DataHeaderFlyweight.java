@@ -27,8 +27,7 @@ import static java.nio.ByteOrder.LITTLE_ENDIAN;
  *
  * <a href="https://github.com/real-logic/Aeron/wiki/Protocol-Specification#data-frame">Data Frame</a>
  */
-public class DataHeaderFlyweight extends HeaderFlyweight
-{
+public class DataHeaderFlyweight extends HeaderFlyweight {
     /**
      * Length of the Data Header
      */
@@ -55,17 +54,14 @@ public class DataHeaderFlyweight extends HeaderFlyweight
     public static final int TERM_ID_FIELD_OFFSET = 20;
     public static final int DATA_OFFSET = 24;
 
-    public DataHeaderFlyweight()
-    {
+    public DataHeaderFlyweight() {
     }
 
-    public DataHeaderFlyweight(final UnsafeBuffer buffer)
-    {
+    public DataHeaderFlyweight(final UnsafeBuffer buffer) {
         super(buffer);
     }
 
-    public DataHeaderFlyweight(final ByteBuffer buffer)
-    {
+    public DataHeaderFlyweight(final ByteBuffer buffer) {
         super(buffer);
     }
 
@@ -74,8 +70,7 @@ public class DataHeaderFlyweight extends HeaderFlyweight
      *
      * @return session id field
      */
-    public int sessionId()
-    {
+    public int sessionId() {
         return getInt(SESSION_ID_FIELD_OFFSET, LITTLE_ENDIAN);
     }
 
@@ -85,8 +80,7 @@ public class DataHeaderFlyweight extends HeaderFlyweight
      * @param sessionId field value
      * @return flyweight
      */
-    public DataHeaderFlyweight sessionId(final int sessionId)
-    {
+    public DataHeaderFlyweight sessionId(final int sessionId) {
         putInt(SESSION_ID_FIELD_OFFSET, sessionId, LITTLE_ENDIAN);
 
         return this;
@@ -97,8 +91,7 @@ public class DataHeaderFlyweight extends HeaderFlyweight
      *
      * @return stream id field
      */
-    public int streamId()
-    {
+    public int streamId() {
         return getInt(STREAM_ID_FIELD_OFFSET, LITTLE_ENDIAN);
     }
 
@@ -108,8 +101,7 @@ public class DataHeaderFlyweight extends HeaderFlyweight
      * @param streamId field value
      * @return flyweight
      */
-    public DataHeaderFlyweight streamId(final int streamId)
-    {
+    public DataHeaderFlyweight streamId(final int streamId) {
         putInt(STREAM_ID_FIELD_OFFSET, streamId, LITTLE_ENDIAN);
 
         return this;
@@ -120,8 +112,7 @@ public class DataHeaderFlyweight extends HeaderFlyweight
      *
      * @return term id field
      */
-    public int termId()
-    {
+    public int termId() {
         return getInt(TERM_ID_FIELD_OFFSET, LITTLE_ENDIAN);
     }
 
@@ -131,8 +122,7 @@ public class DataHeaderFlyweight extends HeaderFlyweight
      * @param termId field value
      * @return flyweight
      */
-    public DataHeaderFlyweight termId(final int termId)
-    {
+    public DataHeaderFlyweight termId(final int termId) {
         putInt(TERM_ID_FIELD_OFFSET, termId, LITTLE_ENDIAN);
 
         return this;
@@ -143,8 +133,7 @@ public class DataHeaderFlyweight extends HeaderFlyweight
      *
      * @return term offset field
      */
-    public int termOffset()
-    {
+    public int termOffset() {
         return getInt(TERM_OFFSET_FIELD_OFFSET, LITTLE_ENDIAN);
     }
 
@@ -154,8 +143,7 @@ public class DataHeaderFlyweight extends HeaderFlyweight
      * @param termOffset field value
      * @return flyweight
      */
-    public DataHeaderFlyweight termOffset(final int termOffset)
-    {
+    public DataHeaderFlyweight termOffset(final int termOffset) {
         putInt(TERM_OFFSET_FIELD_OFFSET, termOffset, LITTLE_ENDIAN);
 
         return this;
@@ -166,8 +154,7 @@ public class DataHeaderFlyweight extends HeaderFlyweight
      *
      * @return offset of data in the buffer
      */
-    public int dataOffset()
-    {
+    public int dataOffset() {
         return DATA_OFFSET;
     }
 
@@ -179,13 +166,12 @@ public class DataHeaderFlyweight extends HeaderFlyweight
      * @param termId    for the header
      * @return byte array containing the header
      */
-    public static UnsafeBuffer createDefaultHeader(final int sessionId, final int streamId, final int termId)
-    {
+    public static UnsafeBuffer createDefaultHeader(final int sessionId, final int streamId, final int termId) {
         final UnsafeBuffer buffer = new UnsafeBuffer(new byte[HEADER_LENGTH]);
 
         buffer.putByte(VERSION_FIELD_OFFSET, CURRENT_VERSION);
-        buffer.putByte(FLAGS_FIELD_OFFSET, (byte)BEGIN_AND_END_FLAGS);
-        buffer.putShort(TYPE_FIELD_OFFSET, (short)HDR_TYPE_DATA, ByteOrder.LITTLE_ENDIAN);
+        buffer.putByte(FLAGS_FIELD_OFFSET, (byte) BEGIN_AND_END_FLAGS);
+        buffer.putShort(TYPE_FIELD_OFFSET, (short) HDR_TYPE_DATA, ByteOrder.LITTLE_ENDIAN);
         buffer.putInt(SESSION_ID_FIELD_OFFSET, sessionId, ByteOrder.LITTLE_ENDIAN);
         buffer.putInt(STREAM_ID_FIELD_OFFSET, streamId, ByteOrder.LITTLE_ENDIAN);
         buffer.putInt(TERM_ID_FIELD_OFFSET, termId, ByteOrder.LITTLE_ENDIAN);
@@ -193,22 +179,21 @@ public class DataHeaderFlyweight extends HeaderFlyweight
         return buffer;
     }
 
-    public String toString()
-    {
+    public String toString() {
         final StringBuilder sb = new StringBuilder();
         final String formattedFlags = String.format("%1$8s", Integer.toBinaryString(flags())).replace(' ', '0');
 
         sb.append("Data Header{")
-            .append("frame_length=").append(frameLength())
-            .append(" version=").append(version())
-            .append(" flags=").append(formattedFlags)
-            .append(" type=").append(headerType())
-            .append(" frame_length=").append(frameLength())
-            .append(" term_offset=").append(termOffset())
-            .append(" session_id=").append(sessionId())
-            .append(" stream_id=").append(streamId())
-            .append(" term_id=").append(termId())
-            .append("}");
+                .append("frame_length=").append(frameLength())
+                .append(" version=").append(version())
+                .append(" flags=").append(formattedFlags)
+                .append(" type=").append(headerType())
+                .append(" frame_length=").append(frameLength())
+                .append(" term_offset=").append(termOffset())
+                .append(" session_id=").append(sessionId())
+                .append(" stream_id=").append(streamId())
+                .append(" term_id=").append(termId())
+                .append("}");
 
         return sb.toString();
     }

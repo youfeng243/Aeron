@@ -32,8 +32,7 @@ import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.mock;
 
 @RunWith(Theories.class)
-public class PublicationUnblockTest
-{
+public class PublicationUnblockTest {
     @DataPoint
     public static final String NETWORK_CHANNEL = "aeron:udp?remote=localhost:54325";
 
@@ -45,8 +44,7 @@ public class PublicationUnblockTest
 
     @Theory
     @Test(timeout = 10000)
-    public void shouldUnblockNonCommittedMessage(final String channel) throws Exception
-    {
+    public void shouldUnblockNonCommittedMessage(final String channel) throws Exception {
         final FragmentHandler mockFragmentHandler = mock(FragmentHandler.class);
         final MediaDriver.Context ctx = new MediaDriver.Context();
         ctx.publicationUnblockTimeoutNs(TimeUnit.MILLISECONDS.toNanos(10));
@@ -55,51 +53,43 @@ public class PublicationUnblockTest
              final Aeron client = Aeron.connect(new Aeron.Context());
              final Publication publicationA = client.addPublication(channel, STREAM_ID);
              final Publication publicationB = client.addPublication(channel, STREAM_ID);
-             final Subscription subscription = client.addSubscription(channel, STREAM_ID))
-        {
+             final Subscription subscription = client.addSubscription(channel, STREAM_ID)) {
             final UnsafeBuffer srcBuffer = new UnsafeBuffer(new byte[ctx.mtuLength()]);
             final int length = 128;
             final BufferClaim bufferClaim = new BufferClaim();
 
-            srcBuffer.setMemory(0, length, (byte)66);
+            srcBuffer.setMemory(0, length, (byte) 66);
 
-            while (publicationA.tryClaim(length, bufferClaim) < 0L)
-            {
+            while (publicationA.tryClaim(length, bufferClaim) < 0L) {
                 Thread.yield();
             }
 
-            bufferClaim.buffer().setMemory(bufferClaim.offset(), length, (byte)65);
+            bufferClaim.buffer().setMemory(bufferClaim.offset(), length, (byte) 65);
             bufferClaim.commit();
 
-            while (publicationB.offer(srcBuffer, 0, length) < 0L)
-            {
+            while (publicationB.offer(srcBuffer, 0, length) < 0L) {
                 Thread.yield();
             }
 
-            while (publicationA.tryClaim(length, bufferClaim) < 0L)
-            {
+            while (publicationA.tryClaim(length, bufferClaim) < 0L) {
                 Thread.yield();
             }
 
             // no commit of publicationA
 
-            while (publicationB.offer(srcBuffer, 0, length) < 0L)
-            {
+            while (publicationB.offer(srcBuffer, 0, length) < 0L) {
                 Thread.yield();
             }
 
             final int expectedFragments = 3;
             int numFragments = 0;
-            do
-            {
+            do {
                 numFragments += subscription.poll(mockFragmentHandler, FRAGMENT_COUNT_LIMIT);
             }
             while (numFragments < expectedFragments);
 
             assertThat(numFragments, is(3));
-        }
-        finally
-        {
+        } finally {
             ctx.deleteAeronDirectory();
         }
     }

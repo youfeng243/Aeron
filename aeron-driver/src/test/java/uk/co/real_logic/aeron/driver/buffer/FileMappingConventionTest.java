@@ -23,24 +23,20 @@ import java.io.IOException;
 
 import static org.junit.Assert.assertTrue;
 
-public class FileMappingConventionTest
-{
+public class FileMappingConventionTest {
     @Test
-    public void uriStringsAreValidFiles() throws IOException
-    {
+    public void uriStringsAreValidFiles() throws IOException {
         assertIsValidFile(uriToDir("udp://localhost:40123@localhost:40124"));
         assertIsValidFile(uriToDir("udp://localhost:40124"));
     }
 
-    private String uriToDir(final String uri)
-    {
+    private String uriToDir(final String uri) {
         final UdpChannel udpChannel = UdpChannel.parse(uri);
 
         return udpChannel.canonicalForm();
     }
 
-    private void assertIsValidFile(final String channelDir) throws IOException
-    {
+    private void assertIsValidFile(final String channelDir) throws IOException {
         final File file = new File(channelDir);
         assertTrue("Can't create file", file.mkdir());
         assertTrue("Failed to clean up", file.delete());

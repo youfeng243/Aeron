@@ -23,8 +23,7 @@ import java.util.Random;
 /**
  * Uniform random loss generator
  */
-public class RandomLossGenerator implements LossGenerator
-{
+public class RandomLossGenerator implements LossGenerator {
     private final double lossRate;
     private final Random random;
 
@@ -33,8 +32,7 @@ public class RandomLossGenerator implements LossGenerator
      *
      * @param lossRate for generating loss
      */
-    public RandomLossGenerator(final double lossRate)
-    {
+    public RandomLossGenerator(final double lossRate) {
         this(lossRate, -1);
     }
 
@@ -44,14 +42,12 @@ public class RandomLossGenerator implements LossGenerator
      * @param lossRate for generating loss
      * @param lossSeed for random seeding
      */
-    public RandomLossGenerator(final double lossRate, final long lossSeed)
-    {
+    public RandomLossGenerator(final double lossRate, final long lossSeed) {
         this.random = -1 == lossSeed ? new Random() : new Random(lossSeed);
         this.lossRate = lossRate;
     }
 
-    public boolean shouldDropFrame(final InetSocketAddress address, final UnsafeBuffer buffer, final int length)
-    {
+    public boolean shouldDropFrame(final InetSocketAddress address, final UnsafeBuffer buffer, final int length) {
         return random.nextDouble() <= lossRate;
     }
 }

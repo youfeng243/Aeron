@@ -59,8 +59,7 @@ import static uk.co.real_logic.agrona.BitUtil.align;
  *  +----------------------------+
  * </pre>
  */
-public class CncFileDescriptor
-{
+public class CncFileDescriptor {
     public static final String CNC_FILE = "cnc";
 
     public static final int CNC_VERSION = 3;
@@ -76,8 +75,7 @@ public class CncFileDescriptor
     public static final int COUNTER_VALUES_BUFFER_LENGTH_FIELD_OFFSET;
     public static final int CLIENT_LIVENESS_TIMEOUT_FIELD_OFFSET;
 
-    static
-    {
+    static {
         CNC_VERSION_FIELD_OFFSET = 0;
         META_DATA_OFFSET = CNC_VERSION_FIELD_OFFSET + BitUtil.SIZE_OF_INT;
 
@@ -98,54 +96,45 @@ public class CncFileDescriptor
      * @param totalLengthOfBuffers in bytes
      * @return cnc file length in bytes
      */
-    public static int computeCncFileLength(final int totalLengthOfBuffers)
-    {
+    public static int computeCncFileLength(final int totalLengthOfBuffers) {
         return END_OF_META_DATA_OFFSET + totalLengthOfBuffers;
     }
 
-    public static int cncVersionOffset(final int baseOffset)
-    {
+    public static int cncVersionOffset(final int baseOffset) {
         return baseOffset + CNC_VERSION_FIELD_OFFSET;
     }
 
-    public static int toDriverBufferLengthOffset(final int baseOffset)
-    {
+    public static int toDriverBufferLengthOffset(final int baseOffset) {
         return baseOffset + META_DATA_OFFSET + TO_DRIVER_BUFFER_LENGTH_FIELD_OFFSET;
     }
 
-    public static int toClientsBufferLengthOffset(final int baseOffset)
-    {
+    public static int toClientsBufferLengthOffset(final int baseOffset) {
         return baseOffset + META_DATA_OFFSET + TO_CLIENTS_BUFFER_LENGTH_FIELD_OFFSET;
     }
 
-    public static int counterLabelsBufferLengthOffset(final int baseOffset)
-    {
+    public static int counterLabelsBufferLengthOffset(final int baseOffset) {
         return baseOffset + META_DATA_OFFSET + COUNTER_LABELS_BUFFER_LENGTH_FIELD_OFFSET;
     }
 
-    public static int counterValuesBufferLengthOffset(final int baseOffset)
-    {
+    public static int counterValuesBufferLengthOffset(final int baseOffset) {
         return baseOffset + META_DATA_OFFSET + COUNTER_VALUES_BUFFER_LENGTH_FIELD_OFFSET;
     }
 
-    public static int clientLivenessTimeoutOffset(final int baseOffset)
-    {
+    public static int clientLivenessTimeoutOffset(final int baseOffset) {
         return baseOffset + META_DATA_OFFSET + CLIENT_LIVENESS_TIMEOUT_FIELD_OFFSET;
     }
 
-    public static UnsafeBuffer createMetaDataBuffer(final ByteBuffer buffer)
-    {
+    public static UnsafeBuffer createMetaDataBuffer(final ByteBuffer buffer) {
         return new UnsafeBuffer(buffer, 0, BitUtil.SIZE_OF_INT + META_DATA_LENGTH);
     }
 
     public static void fillMetaData(
-        final UnsafeBuffer cncMetaDataBuffer,
-        final int toDriverBufferLength,
-        final int toClientsBufferLength,
-        final int counterLabelsBufferLength,
-        final int counterValuesBufferLength,
-        final long clientLivenessTimeout)
-    {
+            final UnsafeBuffer cncMetaDataBuffer,
+            final int toDriverBufferLength,
+            final int toClientsBufferLength,
+            final int counterLabelsBufferLength,
+            final int counterValuesBufferLength,
+            final long clientLivenessTimeout) {
         cncMetaDataBuffer.putInt(cncVersionOffset(0), CncFileDescriptor.CNC_VERSION);
         cncMetaDataBuffer.putInt(toDriverBufferLengthOffset(0), toDriverBufferLength);
         cncMetaDataBuffer.putInt(toClientsBufferLengthOffset(0), toClientsBufferLength);
@@ -154,39 +143,34 @@ public class CncFileDescriptor
         cncMetaDataBuffer.putLong(clientLivenessTimeoutOffset(0), clientLivenessTimeout);
     }
 
-    public static UnsafeBuffer createToDriverBuffer(final ByteBuffer buffer, final DirectBuffer metaDataBuffer)
-    {
+    public static UnsafeBuffer createToDriverBuffer(final ByteBuffer buffer, final DirectBuffer metaDataBuffer) {
         return new UnsafeBuffer(buffer, END_OF_META_DATA_OFFSET, metaDataBuffer.getInt(toDriverBufferLengthOffset(0)));
     }
 
-    public static UnsafeBuffer createToClientsBuffer(final ByteBuffer buffer, final DirectBuffer metaDataBuffer)
-    {
+    public static UnsafeBuffer createToClientsBuffer(final ByteBuffer buffer, final DirectBuffer metaDataBuffer) {
         final int offset = END_OF_META_DATA_OFFSET + metaDataBuffer.getInt(toDriverBufferLengthOffset(0));
 
         return new UnsafeBuffer(buffer, offset, metaDataBuffer.getInt(toClientsBufferLengthOffset(0)));
     }
 
-    public static UnsafeBuffer createCounterLabelsBuffer(final ByteBuffer buffer, final DirectBuffer metaDataBuffer)
-    {
+    public static UnsafeBuffer createCounterLabelsBuffer(final ByteBuffer buffer, final DirectBuffer metaDataBuffer) {
         final int offset = END_OF_META_DATA_OFFSET +
-            metaDataBuffer.getInt(toDriverBufferLengthOffset(0)) +
-            metaDataBuffer.getInt(toClientsBufferLengthOffset(0));
+                metaDataBuffer.getInt(toDriverBufferLengthOffset(0)) +
+                metaDataBuffer.getInt(toClientsBufferLengthOffset(0));
 
         return new UnsafeBuffer(buffer, offset, metaDataBuffer.getInt(counterLabelsBufferLengthOffset(0)));
     }
 
-    public static UnsafeBuffer createCounterValuesBuffer(final ByteBuffer buffer, final DirectBuffer metaDataBuffer)
-    {
+    public static UnsafeBuffer createCounterValuesBuffer(final ByteBuffer buffer, final DirectBuffer metaDataBuffer) {
         final int offset = END_OF_META_DATA_OFFSET +
-            metaDataBuffer.getInt(toDriverBufferLengthOffset(0)) +
-            metaDataBuffer.getInt(toClientsBufferLengthOffset(0)) +
-            metaDataBuffer.getInt(counterLabelsBufferLengthOffset(0));
+                metaDataBuffer.getInt(toDriverBufferLengthOffset(0)) +
+                metaDataBuffer.getInt(toClientsBufferLengthOffset(0)) +
+                metaDataBuffer.getInt(counterLabelsBufferLengthOffset(0));
 
         return new UnsafeBuffer(buffer, offset, metaDataBuffer.getInt(counterValuesBufferLengthOffset(0)));
     }
 
-    public static long clientLivenessTimeout(final DirectBuffer metaDataBuffer)
-    {
+    public static long clientLivenessTimeout(final DirectBuffer metaDataBuffer) {
         return metaDataBuffer.getLong(clientLivenessTimeoutOffset(0));
     }
 }

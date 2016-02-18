@@ -21,8 +21,7 @@ import uk.co.real_logic.agrona.DirectBuffer;
  * Function for handling a block of message fragments scanned from the log.
  */
 @FunctionalInterface
-public interface BlockHandler
-{
+public interface BlockHandler {
     /**
      * Callback for handling a block of messages being read from a log.
      *

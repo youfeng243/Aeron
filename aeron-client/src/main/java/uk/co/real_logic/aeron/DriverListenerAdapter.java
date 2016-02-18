@@ -26,8 +26,7 @@ import static uk.co.real_logic.aeron.command.ControlProtocolEvents.*;
 /**
  * Analogue of {@link DriverProxy} on the client side
  */
-class DriverListenerAdapter implements MessageHandler
-{
+class DriverListenerAdapter implements MessageHandler {
     public static final long MISSING_REGISTRATION_ID = -1L;
 
     private final CopyBroadcastReceiver broadcastReceiver;
@@ -44,14 +43,12 @@ class DriverListenerAdapter implements MessageHandler
     private long lastReceivedCorrelationId;
     private String expectedChannel;
 
-    DriverListenerAdapter(final CopyBroadcastReceiver broadcastReceiver, final DriverListener listener)
-    {
+    DriverListenerAdapter(final CopyBroadcastReceiver broadcastReceiver, final DriverListener listener) {
         this.broadcastReceiver = broadcastReceiver;
         this.listener = listener;
     }
 
-    public int pollMessage(final long activeCorrelationId, final String expectedChannel)
-    {
+    public int pollMessage(final long activeCorrelationId, final String expectedChannel) {
         this.activeCorrelationId = activeCorrelationId;
         this.lastReceivedCorrelationId = -1;
         this.expectedChannel = expectedChannel;
@@ -59,42 +56,35 @@ class DriverListenerAdapter implements MessageHandler
         return broadcastReceiver.receive(this);
     }
 
-    public long lastReceivedCorrelationId()
-    {
+    public long lastReceivedCorrelationId() {
         return lastReceivedCorrelationId;
     }
 
-    public void onMessage(final int msgTypeId, final MutableDirectBuffer buffer, final int index, final int length)
-    {
-        switch (msgTypeId)
-        {
-            case ON_PUBLICATION_READY:
-            {
+    public void onMessage(final int msgTypeId, final MutableDirectBuffer buffer, final int index, final int length) {
+        switch (msgTypeId) {
+            case ON_PUBLICATION_READY: {
                 publicationReady.wrap(buffer, index);
 
                 final long correlationId = publicationReady.correlationId();
-                if (correlationId == activeCorrelationId)
-                {
+                if (correlationId == activeCorrelationId) {
                     listener.onNewPublication(
-                        expectedChannel,
-                        publicationReady.streamId(),
-                        publicationReady.sessionId(),
-                        publicationReady.publicationLimitCounterId(),
-                        publicationReady.logFileName(),
-                        correlationId);
+                            expectedChannel,
+                            publicationReady.streamId(),
+                            publicationReady.sessionId(),
+                            publicationReady.publicationLimitCounterId(),
+                            publicationReady.logFileName(),
+                            correlationId);
 
                     lastReceivedCorrelationId = correlationId;
                 }
                 break;
             }
 
-            case ON_AVAILABLE_IMAGE:
-            {
+            case ON_AVAILABLE_IMAGE: {
                 imageReady.wrap(buffer, index);
 
                 subscriberPositionMap.clear();
-                for (int i = 0, max = imageReady.subscriberPositionCount(); i < max; i++)
-                {
+                for (int i = 0, max = imageReady.subscriberPositionCount(); i < max; i++) {
                     final long registrationId = imageReady.positionIndicatorRegistrationId(i);
                     final int positionId = imageReady.subscriberPositionId(i);
 
@@ -102,42 +92,37 @@ class DriverListenerAdapter implements MessageHandler
                 }
 
                 listener.onAvailableImage(
-                    imageReady.streamId(),
-                    imageReady.sessionId(),
-                    subscriberPositionMap,
-                    imageReady.logFileName(),
-                    imageReady.sourceIdentity(),
-                    imageReady.correlationId());
+                        imageReady.streamId(),
+                        imageReady.sessionId(),
+                        subscriberPositionMap,
+                        imageReady.logFileName(),
+                        imageReady.sourceIdentity(),
+                        imageReady.correlationId());
                 break;
             }
 
-            case ON_OPERATION_SUCCESS:
-            {
+            case ON_OPERATION_SUCCESS: {
                 correlatedMessage.wrap(buffer, index);
 
                 final long correlationId = correlatedMessage.correlationId();
-                if (correlationId == activeCorrelationId)
-                {
+                if (correlationId == activeCorrelationId) {
                     lastReceivedCorrelationId = correlationId;
                 }
                 break;
             }
 
-            case ON_UNAVAILABLE_IMAGE:
-            {
+            case ON_UNAVAILABLE_IMAGE: {
                 imageMessage.wrap(buffer, index);
 
                 listener.onUnavailableImage(imageMessage.streamId(), imageMessage.correlationId());
                 break;
             }
 
-            case ON_ERROR:
-            {
+            case ON_ERROR: {
                 errorResponse.wrap(buffer, index);
 
                 final long correlationId = errorResponse.offendingCommandCorrelationId();
-                if (correlationId == activeCorrelationId)
-                {
+                if (correlationId == activeCorrelationId) {
                     listener.onError(errorResponse.errorCode(), errorResponse.errorMessage(), correlationId);
 
                     lastReceivedCorrelationId = correlationId;

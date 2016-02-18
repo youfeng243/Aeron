@@ -30,74 +30,68 @@ import static org.junit.Assert.assertThat;
 import static uk.co.real_logic.aeron.command.ControlProtocolEvents.*;
 import static uk.co.real_logic.agrona.concurrent.ringbuffer.RingBufferDescriptor.TRAILER_LENGTH;
 
-public class DriverProxyTest
-{
+public class DriverProxyTest {
     public static final String CHANNEL = "udp://localhost:40123@localhost:40124";
 
     private static final int STREAM_ID = 1;
     private static final long CORRELATION_ID = 3;
     private final RingBuffer conductorBuffer = new ManyToOneRingBuffer(
-        new UnsafeBuffer(ByteBuffer.allocateDirect(TRAILER_LENGTH + 1024)));
+            new UnsafeBuffer(ByteBuffer.allocateDirect(TRAILER_LENGTH + 1024)));
     private final DriverProxy conductor = new DriverProxy(conductorBuffer);
 
     @Test
-    public void threadSendsAddChannelMessage()
-    {
+    public void threadSendsAddChannelMessage() {
         threadSendsChannelMessage(() -> conductor.addPublication(CHANNEL, STREAM_ID), ADD_PUBLICATION);
     }
 
     @Test
-    public void threadSendsRemoveChannelMessage()
-    {
+    public void threadSendsRemoveChannelMessage() {
         conductor.removePublication(CORRELATION_ID);
         assertReadsOneMessage(
-            (msgTypeId, buffer, index, length) ->
-            {
-                final RemoveMessageFlyweight message = new RemoveMessageFlyweight();
-                message.wrap(buffer, index);
+                (msgTypeId, buffer, index, length) ->
+                {
+                    final RemoveMessageFlyweight message = new RemoveMessageFlyweight();
+                    message.wrap(buffer, index);
 
-                assertThat(msgTypeId, is(REMOVE_PUBLICATION));
-                assertThat(message.registrationId(), is(CORRELATION_ID));
-            }
+                    assertThat(msgTypeId, is(REMOVE_PUBLICATION));
+                    assertThat(message.registrationId(), is(CORRELATION_ID));
+                }
         );
     }
 
-    private void threadSendsChannelMessage(final Runnable sendMessage, final int expectedMsgTypeId)
-    {
+    private void threadSendsChannelMessage(final Runnable sendMessage, final int expectedMsgTypeId) {
         sendMessage.run();
 
         assertReadsOneMessage(
-            (msgTypeId, buffer, index, length) ->
-            {
-                final PublicationMessageFlyweight publicationMessage = new PublicationMessageFlyweight();
-                publicationMessage.wrap(buffer, index);
+                (msgTypeId, buffer, index, length) ->
+                {
+                    final PublicationMessageFlyweight publicationMessage = new PublicationMessageFlyweight();
+                    publicationMessage.wrap(buffer, index);
 
-                assertThat(msgTypeId, is(expectedMsgTypeId));
-                assertThat(publicationMessage.channel(), is(CHANNEL));
-                assertThat(publicationMessage.streamId(), is(STREAM_ID));
-            }
+                    assertThat(msgTypeId, is(expectedMsgTypeId));
+                    assertThat(publicationMessage.channel(), is(CHANNEL));
+                    assertThat(publicationMessage.streamId(), is(STREAM_ID));
+                }
         );
     }
 
     @Test
-    public void threadSendsRemoveSubscriberMessage()
-    {
+    public void threadSendsRemoveSubscriberMessage() {
         conductor.removeSubscription(CORRELATION_ID);
 
         assertReadsOneMessage(
-            (msgTypeId, buffer, index, length) ->
-            {
-                final RemoveMessageFlyweight removeMessage = new RemoveMessageFlyweight();
-                removeMessage.wrap(buffer, index);
+                (msgTypeId, buffer, index, length) ->
+                {
+                    final RemoveMessageFlyweight removeMessage = new RemoveMessageFlyweight();
+                    removeMessage.wrap(buffer, index);
 
-                assertThat(msgTypeId, is(REMOVE_SUBSCRIPTION));
-                assertThat(removeMessage.registrationId(), is(CORRELATION_ID));
-            }
+                    assertThat(msgTypeId, is(REMOVE_SUBSCRIPTION));
+                    assertThat(removeMessage.registrationId(), is(CORRELATION_ID));
+                }
         );
     }
 
-    private void assertReadsOneMessage(final MessageHandler handler)
-    {
+    private void assertReadsOneMessage(final MessageHandler handler) {
         final int messageCount = conductorBuffer.read(handler);
         assertThat(messageCount, is(1));
     }

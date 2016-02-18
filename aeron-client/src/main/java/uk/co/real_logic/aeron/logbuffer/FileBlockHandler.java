@@ -21,8 +21,7 @@ import java.nio.channels.FileChannel;
  * Function for handling a block of fragments from the log that are contained in the underlying file.
  */
 @FunctionalInterface
-public interface FileBlockHandler
-{
+public interface FileBlockHandler {
     /**
      * Notification of an available block of fragments.
      *

@@ -38,8 +38,7 @@ import static uk.co.real_logic.aeron.DriverListenerAdapter.MISSING_REGISTRATION_
  * Client conductor takes responses and notifications from media driver and acts on them.
  * As well as passes commands to the media driver.
  */
-class ClientConductor implements Agent, DriverListener
-{
+class ClientConductor implements Agent, DriverListener {
     private static final long NO_CORRELATION_ID = -1;
     private static final long RESOURCE_TIMEOUT_NS = TimeUnit.SECONDS.toNanos(1);
     private static final long RESOURCE_LINGER_NS = TimeUnit.SECONDS.toNanos(5);
@@ -69,19 +68,18 @@ class ClientConductor implements Agent, DriverListener
     private RegistrationException driverException;
 
     ClientConductor(
-        final EpochClock epochClock,
-        final NanoClock nanoClock,
-        final CopyBroadcastReceiver broadcastReceiver,
-        final LogBuffersFactory logBuffersFactory,
-        final UnsafeBuffer counterValuesBuffer,
-        final DriverProxy driverProxy,
-        final ErrorHandler errorHandler,
-        final AvailableImageHandler availableImageHandler,
-        final UnavailableImageHandler unavailableImageHandler,
-        final long keepAliveIntervalNs,
-        final long driverTimeoutMs,
-        final long interServiceTimeoutNs)
-    {
+            final EpochClock epochClock,
+            final NanoClock nanoClock,
+            final CopyBroadcastReceiver broadcastReceiver,
+            final LogBuffersFactory logBuffersFactory,
+            final UnsafeBuffer counterValuesBuffer,
+            final DriverProxy driverProxy,
+            final ErrorHandler errorHandler,
+            final AvailableImageHandler availableImageHandler,
+            final UnavailableImageHandler unavailableImageHandler,
+            final long keepAliveIntervalNs,
+            final long driverTimeoutMs,
+            final long interServiceTimeoutNs) {
         this.epochClock = epochClock;
         this.nanoClock = nanoClock;
         this.timeOfLastKeepalive = nanoClock.nanoTime();
@@ -101,30 +99,25 @@ class ClientConductor implements Agent, DriverListener
         this.driverListener = new DriverListenerAdapter(broadcastReceiver, this);
     }
 
-    public synchronized void onClose()
-    {
+    public synchronized void onClose() {
         activePublications.close();
         activeSubscriptions.close();
         managedResources.forEach(ManagedResource::delete);
     }
 
-    public synchronized int doWork()
-    {
+    public synchronized int doWork() {
         return doWork(NO_CORRELATION_ID, null);
     }
 
-    public String roleName()
-    {
+    public String roleName() {
         return "client-conductor";
     }
 
-    public synchronized Publication addPublication(final String channel, final int streamId)
-    {
+    public synchronized Publication addPublication(final String channel, final int streamId) {
         verifyDriverIsActive();
 
         Publication publication = activePublications.get(channel, streamId);
-        if (publication == null)
-        {
+        if (publication == null) {
             final long correlationId = driverProxy.addPublication(channel, streamId);
             final long timeout = nanoClock.nanoTime() + driverTimeoutNs;
 
@@ -138,8 +131,7 @@ class ClientConductor implements Agent, DriverListener
         return publication;
     }
 
-    public synchronized void releasePublication(final Publication publication)
-    {
+    public synchronized void releasePublication(final Publication publication) {
         verifyDriverIsActive();
 
         final long correlationId = driverProxy.removePublication(publication.registrationId());
@@ -149,8 +141,7 @@ class ClientConductor implements Agent, DriverListener
         doWorkUntil(correlationId, timeout, publication.channel());
     }
 
-    public synchronized Subscription addSubscription(final String channel, final int streamId)
-    {
+    public synchronized Subscription addSubscription(final String channel, final int streamId) {
         verifyDriverIsActive();
 
         final long correlationId = driverProxy.addSubscription(channel, streamId);
@@ -164,8 +155,7 @@ class ClientConductor implements Agent, DriverListener
         return subscription;
     }
 
-    public synchronized void releaseSubscription(final Subscription subscription)
-    {
+    public synchronized void releaseSubscription(final Subscription subscription) {
         verifyDriverIsActive();
 
         final long correlationId = driverProxy.removeSubscription(subscription.registrationId());
@@ -177,98 +167,87 @@ class ClientConductor implements Agent, DriverListener
     }
 
     public void onNewPublication(
-        final String channel,
-        final int streamId,
-        final int sessionId,
-        final int publicationLimitId,
-        final String logFileName,
-        final long correlationId)
-    {
+            final String channel,
+            final int streamId,
+            final int sessionId,
+            final int publicationLimitId,
+            final String logFileName,
+            final long correlationId) {
         final Publication publication = new Publication(
-            this,
-            channel,
-            streamId,
-            sessionId,
-            new UnsafeBufferPosition(counterValuesBuffer, publicationLimitId),
-            logBuffersFactory.map(logFileName),
-            correlationId);
+                this,
+                channel,
+                streamId,
+                sessionId,
+                new UnsafeBufferPosition(counterValuesBuffer, publicationLimitId),
+                logBuffersFactory.map(logFileName),
+                correlationId);
 
         activePublications.put(channel, streamId, publication);
     }
 
     public void onAvailableImage(
-        final int streamId,
-        final int sessionId,
-        final Long2LongHashMap subscriberPositionMap,
-        final String logFileName,
-        final String sourceIdentity,
-        final long correlationId)
-    {
+            final int streamId,
+            final int sessionId,
+            final Long2LongHashMap subscriberPositionMap,
+            final String logFileName,
+            final String sourceIdentity,
+            final long correlationId) {
         activeSubscriptions.forEach(
-            streamId,
-            (subscription) ->
-            {
-                if (!subscription.hasImage(sessionId))
+                streamId,
+                (subscription) ->
                 {
-                    final long positionId = subscriberPositionMap.get(subscription.registrationId());
+                    if (!subscription.hasImage(sessionId)) {
+                        final long positionId = subscriberPositionMap.get(subscription.registrationId());
 
-                    if (MISSING_REGISTRATION_ID != positionId)
-                    {
-                        final Image image = new Image(
-                            subscription,
-                            sessionId,
-                            new UnsafeBufferPosition(counterValuesBuffer, (int)positionId),
-                            logBuffersFactory.map(logFileName),
-                            errorHandler,
-                            sourceIdentity,
-                            correlationId
-                        );
+                        if (MISSING_REGISTRATION_ID != positionId) {
+                            final Image image = new Image(
+                                    subscription,
+                                    sessionId,
+                                    new UnsafeBufferPosition(counterValuesBuffer, (int) positionId),
+                                    logBuffersFactory.map(logFileName),
+                                    errorHandler,
+                                    sourceIdentity,
+                                    correlationId
+                            );
 
-                        subscription.addImage(image);
+                            subscription.addImage(image);
 
-                        availableImageHandler.onAvailableImage(image);
+                            availableImageHandler.onAvailableImage(image);
+                        }
                     }
-                }
-            });
+                });
     }
 
-    public void onError(final ErrorCode errorCode, final String message, final long correlationId)
-    {
+    public void onError(final ErrorCode errorCode, final String message, final long correlationId) {
         driverException = new RegistrationException(errorCode, message);
     }
 
-    public void onUnavailableImage(final int streamId, final long correlationId)
-    {
+    public void onUnavailableImage(final int streamId, final long correlationId) {
         activeSubscriptions.forEach(
-            streamId,
-            (subscription) ->
-            {
-                final Image image = subscription.removeImage(correlationId);
-                if (null != image)
+                streamId,
+                (subscription) ->
                 {
-                    unavailableImageHandler.onUnavailableImage(image);
-                }
-            });
+                    final Image image = subscription.removeImage(correlationId);
+                    if (null != image) {
+                        unavailableImageHandler.onUnavailableImage(image);
+                    }
+                });
     }
 
-    public DriverListenerAdapter driverListenerAdapter()
-    {
+    public DriverListenerAdapter driverListenerAdapter() {
         return driverListener;
     }
 
-    public void lingerResource(final ManagedResource managedResource)
-    {
+    public void lingerResource(final ManagedResource managedResource) {
         managedResource.timeOfLastStateChange(nanoClock.nanoTime());
         managedResources.add(managedResource);
     }
 
-    private void checkDriverHeartbeat()
-    {
+    private void checkDriverHeartbeat() {
         final long now = epochClock.time();
         final long currentDriverKeepaliveTime = driverProxy.timeOfLastDriverKeepalive();
 
-        if (driverActive && (now > (currentDriverKeepaliveTime + driverTimeoutMs)))
-        {
+        if (driverActive && (now > (currentDriverKeepaliveTime + driverTimeoutMs))) {
             driverActive = false;
 
             final String msg = String.format("Driver has been inactive for over %dms", driverTimeoutMs);
@@ -276,43 +255,33 @@ class ClientConductor implements Agent, DriverListener
         }
     }
 
-    private void verifyDriverIsActive()
-    {
-        if (!driverActive)
-        {
+    private void verifyDriverIsActive() {
+        if (!driverActive) {
             throw new DriverTimeoutException("Driver is inactive");
         }
     }
 
-    private int doWork(final long correlationId, final String expectedChannel)
-    {
+    private int doWork(final long correlationId, final String expectedChannel) {
         int workCount = 0;
 
-        try
-        {
+        try {
             workCount += onCheckTimeouts();
             workCount += driverListener.pollMessage(correlationId, expectedChannel);
-        }
-        catch (final Exception ex)
-        {
+        } catch (final Exception ex) {
             errorHandler.onError(ex);
         }
 
         return workCount;
     }
 
-    private void doWorkUntil(final long correlationId, final long timeout, final String expectedChannel)
-    {
+    private void doWorkUntil(final long correlationId, final long timeout, final String expectedChannel) {
         driverException = null;
 
-        do
-        {
+        do {
             doWork(correlationId, expectedChannel);
 
-            if (driverListener.lastReceivedCorrelationId() == correlationId)
-            {
-                if (null != driverException)
-                {
+            if (driverListener.lastReceivedCorrelationId() == correlationId) {
+                if (null != driverException) {
                     throw driverException;
                 }
 
@@ -324,24 +293,21 @@ class ClientConductor implements Agent, DriverListener
         throw new DriverTimeoutException("No response from driver within timeout");
     }
 
-    private int onCheckTimeouts()
-    {
+    private int onCheckTimeouts() {
         final long now = nanoClock.nanoTime();
         int result = 0;
 
-        if (now > (timeOfLastDoWork + interServiceTimeoutNs))
-        {
+        if (now > (timeOfLastDoWork + interServiceTimeoutNs)) {
             activePublications.close();
             activeSubscriptions.close();
 
             throw new ConductorServiceTimeoutException(
-                String.format("Timeout between service calls over %dns", interServiceTimeoutNs));
+                    String.format("Timeout between service calls over %dns", interServiceTimeoutNs));
         }
 
         timeOfLastDoWork = now;
 
-        if (now > (timeOfLastKeepalive + keepAliveIntervalNs))
-        {
+        if (now > (timeOfLastKeepalive + keepAliveIntervalNs)) {
             driverProxy.sendClientKeepalive();
             checkDriverHeartbeat();
 
@@ -349,13 +315,10 @@ class ClientConductor implements Agent, DriverListener
             result++;
         }
 
-        if (now > (timeOfLastCheckResources + RESOURCE_TIMEOUT_NS))
-        {
-            for (int i = managedResources.size() - 1; i >= 0; i--)
-            {
+        if (now > (timeOfLastCheckResources + RESOURCE_TIMEOUT_NS)) {
+            for (int i = managedResources.size() - 1; i >= 0; i--) {
                 final ManagedResource resource = managedResources.get(i);
-                if (now > (resource.timeOfLastStateChange() + RESOURCE_LINGER_NS))
-                {
+                if (now > (resource.timeOfLastStateChange() + RESOURCE_LINGER_NS)) {
                     managedResources.remove(i);
                     resource.delete();
                 }

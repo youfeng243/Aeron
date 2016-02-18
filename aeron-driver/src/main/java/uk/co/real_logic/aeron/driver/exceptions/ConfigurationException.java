@@ -15,10 +15,8 @@
  */
 package uk.co.real_logic.aeron.driver.exceptions;
 
-public class ConfigurationException extends IllegalArgumentException
-{
-    public ConfigurationException(final String message)
-    {
+public class ConfigurationException extends IllegalArgumentException {
+    public ConfigurationException(final String message) {
         super(message);
     }
 }

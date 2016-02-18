@@ -16,16 +16,21 @@
 package uk.co.real_logic.aeron.driver;
 
 /**
-* Threading mode to be employed by the agents in the media driver.
-*/
-public enum ThreadingMode
-{
-    /** 3 Threads, one dedicated to each of the agents. */
+ * Threading mode to be employed by the agents in the media driver.
+ */
+public enum ThreadingMode {
+    /**
+     * 3 Threads, one dedicated to each of the agents.
+     */
     DEDICATED,
 
-    /** One thread shared for both the {@link Sender} and {@link Receiver} agents, and one for the {@link DriverConductor}. */
+    /**
+     * One thread shared for both the {@link Sender} and {@link Receiver} agents, and one for the {@link DriverConductor}.
+     */
     SHARED_NETWORK,
 
-    /** One thread shared by all 3 agents. */
+    /**
+     * One thread shared by all 3 agents.
+     */
     SHARED
 }

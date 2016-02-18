@@ -27,15 +27,13 @@ import static uk.co.real_logic.agrona.BitUtil.SIZE_OF_LONG;
 /**
  * Encoding of event types to a buffer for logging.
  */
-public class EventEncoder
-{
+public class EventEncoder {
     static final int STACK_DEPTH = 5;
     private static final int LOG_HEADER_LENGTH = 16;
     private static final int SOCKET_ADDRESS_MAX_LENGTH = 24;
 
     public static int encode(
-        final MutableDirectBuffer encodingBuffer, final MutableDirectBuffer buffer, final int offset, final int length)
-    {
+            final MutableDirectBuffer encodingBuffer, final MutableDirectBuffer buffer, final int offset, final int length) {
         final int captureLength = determineCaptureLength(length);
         int relativeOffset = encodeLogHeader(encodingBuffer, captureLength, length);
 
@@ -46,12 +44,11 @@ public class EventEncoder
     }
 
     public static int encode(
-        final MutableDirectBuffer encodingBuffer,
-        final ByteBuffer buffer,
-        final int offset,
-        final int bufferLength,
-        final InetSocketAddress dstAddress)
-    {
+            final MutableDirectBuffer encodingBuffer,
+            final ByteBuffer buffer,
+            final int offset,
+            final int bufferLength,
+            final InetSocketAddress dstAddress) {
         final int captureLength = determineCaptureLength(bufferLength);
         int relativeOffset = encodeLogHeader(encodingBuffer, captureLength, bufferLength);
 
@@ -62,8 +59,7 @@ public class EventEncoder
         return relativeOffset;
     }
 
-    public static int encode(final MutableDirectBuffer encodingBuffer, final String value)
-    {
+    public static int encode(final MutableDirectBuffer encodingBuffer, final String value) {
         final int length = encodingBuffer.putStringUtf8(LOG_HEADER_LENGTH, value, LITTLE_ENDIAN);
         final int recordLength = LOG_HEADER_LENGTH + length;
         encodeLogHeader(encodingBuffer, recordLength, recordLength);
@@ -71,8 +67,7 @@ public class EventEncoder
         return recordLength;
     }
 
-    public static int encode(final MutableDirectBuffer encodingBuffer, final StackTraceElement stack)
-    {
+    public static int encode(final MutableDirectBuffer encodingBuffer, final StackTraceElement stack) {
         final int relativeOffset = putStackTraceElement(encodingBuffer, stack, LOG_HEADER_LENGTH);
         final int captureLength = relativeOffset;
         encodeLogHeader(encodingBuffer, captureLength, captureLength);
@@ -80,8 +75,7 @@ public class EventEncoder
         return relativeOffset;
     }
 
-    public static int encode(final MutableDirectBuffer encodingBuffer, final Throwable ex)
-    {
+    public static int encode(final MutableDirectBuffer encodingBuffer, final Throwable ex) {
         final String msg = null != ex.getMessage() ? ex.getMessage() : "exception message not set";
 
         int relativeOffset = LOG_HEADER_LENGTH;
@@ -89,8 +83,7 @@ public class EventEncoder
         relativeOffset += encodingBuffer.putStringUtf8(relativeOffset, msg, LITTLE_ENDIAN);
 
         final StackTraceElement[] stackTrace = ex.getStackTrace();
-        for (int i = 0; i < Math.min(STACK_DEPTH, stackTrace.length); i++)
-        {
+        for (int i = 0; i < Math.min(STACK_DEPTH, stackTrace.length); i++) {
             relativeOffset = putStackTraceElement(encodingBuffer, stackTrace[i], relativeOffset);
         }
 
@@ -101,8 +94,7 @@ public class EventEncoder
     }
 
     private static int putStackTraceElement(
-        final MutableDirectBuffer encodingBuffer, final StackTraceElement stack, int relativeOffset)
-    {
+            final MutableDirectBuffer encodingBuffer, final StackTraceElement stack, int relativeOffset) {
         encodingBuffer.putInt(relativeOffset, stack.getLineNumber(), LITTLE_ENDIAN);
         relativeOffset += SIZE_OF_INT;
         relativeOffset += encodingBuffer.putStringUtf8(relativeOffset, stack.getClassName(), LITTLE_ENDIAN);
@@ -112,8 +104,7 @@ public class EventEncoder
         return relativeOffset;
     }
 
-    private static int encodeLogHeader(final MutableDirectBuffer encodingBuffer, final int captureLength, final int length)
-    {
+    private static int encodeLogHeader(final MutableDirectBuffer encodingBuffer, final int captureLength, final int length) {
         int relativeOffset = 0;
         /*
          * Stream of values:
@@ -136,8 +127,7 @@ public class EventEncoder
     }
 
     private static int encodeSocketAddress(
-        final MutableDirectBuffer encodingBuffer, final int offset, final InetSocketAddress dstAddress)
-    {
+            final MutableDirectBuffer encodingBuffer, final int offset, final InetSocketAddress dstAddress) {
         int relativeOffset = 0;
         /*
          * Stream of values:
@@ -159,8 +149,7 @@ public class EventEncoder
         return relativeOffset;
     }
 
-    private static int determineCaptureLength(final int bufferLength)
-    {
+    private static int determineCaptureLength(final int bufferLength) {
         return Math.min(bufferLength, EventConfiguration.MAX_EVENT_LENGTH - LOG_HEADER_LENGTH - SOCKET_ADDRESS_MAX_LENGTH);
     }
 }

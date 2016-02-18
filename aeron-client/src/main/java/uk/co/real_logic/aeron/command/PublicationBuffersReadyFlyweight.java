@@ -45,8 +45,7 @@ import static uk.co.real_logic.agrona.BitUtil.SIZE_OF_LONG;
  * ...                                                             |
  * +---------------------------------------------------------------+
  */
-public class PublicationBuffersReadyFlyweight
-{
+public class PublicationBuffersReadyFlyweight {
     private static final int CORRELATION_ID_OFFSET = 0;
     private static final int SESSION_ID_OFFSET = CORRELATION_ID_OFFSET + SIZE_OF_LONG;
     private static final int STREAM_ID_FIELD_OFFSET = SESSION_ID_OFFSET + SIZE_OF_INT;
@@ -63,8 +62,7 @@ public class PublicationBuffersReadyFlyweight
      * @param offset at which the message begins.
      * @return for fluent API
      */
-    public final PublicationBuffersReadyFlyweight wrap(final MutableDirectBuffer buffer, final int offset)
-    {
+    public final PublicationBuffersReadyFlyweight wrap(final MutableDirectBuffer buffer, final int offset) {
         this.buffer = buffer;
         this.offset = offset;
 
@@ -76,8 +74,7 @@ public class PublicationBuffersReadyFlyweight
      *
      * @return correlation id field
      */
-    public long correlationId()
-    {
+    public long correlationId() {
         return buffer.getLong(offset + CORRELATION_ID_OFFSET);
     }
 
@@ -87,8 +84,7 @@ public class PublicationBuffersReadyFlyweight
      * @param correlationId field value
      * @return flyweight
      */
-    public PublicationBuffersReadyFlyweight correlationId(final long correlationId)
-    {
+    public PublicationBuffersReadyFlyweight correlationId(final long correlationId) {
         buffer.putLong(offset + CORRELATION_ID_OFFSET, correlationId);
 
         return this;
@@ -99,8 +95,7 @@ public class PublicationBuffersReadyFlyweight
      *
      * @return session id field
      */
-    public int sessionId()
-    {
+    public int sessionId() {
         return buffer.getInt(offset + SESSION_ID_OFFSET);
     }
 
@@ -110,8 +105,7 @@ public class PublicationBuffersReadyFlyweight
      * @param sessionId field value
      * @return flyweight
      */
-    public PublicationBuffersReadyFlyweight sessionId(final int sessionId)
-    {
+    public PublicationBuffersReadyFlyweight sessionId(final int sessionId) {
         buffer.putInt(offset + SESSION_ID_OFFSET, sessionId);
 
         return this;
@@ -122,8 +116,7 @@ public class PublicationBuffersReadyFlyweight
      *
      * @return stream id field
      */
-    public int streamId()
-    {
+    public int streamId() {
         return buffer.getInt(offset + STREAM_ID_FIELD_OFFSET);
     }
 
@@ -133,8 +126,7 @@ public class PublicationBuffersReadyFlyweight
      * @param streamId field value
      * @return flyweight
      */
-    public PublicationBuffersReadyFlyweight streamId(final int streamId)
-    {
+    public PublicationBuffersReadyFlyweight streamId(final int streamId) {
         buffer.putInt(offset + STREAM_ID_FIELD_OFFSET, streamId);
 
         return this;
@@ -145,8 +137,7 @@ public class PublicationBuffersReadyFlyweight
      *
      * @return publication limit counter id.
      */
-    public int publicationLimitCounterId()
-    {
+    public int publicationLimitCounterId() {
         return buffer.getInt(offset + PUBLICATION_LIMIT_COUNTER_ID_OFFSET);
     }
 
@@ -156,20 +147,17 @@ public class PublicationBuffersReadyFlyweight
      * @param positionCounterId field value
      * @return flyweight
      */
-    public PublicationBuffersReadyFlyweight publicationLimitCounterId(final int positionCounterId)
-    {
+    public PublicationBuffersReadyFlyweight publicationLimitCounterId(final int positionCounterId) {
         buffer.putInt(offset + PUBLICATION_LIMIT_COUNTER_ID_OFFSET, positionCounterId);
 
         return this;
     }
 
-    public String logFileName()
-    {
+    public String logFileName() {
         return buffer.getStringUtf8(offset + LOGFILE_FIELD_OFFSET, ByteOrder.nativeOrder());
     }
 
-    public PublicationBuffersReadyFlyweight logFileName(final String logFileName)
-    {
+    public PublicationBuffersReadyFlyweight logFileName(final String logFileName) {
         buffer.putStringUtf8(offset + LOGFILE_FIELD_OFFSET, logFileName, ByteOrder.nativeOrder());
         return this;
     }
@@ -181,8 +169,7 @@ public class PublicationBuffersReadyFlyweight
      *
      * @return the length of the current message
      */
-    public int length()
-    {
+    public int length() {
         return buffer.getInt(offset + LOGFILE_FIELD_OFFSET) + LOGFILE_FIELD_OFFSET + SIZE_OF_INT;
     }
 }

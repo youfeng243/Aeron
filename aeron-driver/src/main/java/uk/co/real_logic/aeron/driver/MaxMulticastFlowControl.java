@@ -25,8 +25,7 @@ import static uk.co.real_logic.aeron.logbuffer.LogBufferDescriptor.computePositi
  * Max of right edges.
  * No tracking of receivers.
  */
-public class MaxMulticastFlowControl implements FlowControl
-{
+public class MaxMulticastFlowControl implements FlowControl {
     private long positionLimit = 0;
     private int positionBitsToShift;
     private int initialTermId;
@@ -35,8 +34,7 @@ public class MaxMulticastFlowControl implements FlowControl
      * {@inheritDoc}
      */
     public long onStatusMessage(
-        final int termId, final int termOffset, final int receiverWindowLength, final InetSocketAddress address)
-    {
+            final int termId, final int termOffset, final int receiverWindowLength, final InetSocketAddress address) {
         final long position = computePosition(termId, termOffset, positionBitsToShift, initialTermId);
         final long newPositionLimit = position + receiverWindowLength;
 
@@ -48,8 +46,7 @@ public class MaxMulticastFlowControl implements FlowControl
     /**
      * {@inheritDoc}
      */
-    public void initialize(final int initialTermId, final int termBufferCapacity)
-    {
+    public void initialize(final int initialTermId, final int termBufferCapacity) {
         this.initialTermId = initialTermId;
         positionBitsToShift = Long.numberOfTrailingZeros(termBufferCapacity);
         positionLimit = computePosition(initialTermId, 0, positionBitsToShift, initialTermId);
@@ -58,8 +55,7 @@ public class MaxMulticastFlowControl implements FlowControl
     /**
      * {@inheritDoc}
      */
-    public long onIdle(final long now)
-    {
+    public long onIdle(final long now) {
         return positionLimit;
     }
 }

@@ -31,10 +31,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * is received. This application doesn't handle large fragmented messages. For an example of
  * fragmented message reception, see {@link MultipleSubscribersWithFragmentAssembly}.
  */
-public class SimpleSubscriber
-{
-    public static void main(final String[] args) throws Exception
-    {
+public class SimpleSubscriber {
+    public static void main(final String[] args) throws Exception {
         // Maximum number of message fragments to receive during a single 'poll' operation
         final int fragmentLimitCount = 10;
 
@@ -53,18 +51,18 @@ public class SimpleSubscriber
 
         // dataHandler method is called for every new datagram received
         final FragmentHandler fragmentHandler =
-            (buffer, offset, length, header) ->
-            {
-                final byte[] data = new byte[length];
-                buffer.getBytes(offset, data);
+                (buffer, offset, length, header) ->
+                {
+                    final byte[] data = new byte[length];
+                    buffer.getBytes(offset, data);
 
-                System.out.println(String.format(
-                    "Received message (%s) to stream %d from session %x term id %x term offset %d (%d@%d)",
-                    new String(data), streamId, header.sessionId(), header.termId(), header.termOffset(), length, offset));
+                    System.out.println(String.format(
+                            "Received message (%s) to stream %d from session %x term id %x term offset %d (%d@%d)",
+                            new String(data), streamId, header.sessionId(), header.termId(), header.termOffset(), length, offset));
 
-                // Received the intended message, time to exit the program
-                running.set(false);
-            };
+                    // Received the intended message, time to exit the program
+                    running.set(false);
+                };
 
         // Create a context, needed for client connection to media driver
         // A separate media driver process need to run prior to running this application
@@ -76,14 +74,12 @@ public class SimpleSubscriber
         // The Aeron and Subscription classes implement AutoCloseable, and will automatically
         // clean up resources when this try block is finished.
         try (final Aeron aeron = Aeron.connect(ctx);
-             final Subscription subscription = aeron.addSubscription(channel, streamId))
-        {
+             final Subscription subscription = aeron.addSubscription(channel, streamId)) {
             final IdleStrategy idleStrategy = new BackoffIdleStrategy(
-                100, 10, TimeUnit.MICROSECONDS.toNanos(1), TimeUnit.MICROSECONDS.toNanos(100));
+                    100, 10, TimeUnit.MICROSECONDS.toNanos(1), TimeUnit.MICROSECONDS.toNanos(100));
 
             // Try to read the data from subscriber
-            while (running.get())
-            {
+            while (running.get()) {
                 // poll delivers messages to the dataHandler as they arrive
                 // and returns number of fragments read, or 0
                 // if no data is available.

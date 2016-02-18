@@ -36,8 +36,7 @@ import java.util.concurrent.TimeUnit;
  *
  * Initiates and records times.
  */
-public class Ping
-{
+public class Ping {
     private static final String PING_CHANNEL = SampleConfiguration.PING_CHANNEL;
     private static final String PONG_CHANNEL = SampleConfiguration.PONG_CHANNEL;
     private static final int PING_STREAM_ID = SampleConfiguration.PING_STREAM_ID;
@@ -54,14 +53,12 @@ public class Ping
     private static final CountDownLatch LATCH = new CountDownLatch(1);
     private static final IdleStrategy POLLING_IDLE_STRATEGY = new NoOpIdleStrategy();
 
-    public static void main(final String[] args) throws Exception
-    {
+    public static void main(final String[] args) throws Exception {
         final MediaDriver driver = EMBEDDED_MEDIA_DRIVER ? MediaDriver.launchEmbedded() : null;
         final Aeron.Context ctx = new Aeron.Context().availableImageHandler(Ping::availablePongImageHandler);
         final FragmentHandler fragmentHandler = new FragmentAssembler(Ping::pongHandler);
 
-        if (EMBEDDED_MEDIA_DRIVER)
-        {
+        if (EMBEDDED_MEDIA_DRIVER) {
             ctx.aeronDirectoryName(driver.aeronDirectoryName());
         }
 
@@ -69,26 +66,22 @@ public class Ping
         System.out.println("Subscribing Pong at " + PONG_CHANNEL + " on stream Id " + PONG_STREAM_ID);
         System.out.println("Message length of " + MESSAGE_LENGTH + " bytes");
 
-        try (final Aeron aeron = Aeron.connect(ctx))
-        {
+        try (final Aeron aeron = Aeron.connect(ctx)) {
             System.out.println(
-                "Warming up... " + WARMUP_NUMBER_OF_ITERATIONS + " iterations of " + WARMUP_NUMBER_OF_MESSAGES + " messages");
+                    "Warming up... " + WARMUP_NUMBER_OF_ITERATIONS + " iterations of " + WARMUP_NUMBER_OF_MESSAGES + " messages");
 
             try (final Publication publication = aeron.addPublication(PING_CHANNEL, PING_STREAM_ID);
-                 final Subscription subscription = aeron.addSubscription(PONG_CHANNEL, PONG_STREAM_ID))
-            {
+                 final Subscription subscription = aeron.addSubscription(PONG_CHANNEL, PONG_STREAM_ID)) {
                 LATCH.await();
 
-                for (int i = 0; i < WARMUP_NUMBER_OF_ITERATIONS; i++)
-                {
+                for (int i = 0; i < WARMUP_NUMBER_OF_ITERATIONS; i++) {
                     roundTripMessages(fragmentHandler, publication, subscription, WARMUP_NUMBER_OF_MESSAGES);
                 }
 
                 Thread.sleep(100);
                 final ContinueBarrier barrier = new ContinueBarrier("Execute again?");
 
-                do
-                {
+                do {
                     HISTOGRAM.reset();
                     System.out.println("Pinging " + NUMBER_OF_MESSAGES + " messages");
 
@@ -105,41 +98,34 @@ public class Ping
     }
 
     private static void roundTripMessages(
-        final FragmentHandler fragmentHandler, final Publication publication, final Subscription subscription, final int count)
-    {
-        for (int i = 0; i < count; i++)
-        {
-            do
-            {
+            final FragmentHandler fragmentHandler, final Publication publication, final Subscription subscription, final int count) {
+        for (int i = 0; i < count; i++) {
+            do {
                 ATOMIC_BUFFER.putLong(0, System.nanoTime());
             }
             while (publication.offer(ATOMIC_BUFFER, 0, MESSAGE_LENGTH) < 0L);
 
             POLLING_IDLE_STRATEGY.reset();
-            while (subscription.poll(fragmentHandler, FRAGMENT_COUNT_LIMIT) <= 0)
-            {
+            while (subscription.poll(fragmentHandler, FRAGMENT_COUNT_LIMIT) <= 0) {
                 POLLING_IDLE_STRATEGY.idle();
             }
         }
     }
 
-    private static void pongHandler(final DirectBuffer buffer, final int offset, final int length, final Header header)
-    {
+    private static void pongHandler(final DirectBuffer buffer, final int offset, final int length, final Header header) {
         final long pingTimestamp = buffer.getLong(offset);
         final long rttNs = System.nanoTime() - pingTimestamp;
 
         HISTOGRAM.recordValue(rttNs);
     }
 
-    private static void availablePongImageHandler(final Image image)
-    {
+    private static void availablePongImageHandler(final Image image) {
         final Subscription subscription = image.subscription();
         System.out.format(
-            "Available image: channel=%s streamId=%d session=%d\n",
-            subscription.channel(), subscription.streamId(), image.sessionId());
+                "Available image: channel=%s streamId=%d session=%d\n",
+                subscription.channel(), subscription.streamId(), image.sessionId());
 
-        if (PONG_STREAM_ID == subscription.streamId() && PONG_CHANNEL.equals(subscription.channel()))
-        {
+        if (PONG_STREAM_ID == subscription.streamId() && PONG_CHANNEL.equals(subscription.channel())) {
             LATCH.countDown();
         }
     }

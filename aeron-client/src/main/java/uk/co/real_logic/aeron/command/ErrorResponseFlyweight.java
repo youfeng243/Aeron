@@ -24,7 +24,7 @@ import java.nio.ByteOrder;
 /**
  * Control message flyweight for any errors sent from driver to clients
  *
- * <p>
+ *
  * 0                   1                   2                   3
  * 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
  * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -39,8 +39,7 @@ import java.nio.ByteOrder;
  * ...                                                             |
  * +---------------------------------------------------------------+
  */
-public class ErrorResponseFlyweight
-{
+public class ErrorResponseFlyweight {
     private static final int OFFENDING_COMMAND_CORRELATION_ID_OFFSET = 0;
     private static final int ERROR_CODE_OFFSET = OFFENDING_COMMAND_CORRELATION_ID_OFFSET + BitUtil.SIZE_OF_LONG;
     private static final int ERROR_MESSAGE_OFFSET = ERROR_CODE_OFFSET + BitUtil.SIZE_OF_INT;
@@ -55,8 +54,7 @@ public class ErrorResponseFlyweight
      * @param offset at which the message begins.
      * @return for fluent API
      */
-    public final ErrorResponseFlyweight wrap(final MutableDirectBuffer buffer, final int offset)
-    {
+    public final ErrorResponseFlyweight wrap(final MutableDirectBuffer buffer, final int offset) {
         this.buffer = buffer;
         this.offset = offset;
 
@@ -68,8 +66,7 @@ public class ErrorResponseFlyweight
      *
      * @return correlation ID of the offending command
      */
-    public long offendingCommandCorrelationId()
-    {
+    public long offendingCommandCorrelationId() {
         return buffer.getLong(offset + OFFENDING_COMMAND_CORRELATION_ID_OFFSET);
     }
 
@@ -79,8 +76,7 @@ public class ErrorResponseFlyweight
      * @param correlationId of the offending command
      * @return flyweight
      */
-    public ErrorResponseFlyweight offendingCommandCorrelationId(final long correlationId)
-    {
+    public ErrorResponseFlyweight offendingCommandCorrelationId(final long correlationId) {
         buffer.putLong(offset + OFFENDING_COMMAND_CORRELATION_ID_OFFSET, correlationId);
         return this;
     }
@@ -90,8 +86,7 @@ public class ErrorResponseFlyweight
      *
      * @return error code for the command
      */
-    public ErrorCode errorCode()
-    {
+    public ErrorCode errorCode() {
         return ErrorCode.get(buffer.getInt(offset + ERROR_CODE_OFFSET));
     }
 
@@ -101,8 +96,7 @@ public class ErrorResponseFlyweight
      * @param code for the error
      * @return flyweight
      */
-    public ErrorResponseFlyweight errorCode(final ErrorCode code)
-    {
+    public ErrorResponseFlyweight errorCode(final ErrorCode code) {
         buffer.putInt(offset + ERROR_CODE_OFFSET, code.value());
         return this;
     }
@@ -112,8 +106,7 @@ public class ErrorResponseFlyweight
      *
      * @return error message
      */
-    public String errorMessage()
-    {
+    public String errorMessage() {
         return buffer.getStringUtf8(offset + ERROR_MESSAGE_OFFSET, ByteOrder.nativeOrder());
     }
 
@@ -123,8 +116,7 @@ public class ErrorResponseFlyweight
      * @param message to associate with the error
      * @return flyweight
      */
-    public ErrorResponseFlyweight errorMessage(final String message)
-    {
+    public ErrorResponseFlyweight errorMessage(final String message) {
         buffer.putStringUtf8(offset + ERROR_MESSAGE_OFFSET, message, ByteOrder.nativeOrder());
         return this;
     }
@@ -134,8 +126,7 @@ public class ErrorResponseFlyweight
      *
      * @return length of the error response
      */
-    public int length()
-    {
+    public int length() {
         return buffer.getInt(offset + ERROR_MESSAGE_OFFSET) + ERROR_MESSAGE_OFFSET + BitUtil.SIZE_OF_INT;
     }
 }

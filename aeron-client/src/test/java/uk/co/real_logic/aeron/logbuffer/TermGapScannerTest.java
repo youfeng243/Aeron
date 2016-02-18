@@ -24,8 +24,7 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.*;
 
-public class TermGapScannerTest
-{
+public class TermGapScannerTest {
     private static final int LOG_BUFFER_CAPACITY = LogBufferDescriptor.TERM_MIN_LENGTH;
     private static final int TERM_ID = 1;
     private static final int HEADER_LENGTH = DataHeaderFlyweight.HEADER_LENGTH;
@@ -34,14 +33,12 @@ public class TermGapScannerTest
     private final TermGapScanner.GapHandler gapHandler = mock(TermGapScanner.GapHandler.class);
 
     @Before
-    public void setUp()
-    {
+    public void setUp() {
         when(termBuffer.capacity()).thenReturn(LOG_BUFFER_CAPACITY);
     }
 
     @Test
-    public void shouldReportGapAtBeginningOfBuffer()
-    {
+    public void shouldReportGapAtBeginningOfBuffer() {
         final int frameOffset = HEADER_LENGTH * 3;
         final int highWaterMark = frameOffset + HEADER_LENGTH;
 
@@ -53,8 +50,7 @@ public class TermGapScannerTest
     }
 
     @Test
-    public void shouldReportSingleGapWhenBufferNotFull()
-    {
+    public void shouldReportSingleGapWhenBufferNotFull() {
         final int tail = HEADER_LENGTH;
         final int highWaterMark = HEADER_LENGTH * 3;
 
@@ -68,8 +64,7 @@ public class TermGapScannerTest
     }
 
     @Test
-    public void shouldReportSingleGapWhenBufferIsFull()
-    {
+    public void shouldReportSingleGapWhenBufferIsFull() {
         final int tail = LOG_BUFFER_CAPACITY - (HEADER_LENGTH * 2);
         final int highWaterMark = LOG_BUFFER_CAPACITY;
 
@@ -83,8 +78,7 @@ public class TermGapScannerTest
     }
 
     @Test
-    public void shouldReportNoGapWhenHwmIsInPadding()
-    {
+    public void shouldReportNoGapWhenHwmIsInPadding() {
         final int paddingLength = HEADER_LENGTH * 2;
         final int tail = LOG_BUFFER_CAPACITY - paddingLength;
         final int highWaterMark = LOG_BUFFER_CAPACITY - paddingLength + HEADER_LENGTH;

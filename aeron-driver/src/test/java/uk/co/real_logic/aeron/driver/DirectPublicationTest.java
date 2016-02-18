@@ -38,8 +38,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static uk.co.real_logic.aeron.logbuffer.LogBufferDescriptor.TERM_META_DATA_LENGTH;
 
-public class DirectPublicationTest
-{
+public class DirectPublicationTest {
     private static final int STREAM_ID = 10;
     private static final int TERM_BUFFER_LENGTH = Configuration.TERM_BUFFER_LENGTH_DEFAULT;
     private static final int BUFFER_LENGTH = 1024 * 1024;
@@ -55,31 +54,30 @@ public class DirectPublicationTest
 
     @SuppressWarnings("unchecked")
     @Before
-    public void setUp() throws Exception
-    {
+    public void setUp() throws Exception {
         final RingBuffer fromClientCommands =
-            new ManyToOneRingBuffer(new UnsafeBuffer(
-                ByteBuffer.allocateDirect(Configuration.CONDUCTOR_BUFFER_LENGTH)));
+                new ManyToOneRingBuffer(new UnsafeBuffer(
+                        ByteBuffer.allocateDirect(Configuration.CONDUCTOR_BUFFER_LENGTH)));
 
         final RawLogFactory mockRawLogFactory = mock(RawLogFactory.class);
         final UnsafeBuffer counterBuffer = new UnsafeBuffer(ByteBuffer.allocateDirect(BUFFER_LENGTH));
         final CountersManager countersManager = new CountersManager(
-            new UnsafeBuffer(ByteBuffer.allocateDirect(BUFFER_LENGTH)), counterBuffer);
+                new UnsafeBuffer(ByteBuffer.allocateDirect(BUFFER_LENGTH)), counterBuffer);
 
         when(mockRawLogFactory.newDirectPublication(anyInt(), anyInt(), anyLong()))
-            .thenReturn(LogBufferHelper.newTestLogBuffers(TERM_BUFFER_LENGTH, TERM_META_DATA_LENGTH));
+                .thenReturn(LogBufferHelper.newTestLogBuffers(TERM_BUFFER_LENGTH, TERM_META_DATA_LENGTH));
 
         final MediaDriver.Context ctx = new MediaDriver.Context()
-            .toDriverCommands(fromClientCommands)
-            .rawLogBuffersFactory(mockRawLogFactory)
-            .clientProxy(mock(ClientProxy.class))
-            .eventLogger(mock(EventLogger.class))
-            .toConductorFromReceiverCommandQueue(mock(OneToOneConcurrentArrayQueue.class))
-            .toConductorFromSenderCommandQueue(mock(OneToOneConcurrentArrayQueue.class))
-            .toEventReader(mock(ManyToOneRingBuffer.class))
-            .epochClock(new SystemEpochClock())
-            .countersManager(countersManager)
-            .nanoClock(nanoClock);
+                .toDriverCommands(fromClientCommands)
+                .rawLogBuffersFactory(mockRawLogFactory)
+                .clientProxy(mock(ClientProxy.class))
+                .eventLogger(mock(EventLogger.class))
+                .toConductorFromReceiverCommandQueue(mock(OneToOneConcurrentArrayQueue.class))
+                .toConductorFromSenderCommandQueue(mock(OneToOneConcurrentArrayQueue.class))
+                .toEventReader(mock(ManyToOneRingBuffer.class))
+                .epochClock(new SystemEpochClock())
+                .countersManager(countersManager)
+                .nanoClock(nanoClock);
 
         ctx.counterValuesBuffer(counterBuffer);
 
@@ -96,27 +94,23 @@ public class DirectPublicationTest
     }
 
     @Test
-    public void shouldStartWithPublisherLimitSetToZero()
-    {
+    public void shouldStartWithPublisherLimitSetToZero() {
         assertThat(publisherLimit.get(), is(0L));
     }
 
     @Test
-    public void shouldKeepPublisherLimitZeroOnNoSubscriptionUpdate()
-    {
+    public void shouldKeepPublisherLimitZeroOnNoSubscriptionUpdate() {
         directPublication.updatePublishersLimit();
         assertThat(publisherLimit.get(), is(0L));
     }
 
     @Test
-    public void shouldHaveJoiningPositionZeroWhenNoSubscriptions()
-    {
+    public void shouldHaveJoiningPositionZeroWhenNoSubscriptions() {
         assertThat(directPublication.joiningPosition(), is(0L));
     }
 
     @Test
-    public void shouldIncrementPublisherLimitOnSubscription() throws Exception
-    {
+    public void shouldIncrementPublisherLimitOnSubscription() throws Exception {
         driverProxy.addSubscription(CommonContext.IPC_CHANNEL, STREAM_ID);
         driverConductor.doWork();
 

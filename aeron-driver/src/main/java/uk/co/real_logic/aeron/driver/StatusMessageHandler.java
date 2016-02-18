@@ -20,8 +20,7 @@ import uk.co.real_logic.aeron.protocol.StatusMessageFlyweight;
 import java.net.InetSocketAddress;
 
 @FunctionalInterface
-public interface StatusMessageHandler
-{
+public interface StatusMessageHandler {
     /**
      * Handle a Status Message Frame
      *

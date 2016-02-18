@@ -23,8 +23,7 @@ import java.net.InetSocketAddress;
  * Interface for loss generators.
  */
 @FunctionalInterface
-public interface LossGenerator
-{
+public interface LossGenerator {
     /**
      * Should a frame be dropped?
      *

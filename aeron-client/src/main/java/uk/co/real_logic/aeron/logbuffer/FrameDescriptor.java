@@ -50,8 +50,7 @@ import static java.nio.ByteOrder.LITTLE_ENDIAN;
  * The (B)egin and (E)nd flags are used for message fragmentation. R is for reserved bit.
  * Both are set for a message that does not span frames.
  */
-public class FrameDescriptor
-{
+public class FrameDescriptor {
     /**
      * Alignment as a multiple of bytes for each frame. The length field will store the unaligned length in bytes.
      */
@@ -60,12 +59,12 @@ public class FrameDescriptor
     /**
      * Beginning fragment of a frame.
      */
-    public static final byte BEGIN_FRAG_FLAG = (byte)0b1000_0000;
+    public static final byte BEGIN_FRAG_FLAG = (byte) 0b1000_0000;
 
     /**
      * End fragment of a frame.
      */
-    public static final byte END_FRAG_FLAG = (byte)0b0100_0000;
+    public static final byte END_FRAG_FLAG = (byte) 0b0100_0000;
 
     /**
      * End fragment of a frame.
@@ -108,8 +107,7 @@ public class FrameDescriptor
      * @param capacity of the log buffer.
      * @return the maximum supported length for a message.
      */
-    public static int computeMaxMessageLength(final int capacity)
-    {
+    public static int computeMaxMessageLength(final int capacity) {
         return capacity / 8;
     }
 
@@ -119,8 +117,7 @@ public class FrameDescriptor
      * @param termOffset at which the frame begins.
      * @return the offset at which the length field begins.
      */
-    public static int lengthOffset(final int termOffset)
-    {
+    public static int lengthOffset(final int termOffset) {
         return termOffset;
     }
 
@@ -130,8 +127,7 @@ public class FrameDescriptor
      * @param termOffset at which the frame begins.
      * @return the offset at which the version field begins.
      */
-    public static int versionOffset(final int termOffset)
-    {
+    public static int versionOffset(final int termOffset) {
         return termOffset + VERSION_OFFSET;
     }
 
@@ -141,8 +137,7 @@ public class FrameDescriptor
      * @param termOffset at which the frame begins.
      * @return the offset at which the flags field begins.
      */
-    public static int flagsOffset(final int termOffset)
-    {
+    public static int flagsOffset(final int termOffset) {
         return termOffset + FLAGS_OFFSET;
     }
 
@@ -152,8 +147,7 @@ public class FrameDescriptor
      * @param termOffset at which the frame begins.
      * @return the offset at which the type field begins.
      */
-    public static int typeOffset(final int termOffset)
-    {
+    public static int typeOffset(final int termOffset) {
         return termOffset + TYPE_OFFSET;
     }
 
@@ -163,8 +157,7 @@ public class FrameDescriptor
      * @param termOffset at which the frame begins.
      * @return the offset at which the term offset field begins.
      */
-    public static int termOffsetOffset(final int termOffset)
-    {
+    public static int termOffsetOffset(final int termOffset) {
         return termOffset + TERM_OFFSET;
     }
 
@@ -174,8 +167,7 @@ public class FrameDescriptor
      * @param termOffset at which the frame begins.
      * @return the offset at which the term id field begins.
      */
-    public static int termIdOffset(final int termOffset)
-    {
+    public static int termIdOffset(final int termOffset) {
         return termOffset + TERM_ID_OFFSET;
     }
 
@@ -186,8 +178,7 @@ public class FrameDescriptor
      * @param termOffset at which a frame begins.
      * @return the value of the frame type header.
      */
-    public static int frameVersion(final UnsafeBuffer buffer, final int termOffset)
-    {
+    public static int frameVersion(final UnsafeBuffer buffer, final int termOffset) {
         return buffer.getByte(versionOffset(termOffset));
     }
 
@@ -198,8 +189,7 @@ public class FrameDescriptor
      * @param termOffset at which a frame begins.
      * @return the value of the frame type header.
      */
-    public static int frameType(final UnsafeBuffer buffer, final int termOffset)
-    {
+    public static int frameType(final UnsafeBuffer buffer, final int termOffset) {
         return buffer.getShort(typeOffset(termOffset), LITTLE_ENDIAN) & 0xFFFF;
     }
 
@@ -210,8 +200,7 @@ public class FrameDescriptor
      * @param termOffset at which a frame begins.
      * @return true if the frame is a padding frame otherwise false.
      */
-    public static boolean isPaddingFrame(final UnsafeBuffer buffer, final int termOffset)
-    {
+    public static boolean isPaddingFrame(final UnsafeBuffer buffer, final int termOffset) {
         return buffer.getShort(typeOffset(termOffset)) == PADDING_FRAME_TYPE;
     }
 
@@ -222,8 +211,7 @@ public class FrameDescriptor
      * @param termOffset at which a frame begins.
      * @return the value for the frame length.
      */
-    public static int frameLength(final UnsafeBuffer buffer, final int termOffset)
-    {
+    public static int frameLength(final UnsafeBuffer buffer, final int termOffset) {
         return buffer.getInt(termOffset, LITTLE_ENDIAN);
     }
 
@@ -234,12 +222,10 @@ public class FrameDescriptor
      * @param termOffset at which a frame begins.
      * @return the value for the frame length.
      */
-    public static int frameLengthVolatile(final UnsafeBuffer buffer, final int termOffset)
-    {
+    public static int frameLengthVolatile(final UnsafeBuffer buffer, final int termOffset) {
         int frameLength = buffer.getIntVolatile(termOffset);
 
-        if (ByteOrder.nativeOrder() != LITTLE_ENDIAN)
-        {
+        if (ByteOrder.nativeOrder() != LITTLE_ENDIAN) {
             frameLength = Integer.reverseBytes(frameLength);
         }
 
@@ -253,10 +239,8 @@ public class FrameDescriptor
      * @param termOffset  at which a frame begins.
      * @param frameLength field to be set for the frame.
      */
-    public static void frameLengthOrdered(final UnsafeBuffer buffer, final int termOffset, int frameLength)
-    {
-        if (ByteOrder.nativeOrder() != LITTLE_ENDIAN)
-        {
+    public static void frameLengthOrdered(final UnsafeBuffer buffer, final int termOffset, int frameLength) {
+        if (ByteOrder.nativeOrder() != LITTLE_ENDIAN) {
             frameLength = Integer.reverseBytes(frameLength);
         }
 
@@ -270,9 +254,8 @@ public class FrameDescriptor
      * @param termOffset at which a frame begins.
      * @param type       type value for the frame.
      */
-    public static void frameType(final UnsafeBuffer buffer, final int termOffset, final int type)
-    {
-        buffer.putShort(typeOffset(termOffset), (short)type, LITTLE_ENDIAN);
+    public static void frameType(final UnsafeBuffer buffer, final int termOffset, final int type) {
+        buffer.putShort(typeOffset(termOffset), (short) type, LITTLE_ENDIAN);
     }
 
     /**
@@ -282,8 +265,7 @@ public class FrameDescriptor
      * @param termOffset at which a frame begins.
      * @param flags      value for the frame.
      */
-    public static void frameFlags(final UnsafeBuffer buffer, final int termOffset, final byte flags)
-    {
+    public static void frameFlags(final UnsafeBuffer buffer, final int termOffset, final byte flags) {
         buffer.putByte(flagsOffset(termOffset), flags);
     }
 
@@ -293,8 +275,7 @@ public class FrameDescriptor
      * @param buffer     containing the frame.
      * @param termOffset at which a frame begins.
      */
-    public static void frameTermOffset(final UnsafeBuffer buffer, final int termOffset)
-    {
+    public static void frameTermOffset(final UnsafeBuffer buffer, final int termOffset) {
         buffer.putInt(termOffsetOffset(termOffset), termOffset, LITTLE_ENDIAN);
     }
 
@@ -305,8 +286,7 @@ public class FrameDescriptor
      * @param termOffset at which a frame begins.
      * @param termId     value for the frame.
      */
-    public static void frameTermId(final UnsafeBuffer buffer, final int termOffset, final int termId)
-    {
+    public static void frameTermId(final UnsafeBuffer buffer, final int termOffset, final int termId) {
         buffer.putInt(termIdOffset(termOffset), termId, LITTLE_ENDIAN);
     }
 }

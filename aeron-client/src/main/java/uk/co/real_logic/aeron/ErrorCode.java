@@ -18,50 +18,54 @@ package uk.co.real_logic.aeron;
 /**
  * Error codes between media driver and client and the on-wire protocol.
  */
-public enum ErrorCode
-{
-    /** Aeron encountered an error condition. */
+public enum ErrorCode {
+    /**
+     * Aeron encountered an error condition.
+     */
     GENERIC_ERROR(0),
-    /** A failure occurred creating a new channel or parsing the channel string. */
+    /**
+     * A failure occurred creating a new channel or parsing the channel string.
+     */
     INVALID_CHANNEL(1),
-    /** Attempted to remove a subscription, but it was not found */
+    /**
+     * Attempted to remove a subscription, but it was not found
+     */
     UNKNOWN_SUBSCRIPTION(2),
-    /** Attempted to remove a publication, but it was not found. */
+    /**
+     * Attempted to remove a publication, but it was not found.
+     */
     UNKNOWN_PUBLICATION(3);
 
     private final int value;
 
-    ErrorCode(final int value)
-    {
+    ErrorCode(final int value) {
         this.value = value;
     }
 
     /**
      * Get the value of this ErrorCode.
+     *
      * @return The value.
      */
-    public int value()
-    {
+    public int value() {
         return value;
     }
 
     /**
      * Get the ErrorCode that corresponds to the given value.
+     *
      * @param value Of the ErrorCode
      * @return ErrorCode
      */
-    public static ErrorCode get(final int value)
-    {
-        if (value > Singleton.VALUES.length)
-        {
+    public static ErrorCode get(final int value) {
+        if (value > Singleton.VALUES.length) {
             throw new IllegalArgumentException("no ErrorCode for value: " + value);
         }
 
         return Singleton.VALUES[value];
     }
 
-    static class Singleton
-    {
+    static class Singleton {
         public static final ErrorCode[] VALUES = ErrorCode.values();
     }
 }

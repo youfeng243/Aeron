@@ -34,10 +34,8 @@ import java.util.Map;
  *
  * Multiple params with the same key are allowed, the last value specified 'wins'.
  */
-public class AeronUri
-{
-    private enum State
-    {
+public class AeronUri {
+    private enum State {
         MEDIA, PARAMS_KEY, PARAMS_VALUE
     }
 
@@ -46,54 +44,44 @@ public class AeronUri
     private final String media;
     private final Map<String, String> params;
 
-    public AeronUri(final String scheme, final String media, final Map<String, String> params)
-    {
+    public AeronUri(final String scheme, final String media, final Map<String, String> params) {
         this.scheme = scheme;
         this.media = media;
         this.params = params;
     }
 
-    public String media()
-    {
+    public String media() {
         return media;
     }
 
-    public String scheme()
-    {
+    public String scheme() {
         return scheme;
     }
 
-    public String get(final String key)
-    {
+    public String get(final String key) {
         return params.get(key);
     }
 
-    public String get(final String key, final String defaultValue)
-    {
+    public String get(final String key, final String defaultValue) {
         final String value = params.get(key);
 
-        if (null != value)
-        {
+        if (null != value) {
             return value;
         }
 
         return defaultValue;
     }
 
-    public InetAddress getInetAddress(final String key) throws UnknownHostException
-    {
+    public InetAddress getInetAddress(final String key) throws UnknownHostException {
         return InetAddress.getByName(get(key));
     }
 
-    public InetSocketAddress getSocketAddress(final String key)
-    {
+    public InetSocketAddress getSocketAddress(final String key) {
         return SocketAddressUtil.parse(get(key));
     }
 
-    public InetSocketAddress getSocketAddress(final String key, final int defaultPort, final InetSocketAddress defaultValue)
-    {
-        if (!containsKey(key))
-        {
+    public InetSocketAddress getSocketAddress(final String key, final int defaultPort, final InetSocketAddress defaultValue) {
+        if (!containsKey(key)) {
             return defaultValue;
         }
 
@@ -101,27 +89,21 @@ public class AeronUri
     }
 
     public InterfaceSearchAddress getInterfaceSearchAddress(final String key, final InterfaceSearchAddress defaultValue)
-        throws UnknownHostException
-    {
-        if (!containsKey(key))
-        {
+            throws UnknownHostException {
+        if (!containsKey(key)) {
             return defaultValue;
         }
 
         return InterfaceSearchAddress.parse(get(key));
     }
 
-    public boolean containsKey(final String key)
-    {
+    public boolean containsKey(final String key) {
         return params.containsKey(key);
     }
 
-    public boolean containsAnyKey(String[] keys)
-    {
-        for (final String key : keys)
-        {
-            if (params.containsKey(key))
-            {
+    public boolean containsAnyKey(String[] keys) {
+        for (final String key : keys) {
+            if (params.containsKey(key)) {
                 return true;
             }
         }
@@ -129,10 +111,8 @@ public class AeronUri
         return false;
     }
 
-    public static AeronUri parse(final CharSequence cs)
-    {
-        if (!startsWith(cs, AERON_PREFIX))
-        {
+    public static AeronUri parse(final CharSequence cs) {
+        if (!startsWith(cs, AERON_PREFIX)) {
             throw new IllegalArgumentException("AeronUri must start with 'aeron:', found: '" + cs + "'");
         }
 
@@ -144,15 +124,12 @@ public class AeronUri
         String key = null;
 
         State state = State.MEDIA;
-        for (int i = AERON_PREFIX.length(); i < cs.length(); i++)
-        {
+        for (int i = AERON_PREFIX.length(); i < cs.length(); i++) {
             final char c = cs.charAt(i);
 
-            switch (state)
-            {
+            switch (state) {
                 case MEDIA:
-                    switch (c)
-                    {
+                    switch (c) {
                         case '?':
                             media = builder.toString();
                             builder.setLength(0);
@@ -168,8 +145,7 @@ public class AeronUri
                     break;
 
                 case PARAMS_KEY:
-                    switch (c)
-                    {
+                    switch (c) {
                         case '=':
                             key = builder.toString();
                             builder.setLength(0);
@@ -182,8 +158,7 @@ public class AeronUri
                     break;
 
                 case PARAMS_VALUE:
-                    switch (c)
-                    {
+                    switch (c) {
                         case '|':
                             params.put(key, builder.toString());
                             builder.setLength(0);
@@ -200,8 +175,7 @@ public class AeronUri
             }
         }
 
-        switch (state)
-        {
+        switch (state) {
             case MEDIA:
                 media = builder.toString();
                 break;
@@ -217,17 +191,13 @@ public class AeronUri
         return new AeronUri(scheme, media, params);
     }
 
-    private static boolean startsWith(final CharSequence input, final CharSequence prefix)
-    {
-        if (input.length() < prefix.length())
-        {
+    private static boolean startsWith(final CharSequence input, final CharSequence prefix) {
+        if (input.length() < prefix.length()) {
             return false;
         }
 
-        for (int i = 0; i < prefix.length(); i++)
-        {
-            if (input.charAt(i) != prefix.charAt(i))
-            {
+        for (int i = 0; i < prefix.length(); i++) {
+            if (input.charAt(i) != prefix.charAt(i)) {
                 return false;
             }
         }
@@ -235,35 +205,29 @@ public class AeronUri
         return true;
     }
 
-    public static class Builder
-    {
+    public static class Builder {
         private final Map<String, String> params = new HashMap<>();
         private String media;
 
-        public Builder media(final String media)
-        {
+        public Builder media(final String media) {
             this.media = media;
             return this;
         }
 
-        public Builder param(final String key, final String value)
-        {
-            if (null != key && null != value)
-            {
+        public Builder param(final String key, final String value) {
+            if (null != key && null != value) {
                 params.put(key, value);
             }
 
             return this;
         }
 
-        public AeronUri newInstance()
-        {
+        public AeronUri newInstance() {
             return new AeronUri("aeron", media, params);
         }
     }
 
-    public static Builder builder()
-    {
+    public static Builder builder() {
         return new Builder();
     }
 }

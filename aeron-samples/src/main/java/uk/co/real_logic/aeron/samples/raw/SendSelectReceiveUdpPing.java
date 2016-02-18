@@ -40,19 +40,16 @@ import static uk.co.real_logic.agrona.BitUtil.SIZE_OF_LONG;
  *
  * @see uk.co.real_logic.aeron.samples.raw.HackSelectReceiveSendUdpPong
  */
-public class SendSelectReceiveUdpPing
-{
+public class SendSelectReceiveUdpPing {
     private static final InetSocketAddress SEND_ADDRESS = new InetSocketAddress("localhost", Common.PING_PORT);
 
     private int sequenceNumber;
 
-    public static void main(final String[] args) throws IOException
-    {
+    public static void main(final String[] args) throws IOException {
         new SendSelectReceiveUdpPing().run();
     }
 
-    private void run() throws IOException
-    {
+    private void run() throws IOException {
         final Histogram histogram = new Histogram(TimeUnit.SECONDS.toNanos(10), 3);
         final ByteBuffer buffer = ByteBuffer.allocateDirect(MTU_LENGTH_DEFAULT);
 
@@ -66,39 +63,34 @@ public class SendSelectReceiveUdpPing
         final Selector selector = Selector.open();
 
         final IntSupplier handler =
-            () ->
-            {
-                try
+                () ->
                 {
-                    buffer.clear();
-                    receiveChannel.receive(buffer);
+                    try {
+                        buffer.clear();
+                        receiveChannel.receive(buffer);
 
-                    final long receivedSequenceNumber = buffer.getLong(0);
-                    final long timestamp = buffer.getLong(SIZE_OF_LONG);
+                        final long receivedSequenceNumber = buffer.getLong(0);
+                        final long timestamp = buffer.getLong(SIZE_OF_LONG);
 
-                    if (receivedSequenceNumber != sequenceNumber)
-                    {
-                        throw new IllegalStateException("Data Loss:" + sequenceNumber + " to " + receivedSequenceNumber);
+                        if (receivedSequenceNumber != sequenceNumber) {
+                            throw new IllegalStateException("Data Loss:" + sequenceNumber + " to " + receivedSequenceNumber);
+                        }
+
+                        final long duration = System.nanoTime() - timestamp;
+                        histogram.recordValue(duration);
+                    } catch (final IOException ex) {
+                        ex.printStackTrace();
                     }
 
-                    final long duration = System.nanoTime() - timestamp;
-                    histogram.recordValue(duration);
-                }
-                catch (final IOException ex)
-                {
-                    ex.printStackTrace();
-                }
-
-                return 1;
-            };
+                    return 1;
+                };
 
         receiveChannel.register(selector, OP_READ, handler);
 
         final AtomicBoolean running = new AtomicBoolean(true);
         SigInt.register(() -> running.set(false));
 
-        while (running.get())
-        {
+        while (running.get()) {
             measureRoundTrip(histogram, SEND_ADDRESS, buffer, sendChannel, selector, running);
 
             histogram.reset();
@@ -108,16 +100,14 @@ public class SendSelectReceiveUdpPing
     }
 
     private void measureRoundTrip(
-        final Histogram histogram,
-        final InetSocketAddress sendAddress,
-        final ByteBuffer buffer,
-        final DatagramChannel sendChannel,
-        final Selector selector,
-        final AtomicBoolean running)
-        throws IOException
-    {
-        for (sequenceNumber = 0; sequenceNumber < Common.NUM_MESSAGES; sequenceNumber++)
-        {
+            final Histogram histogram,
+            final InetSocketAddress sendAddress,
+            final ByteBuffer buffer,
+            final DatagramChannel sendChannel,
+            final Selector selector,
+            final AtomicBoolean running)
+            throws IOException {
+        for (sequenceNumber = 0; sequenceNumber < Common.NUM_MESSAGES; sequenceNumber++) {
             final long timestamp = System.nanoTime();
 
             buffer.clear();
@@ -127,10 +117,8 @@ public class SendSelectReceiveUdpPing
 
             sendChannel.send(buffer, sendAddress);
 
-            while (selector.selectNow() == 0)
-            {
-                if (!running.get())
-                {
+            while (selector.selectNow() == 0) {
+                if (!running.get()) {
                     return;
                 }
             }
@@ -138,12 +126,10 @@ public class SendSelectReceiveUdpPing
             final Set<SelectionKey> selectedKeys = selector.selectedKeys();
             final Iterator<SelectionKey> iter = selectedKeys.iterator();
 
-            while (iter.hasNext())
-            {
+            while (iter.hasNext()) {
                 final SelectionKey key = iter.next();
-                if (key.isReadable())
-                {
-                    ((IntSupplier)key.attachment()).getAsInt();
+                if (key.isReadable()) {
+                    ((IntSupplier) key.attachment()).getAsInt();
                 }
 
                 iter.remove();

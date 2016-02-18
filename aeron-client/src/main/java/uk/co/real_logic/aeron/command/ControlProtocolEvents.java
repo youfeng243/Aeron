@@ -19,31 +19,50 @@ package uk.co.real_logic.aeron.command;
  * List of event types used in the control protocol between the
  * media driver and the core.
  */
-public class ControlProtocolEvents
-{
+public class ControlProtocolEvents {
     // Clients to Media Driver
 
-    /** Add Publication */
+    /**
+     * Add Publication
+     */
     public static final int ADD_PUBLICATION = 0x01;
-    /** Remove Publication */
+    /**
+     * Remove Publication
+     */
     public static final int REMOVE_PUBLICATION = 0x02;
-    /** Add Subscriber */
+    /**
+     * Add Subscriber
+     */
     public static final int ADD_SUBSCRIPTION = 0x04;
-    /** Remove Subscriber */
+    /**
+     * Remove Subscriber
+     */
     public static final int REMOVE_SUBSCRIPTION = 0x05;
-    /** Keepalive from Client */
+    /**
+     * Keepalive from Client
+     */
     public static final int CLIENT_KEEPALIVE = 0x06;
 
     // Media Driver to Clients
 
-    /** Error Response */
+    /**
+     * Error Response
+     */
     public static final int ON_ERROR = 0x0F01;
-    /** New subscription Buffer Notification */
+    /**
+     * New subscription Buffer Notification
+     */
     public static final int ON_AVAILABLE_IMAGE = 0x0F02;
-    /** New publication Buffer Notification */
+    /**
+     * New publication Buffer Notification
+     */
     public static final int ON_PUBLICATION_READY = 0x0F03;
-    /** Operation Succeeded */
+    /**
+     * Operation Succeeded
+     */
     public static final int ON_OPERATION_SUCCESS = 0x0F04;
-    /** Inform client of timeout and removal of inactive image */
+    /**
+     * Inform client of timeout and removal of inactive image
+     */
     public static final int ON_UNAVAILABLE_IMAGE = 0x0F05;
 }

@@ -34,8 +34,7 @@ import static uk.co.real_logic.aeron.logbuffer.TermAppender.TRIPPED;
 import static uk.co.real_logic.aeron.protocol.DataHeaderFlyweight.HEADER_LENGTH;
 import static uk.co.real_logic.agrona.BitUtil.*;
 
-public class TermAppenderTest
-{
+public class TermAppenderTest {
     private static final int TERM_BUFFER_LENGTH = LogBufferDescriptor.TERM_MIN_LENGTH;
     private static final int META_DATA_BUFFER_LENGTH = TERM_META_DATA_LENGTH;
     private static final int MAX_FRAME_LENGTH = 1024;
@@ -47,13 +46,12 @@ public class TermAppenderTest
     private final UnsafeBuffer metaDataBuffer = mock(UnsafeBuffer.class);
 
     private final HeaderWriter headerWriter =
-        spy(new HeaderWriter(DataHeaderFlyweight.createDefaultHeader(0, 0, TERM_ID)));
+            spy(new HeaderWriter(DataHeaderFlyweight.createDefaultHeader(0, 0, TERM_ID)));
 
     private TermAppender termAppender;
 
     @Before
-    public void setUp()
-    {
+    public void setUp() {
         when(termBuffer.capacity()).thenReturn(TERM_BUFFER_LENGTH);
         when(metaDataBuffer.capacity()).thenReturn(META_DATA_BUFFER_LENGTH);
 
@@ -61,8 +59,7 @@ public class TermAppenderTest
     }
 
     @Test
-    public void shouldPackResult()
-    {
+    public void shouldPackResult() {
         final int termId = 7;
         final int termOffset = -1;
 
@@ -73,8 +70,7 @@ public class TermAppenderTest
     }
 
     @Test
-    public void shouldAppendFrameToEmptyLog()
-    {
+    public void shouldAppendFrameToEmptyLog() {
         final int headerLength = DEFAULT_HEADER.capacity();
         final UnsafeBuffer buffer = new UnsafeBuffer(new byte[128]);
         final int msgLength = 20;
@@ -83,9 +79,9 @@ public class TermAppenderTest
         final int tail = 0;
 
         when(metaDataBuffer.getAndAddLong(TERM_TAIL_COUNTER_OFFSET, alignedFrameLength))
-            .thenReturn(TermAppender.pack(TERM_ID, tail));
+                .thenReturn(TermAppender.pack(TERM_ID, tail));
 
-        assertThat(termAppender.appendUnfragmentedMessage(headerWriter, buffer, 0, msgLength), is((long)alignedFrameLength));
+        assertThat(termAppender.appendUnfragmentedMessage(headerWriter, buffer, 0, msgLength), is((long) alignedFrameLength));
 
         final InOrder inOrder = inOrder(termBuffer, metaDataBuffer, headerWriter);
         inOrder.verify(metaDataBuffer, times(1)).getAndAddLong(TERM_TAIL_COUNTER_OFFSET, alignedFrameLength);
@@ -95,8 +91,7 @@ public class TermAppenderTest
     }
 
     @Test
-    public void shouldAppendFrameTwiceToLog()
-    {
+    public void shouldAppendFrameTwiceToLog() {
         final int headerLength = DEFAULT_HEADER.capacity();
         final UnsafeBuffer buffer = new UnsafeBuffer(new byte[128]);
         final int msgLength = 20;
@@ -105,13 +100,13 @@ public class TermAppenderTest
         int tail = 0;
 
         when(metaDataBuffer.getAndAddLong(TERM_TAIL_COUNTER_OFFSET, alignedFrameLength))
-            .thenReturn(TermAppender.pack(TERM_ID, tail))
-            .thenReturn(TermAppender.pack(TERM_ID, alignedFrameLength));
+                .thenReturn(TermAppender.pack(TERM_ID, tail))
+                .thenReturn(TermAppender.pack(TERM_ID, alignedFrameLength));
 
         assertThat(termAppender.appendUnfragmentedMessage(
-            headerWriter, buffer, 0, msgLength), is((long)alignedFrameLength));
+                headerWriter, buffer, 0, msgLength), is((long) alignedFrameLength));
         assertThat(termAppender.appendUnfragmentedMessage(
-            headerWriter, buffer, 0, msgLength), is((long)alignedFrameLength * 2));
+                headerWriter, buffer, 0, msgLength), is((long) alignedFrameLength * 2));
 
         final InOrder inOrder = inOrder(termBuffer, metaDataBuffer, headerWriter);
         inOrder.verify(metaDataBuffer, times(1)).getAndAddLong(TERM_TAIL_COUNTER_OFFSET, alignedFrameLength);
@@ -127,8 +122,7 @@ public class TermAppenderTest
     }
 
     @Test
-    public void shouldPadLogAndTripWhenAppendingWithInsufficientRemainingCapacity()
-    {
+    public void shouldPadLogAndTripWhenAppendingWithInsufficientRemainingCapacity() {
         final int msgLength = 120;
         final int headerLength = DEFAULT_HEADER.capacity();
         final int requiredFrameSize = align(headerLength + msgLength, FRAME_ALIGNMENT);
@@ -137,7 +131,7 @@ public class TermAppenderTest
         final int frameLength = TERM_BUFFER_LENGTH - tailValue;
 
         when(metaDataBuffer.getAndAddLong(TERM_TAIL_COUNTER_OFFSET, requiredFrameSize))
-            .thenReturn(TermAppender.pack(TERM_ID, tailValue));
+                .thenReturn(TermAppender.pack(TERM_ID, tailValue));
 
         final long expectResult = TermAppender.pack(TERM_ID, TRIPPED);
         assertThat(termAppender.appendUnfragmentedMessage(headerWriter, buffer, 0, msgLength), is(expectResult));
@@ -145,13 +139,12 @@ public class TermAppenderTest
         final InOrder inOrder = inOrder(termBuffer, metaDataBuffer, headerWriter);
         inOrder.verify(metaDataBuffer, times(1)).getAndAddLong(TERM_TAIL_COUNTER_OFFSET, requiredFrameSize);
         inOrder.verify(headerWriter, times(1)).write(termBuffer, tailValue, frameLength, TERM_ID);
-        inOrder.verify(termBuffer, times(1)).putShort(typeOffset(tailValue), (short)PADDING_FRAME_TYPE, LITTLE_ENDIAN);
+        inOrder.verify(termBuffer, times(1)).putShort(typeOffset(tailValue), (short) PADDING_FRAME_TYPE, LITTLE_ENDIAN);
         inOrder.verify(termBuffer, times(1)).putIntOrdered(tailValue, frameLength);
     }
 
     @Test
-    public void shouldPadLogAndTripWhenAppendingWithInsufficientRemainingCapacityIncludingHeader()
-    {
+    public void shouldPadLogAndTripWhenAppendingWithInsufficientRemainingCapacityIncludingHeader() {
         final int headerLength = DEFAULT_HEADER.capacity();
         final int msgLength = 120;
         final int requiredFrameSize = align(headerLength + msgLength, FRAME_ALIGNMENT);
@@ -160,7 +153,7 @@ public class TermAppenderTest
         final int frameLength = TERM_BUFFER_LENGTH - tailValue;
 
         when(metaDataBuffer.getAndAddLong(TERM_TAIL_COUNTER_OFFSET, requiredFrameSize))
-            .thenReturn(TermAppender.pack(TERM_ID, tailValue));
+                .thenReturn(TermAppender.pack(TERM_ID, tailValue));
 
         final long expectResult = TermAppender.pack(TERM_ID, TRIPPED);
         assertThat(termAppender.appendUnfragmentedMessage(headerWriter, buffer, 0, msgLength), is(expectResult));
@@ -168,25 +161,24 @@ public class TermAppenderTest
         final InOrder inOrder = inOrder(termBuffer, metaDataBuffer, headerWriter);
         inOrder.verify(metaDataBuffer, times(1)).getAndAddLong(TERM_TAIL_COUNTER_OFFSET, requiredFrameSize);
         inOrder.verify(headerWriter, times(1)).write(termBuffer, tailValue, frameLength, TERM_ID);
-        inOrder.verify(termBuffer, times(1)).putShort(typeOffset(tailValue), (short)PADDING_FRAME_TYPE, LITTLE_ENDIAN);
+        inOrder.verify(termBuffer, times(1)).putShort(typeOffset(tailValue), (short) PADDING_FRAME_TYPE, LITTLE_ENDIAN);
         inOrder.verify(termBuffer, times(1)).putIntOrdered(tailValue, frameLength);
     }
 
     @Test
-    public void shouldFragmentMessageOverTwoFrames()
-    {
+    public void shouldFragmentMessageOverTwoFrames() {
         final int msgLength = MAX_PAYLOAD_LENGTH + 1;
         final int headerLength = DEFAULT_HEADER.capacity();
         final int frameLength = headerLength + 1;
         final int requiredCapacity = align(headerLength + 1, FRAME_ALIGNMENT) + MAX_FRAME_LENGTH;
         final UnsafeBuffer buffer = new UnsafeBuffer(new byte[msgLength]);
-        int tail  = 0;
+        int tail = 0;
 
         when(metaDataBuffer.getAndAddLong(TERM_TAIL_COUNTER_OFFSET, requiredCapacity))
-            .thenReturn(TermAppender.pack(TERM_ID, tail));
+                .thenReturn(TermAppender.pack(TERM_ID, tail));
 
         assertThat(termAppender.appendFragmentedMessage(
-            headerWriter, buffer, 0, msgLength, MAX_PAYLOAD_LENGTH), is((long)requiredCapacity));
+                headerWriter, buffer, 0, msgLength, MAX_PAYLOAD_LENGTH), is((long) requiredCapacity));
 
         final InOrder inOrder = inOrder(termBuffer, metaDataBuffer, headerWriter);
         inOrder.verify(metaDataBuffer, times(1)).getAndAddLong(TERM_TAIL_COUNTER_OFFSET, requiredCapacity);
@@ -204,8 +196,7 @@ public class TermAppenderTest
     }
 
     @Test
-    public void shouldClaimRegionForZeroCopyEncoding()
-    {
+    public void shouldClaimRegionForZeroCopyEncoding() {
         final int headerLength = DEFAULT_HEADER.capacity();
         final int msgLength = 20;
         final int frameLength = msgLength + headerLength;
@@ -214,9 +205,9 @@ public class TermAppenderTest
         final BufferClaim bufferClaim = new BufferClaim();
 
         when(metaDataBuffer.getAndAddLong(TERM_TAIL_COUNTER_OFFSET, alignedFrameLength))
-            .thenReturn(TermAppender.pack(TERM_ID, tail));
+                .thenReturn(TermAppender.pack(TERM_ID, tail));
 
-        assertThat(termAppender.claim(headerWriter, msgLength, bufferClaim), is((long)alignedFrameLength));
+        assertThat(termAppender.claim(headerWriter, msgLength, bufferClaim), is((long) alignedFrameLength));
 
         assertThat(bufferClaim.offset(), is(tail + headerLength));
         assertThat(bufferClaim.length(), is(msgLength));

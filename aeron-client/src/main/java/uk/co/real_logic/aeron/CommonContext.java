@@ -29,14 +29,13 @@ import static java.lang.System.getProperty;
 
 /**
  * This class provides the Media Driver and client with common configuration for the Aeron directory.
- * <p>
+ *
  * Properties
  * <ul>
  * <li><code>aeron.dir</code>: Use value as directory name for Aeron buffers and stats.</li>
  * </ul>
  */
-public class CommonContext implements AutoCloseable
-{
+public class CommonContext implements AutoCloseable {
     /**
      * The top level Aeron directory used for communication between a Media Driver and client.
      */
@@ -63,17 +62,14 @@ public class CommonContext implements AutoCloseable
     private UnsafeBuffer counterLabelsBuffer;
     private UnsafeBuffer counterValuesBuffer;
 
-    static
-    {
+    static {
         String baseDirName = IoUtil.tmpDirName() + "aeron";
 
         // Use shared memory on Linux to avoid contention on the page cache.
-        if ("Linux".equalsIgnoreCase(System.getProperty("os.name")))
-        {
+        if ("Linux".equalsIgnoreCase(System.getProperty("os.name"))) {
             final File devShmDir = new File("/dev/shm");
 
-            if (devShmDir.exists())
-            {
+            if (devShmDir.exists()) {
                 baseDirName = "/dev/shm/aeron";
             }
         }
@@ -86,8 +82,7 @@ public class CommonContext implements AutoCloseable
      *
      * @return random directory name with default directory name as base
      */
-    public static String generateRandomDirName()
-    {
+    public static String generateRandomDirName() {
         final String randomDirName = UUID.randomUUID().toString();
 
         return AERON_DIR_PROP_DEFAULT + "-" + randomDirName;
@@ -96,8 +91,7 @@ public class CommonContext implements AutoCloseable
     /**
      * Create a new context with Aeron directory and delete on exit values based on the current system properties.
      */
-    public CommonContext()
-    {
+    public CommonContext() {
         aeronDirectoryName = getProperty(AERON_DIR_PROP_NAME, AERON_DIR_PROP_DEFAULT);
     }
 
@@ -106,8 +100,7 @@ public class CommonContext implements AutoCloseable
      *
      * @return this Object for method chaining.
      */
-    public CommonContext conclude()
-    {
+    public CommonContext conclude() {
         cncFile = new File(aeronDirectoryName, CncFileDescriptor.CNC_FILE);
         return this;
     }
@@ -118,8 +111,7 @@ public class CommonContext implements AutoCloseable
      *
      * @return The top level Aeron directory.
      */
-    public String aeronDirectoryName()
-    {
+    public String aeronDirectoryName() {
         return aeronDirectoryName;
     }
 
@@ -130,8 +122,7 @@ public class CommonContext implements AutoCloseable
      * @param dirName New top level Aeron directory.
      * @return this Object for method chaining.
      */
-    public CommonContext aeronDirectoryName(final String dirName)
-    {
+    public CommonContext aeronDirectoryName(final String dirName) {
         this.aeronDirectoryName = dirName;
         return this;
     }
@@ -141,8 +132,7 @@ public class CommonContext implements AutoCloseable
      *
      * @return The newly created File.
      */
-    public static File newDefaultCncFile()
-    {
+    public static File newDefaultCncFile() {
         return new File(getProperty(AERON_DIR_PROP_NAME, AERON_DIR_PROP_DEFAULT), CncFileDescriptor.CNC_FILE);
     }
 
@@ -151,8 +141,7 @@ public class CommonContext implements AutoCloseable
      *
      * @return The buffer storing the counter labels.
      */
-    public UnsafeBuffer counterLabelsBuffer()
-    {
+    public UnsafeBuffer counterLabelsBuffer() {
         return counterLabelsBuffer;
     }
 
@@ -162,8 +151,7 @@ public class CommonContext implements AutoCloseable
      * @param counterLabelsBuffer The new counter labels buffer.
      * @return this Object for method chaining.
      */
-    public CommonContext counterLabelsBuffer(final UnsafeBuffer counterLabelsBuffer)
-    {
+    public CommonContext counterLabelsBuffer(final UnsafeBuffer counterLabelsBuffer) {
         this.counterLabelsBuffer = counterLabelsBuffer;
         return this;
     }
@@ -173,8 +161,7 @@ public class CommonContext implements AutoCloseable
      *
      * @return The buffer storing the counters.
      */
-    public UnsafeBuffer counterValuesBuffer()
-    {
+    public UnsafeBuffer counterValuesBuffer() {
         return counterValuesBuffer;
     }
 
@@ -184,8 +171,7 @@ public class CommonContext implements AutoCloseable
      * @param counterValuesBuffer The new counters buffer.
      * @return this Object for method chaining.
      */
-    public CommonContext counterValuesBuffer(final UnsafeBuffer counterValuesBuffer)
-    {
+    public CommonContext counterValuesBuffer(final UnsafeBuffer counterValuesBuffer) {
         this.counterValuesBuffer = counterValuesBuffer;
         return this;
     }
@@ -195,8 +181,7 @@ public class CommonContext implements AutoCloseable
      *
      * @return The command and control file.
      */
-    public File cncFile()
-    {
+    public File cncFile() {
         return cncFile;
     }
 
@@ -206,8 +191,7 @@ public class CommonContext implements AutoCloseable
      * @param driverTimeoutMs to indicate liveness of driver
      * @return driver timeout in milliseconds
      */
-    public CommonContext driverTimeoutMs(final long driverTimeoutMs)
-    {
+    public CommonContext driverTimeoutMs(final long driverTimeoutMs) {
         this.driverTimeoutMs = driverTimeoutMs;
         return this;
     }
@@ -217,16 +201,14 @@ public class CommonContext implements AutoCloseable
      *
      * @return driver timeout in milliseconds.
      */
-    public long driverTimeoutMs()
-    {
+    public long driverTimeoutMs() {
         return driverTimeoutMs;
     }
 
     /**
      * Delete the current Aeron directory, throwing errors if not possible.
      */
-    public void deleteAeronDirectory()
-    {
+    public void deleteAeronDirectory() {
         final File dirFile = new File(aeronDirectoryName);
 
         IoUtil.delete(dirFile, false);
@@ -239,36 +221,31 @@ public class CommonContext implements AutoCloseable
      * @param logHandler      for feedback as liveness checked
      * @return true if a driver is active or false if not
      */
-    public boolean isDriverActive(final long driverTimeoutMs, final Consumer<String> logHandler)
-    {
+    public boolean isDriverActive(final long driverTimeoutMs, final Consumer<String> logHandler) {
         final File dirFile = new File(aeronDirectoryName);
 
-        if (dirFile.exists() && dirFile.isDirectory())
-        {
+        if (dirFile.exists() && dirFile.isDirectory()) {
             final File cncFile = new File(aeronDirectoryName, CncFileDescriptor.CNC_FILE);
 
             logHandler.accept(String.format("INFO: Aeron directory %s exists", dirFile));
 
-            if (cncFile.exists())
-            {
+            if (cncFile.exists()) {
                 MappedByteBuffer cncByteBuffer = null;
 
                 logHandler.accept(String.format("INFO: Aeron CnC file %s exists", cncFile));
 
-                try
-                {
+                try {
                     cncByteBuffer = IoUtil.mapExistingFile(cncFile, CncFileDescriptor.CNC_FILE);
                     final UnsafeBuffer cncMetaDataBuffer = CncFileDescriptor.createMetaDataBuffer(cncByteBuffer);
 
                     final int cncVersion = cncMetaDataBuffer.getInt(CncFileDescriptor.cncVersionOffset(0));
 
-                    if (CncFileDescriptor.CNC_VERSION != cncVersion)
-                    {
+                    if (CncFileDescriptor.CNC_VERSION != cncVersion) {
                         throw new IllegalStateException("aeron cnc file version not understood: version=" + cncVersion);
                     }
 
                     final ManyToOneRingBuffer toDriverBuffer = new ManyToOneRingBuffer(
-                        CncFileDescriptor.createToDriverBuffer(cncByteBuffer, cncMetaDataBuffer));
+                            CncFileDescriptor.createToDriverBuffer(cncByteBuffer, cncMetaDataBuffer));
 
                     final long timestamp = toDriverBuffer.consumerHeartbeatTime();
                     final long now = System.currentTimeMillis();
@@ -276,17 +253,12 @@ public class CommonContext implements AutoCloseable
 
                     logHandler.accept(String.format("INFO: Aeron toDriver consumer heartbeat is %d ms old", diff));
 
-                    if (diff <= driverTimeoutMs)
-                    {
+                    if (diff <= driverTimeoutMs) {
                         return true;
                     }
-                }
-                catch (final Exception ex)
-                {
+                } catch (final Exception ex) {
                     LangUtil.rethrowUnchecked(ex);
-                }
-                finally
-                {
+                } finally {
                     IoUtil.unmap(cncByteBuffer);
                 }
             }
@@ -298,7 +270,6 @@ public class CommonContext implements AutoCloseable
     /**
      * Release resources used by the CommonContext.
      */
-    public void close()
-    {
+    public void close() {
     }
 }

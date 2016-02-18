@@ -29,9 +29,9 @@ package uk.co.real_logic.aeron.driver;
  * <code>
  * double RandomBackoff(double maxBackoffT, double groupSize)
  * {
- *     double lambda = log(groupSize) + 1;
- *     double x = UniformRand(lambda / maxBackoffT) + lambda / (maxBackoffT * (exp(lambda) - 1));
- *     return ((maxBackoffT / lambda) * log( x * (exp(lambda) - 1) * (maxBackoffT / lambda)));
+ * double lambda = log(groupSize) + 1;
+ * double x = UniformRand(lambda / maxBackoffT) + lambda / (maxBackoffT * (exp(lambda) - 1));
+ * return ((maxBackoffT / lambda) * log( x * (exp(lambda) - 1) * (maxBackoffT / lambda)));
  * }
  * </code>
  *
@@ -43,7 +43,7 @@ package uk.co.real_logic.aeron.driver;
  * - GRTT is a constant (could be configurable as a system property)
  *
  * N (the expected number of feedback messages per RTT) is
- *   N = exp(1.2 * L / (2 * maxBackoffT/GRTT))
+ * N = exp(1.2 * L / (2 * maxBackoffT/GRTT))
  *
  * Assumptions:
  * maxBackoffT = K * GRTT (K >= 1)
@@ -53,8 +53,7 @@ package uk.co.real_logic.aeron.driver;
  * - K = 6 for situations where responses come from single places (i.e. for NAKs, source only retransmit)
  * }
  */
-public class OptimalMulticastDelayGenerator implements FeedbackDelayGenerator
-{
+public class OptimalMulticastDelayGenerator implements FeedbackDelayGenerator {
     private final double calculatedN;
     private final double randMax;
     private final double baseX;
@@ -67,11 +66,10 @@ public class OptimalMulticastDelayGenerator implements FeedbackDelayGenerator
      * {@code maxBackoffT} and {@code gRtt} must be expressed in the same units.
      *
      * @param maxBackoffT of the delay interval
-     * @param groupSize estimate
-     * @param gRtt estimate
+     * @param groupSize   estimate
+     * @param gRtt        estimate
      */
-    public OptimalMulticastDelayGenerator(final double maxBackoffT, final double groupSize, final double gRtt)
-    {
+    public OptimalMulticastDelayGenerator(final double maxBackoffT, final double groupSize, final double gRtt) {
         final double lambda = Math.log(groupSize) + 1;
         this.calculatedN = Math.exp(1.2 * lambda / (2 * maxBackoffT / gRtt));
 
@@ -85,9 +83,8 @@ public class OptimalMulticastDelayGenerator implements FeedbackDelayGenerator
     /**
      * {@inheritDoc}
      */
-    public long generateDelay()
-    {
-        return (long)generateNewOptimalDelay();
+    public long generateDelay() {
+        return (long) generateNewOptimalDelay();
     }
 
     /**
@@ -95,8 +92,7 @@ public class OptimalMulticastDelayGenerator implements FeedbackDelayGenerator
      *
      * @return delay in units of backoff and RTT
      */
-    public double generateNewOptimalDelay()
-    {
+    public double generateNewOptimalDelay() {
         final double x = uniformRandom(randMax) + baseX;
 
         return constantT * Math.log(x * factorT);
@@ -107,8 +103,7 @@ public class OptimalMulticastDelayGenerator implements FeedbackDelayGenerator
      *
      * @return number of estimated feedback messages in units of backoff and RTT
      */
-    public double calculatedN()
-    {
+    public double calculatedN() {
         return calculatedN;
     }
 
@@ -118,8 +113,7 @@ public class OptimalMulticastDelayGenerator implements FeedbackDelayGenerator
      * @param max of the random range
      * @return random value
      */
-    public static double uniformRandom(final double max)
-    {
+    public static double uniformRandom(final double max) {
         return Math.random() * max;
     }
 }

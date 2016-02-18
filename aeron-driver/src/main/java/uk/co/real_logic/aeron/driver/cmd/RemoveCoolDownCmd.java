@@ -18,21 +18,18 @@ package uk.co.real_logic.aeron.driver.cmd;
 import uk.co.real_logic.aeron.driver.Receiver;
 import uk.co.real_logic.aeron.driver.media.ReceiveChannelEndpoint;
 
-public class RemoveCoolDownCmd implements ReceiverCmd
-{
+public class RemoveCoolDownCmd implements ReceiverCmd {
     private final int sessionId;
     private final int streamId;
     private final ReceiveChannelEndpoint channelEndpoint;
 
-    public RemoveCoolDownCmd(final ReceiveChannelEndpoint channelEndpoint, final int sessionId, final int streamId)
-    {
+    public RemoveCoolDownCmd(final ReceiveChannelEndpoint channelEndpoint, final int sessionId, final int streamId) {
         this.sessionId = sessionId;
         this.streamId = streamId;
         this.channelEndpoint = channelEndpoint;
     }
 
-    public void execute(Receiver receiver)
-    {
+    public void execute(Receiver receiver) {
         receiver.onRemoveCoolDown(channelEndpoint, sessionId, streamId);
     }
 }

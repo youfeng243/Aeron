@@ -15,10 +15,8 @@
  */
 package uk.co.real_logic.aeron.driver.exceptions;
 
-public class UnknownSubscriptionException extends IllegalArgumentException
-{
-    public UnknownSubscriptionException(final String message)
-    {
+public class UnknownSubscriptionException extends IllegalArgumentException {
+    public UnknownSubscriptionException(final String message) {
         super(message);
     }
 }

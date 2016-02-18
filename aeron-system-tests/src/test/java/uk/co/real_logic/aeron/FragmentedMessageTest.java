@@ -34,8 +34,7 @@ import static org.mockito.Mockito.*;
 import static uk.co.real_logic.aeron.logbuffer.FrameDescriptor.UNFRAGMENTED;
 
 @RunWith(Theories.class)
-public class FragmentedMessageTest
-{
+public class FragmentedMessageTest {
     @DataPoint
     public static final String UNICAST_CHANNEL = "aeron:udp?remote=localhost:54325";
 
@@ -58,8 +57,7 @@ public class FragmentedMessageTest
 
     @Theory
     @Test(timeout = 10000)
-    public void shouldReceivePublishedMessage(final String channel, final ThreadingMode threadingMode) throws Exception
-    {
+    public void shouldReceivePublishedMessage(final String channel, final ThreadingMode threadingMode) throws Exception {
         final MediaDriver.Context ctx = new MediaDriver.Context();
         ctx.threadingMode(threadingMode);
 
@@ -68,26 +66,22 @@ public class FragmentedMessageTest
         try (final MediaDriver ignore = MediaDriver.launch(ctx);
              final Aeron aeron = Aeron.connect();
              final Publication publication = aeron.addPublication(channel, STREAM_ID);
-             final Subscription subscription = aeron.addSubscription(channel, STREAM_ID))
-        {
+             final Subscription subscription = aeron.addSubscription(channel, STREAM_ID)) {
             final UnsafeBuffer srcBuffer = new UnsafeBuffer(new byte[ctx.mtuLength() * 4]);
             final int offset = 0;
             final int length = srcBuffer.capacity() / 4;
 
-            for (int i = 0; i < 4; i++)
-            {
-                srcBuffer.setMemory(i * length, length, (byte)(65 + i));
+            for (int i = 0; i < 4; i++) {
+                srcBuffer.setMemory(i * length, length, (byte) (65 + i));
             }
 
-            while (publication.offer(srcBuffer, offset, srcBuffer.capacity()) < 0L)
-            {
+            while (publication.offer(srcBuffer, offset, srcBuffer.capacity()) < 0L) {
                 Thread.yield();
             }
 
             final int expectedFragmentsBecauseOfHeader = 5;
             int numFragments = 0;
-            do
-            {
+            do {
                 numFragments += subscription.poll(adapter, FRAGMENT_COUNT_LIMIT);
             }
             while (numFragments < expectedFragmentsBecauseOfHeader);
@@ -96,18 +90,15 @@ public class FragmentedMessageTest
             final ArgumentCaptor<Header> headerArg = ArgumentCaptor.forClass(Header.class);
 
             verify(mockFragmentHandler, times(1)).onFragment(
-                bufferArg.capture(), eq(offset), eq(srcBuffer.capacity()), headerArg.capture());
+                    bufferArg.capture(), eq(offset), eq(srcBuffer.capacity()), headerArg.capture());
 
             final UnsafeBuffer capturedBuffer = bufferArg.getValue();
-            for (int i = 0; i < srcBuffer.capacity(); i++)
-            {
+            for (int i = 0; i < srcBuffer.capacity(); i++) {
                 assertThat("same at i=" + i, capturedBuffer.getByte(i), is(srcBuffer.getByte(i)));
             }
 
             assertThat(headerArg.getValue().flags(), is(UNFRAGMENTED));
-        }
-        finally
-        {
+        } finally {
             ctx.deleteAeronDirectory();
         }
     }

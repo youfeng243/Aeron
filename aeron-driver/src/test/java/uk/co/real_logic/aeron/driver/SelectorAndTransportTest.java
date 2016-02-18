@@ -36,8 +36,7 @@ import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.*;
 
-public class SelectorAndTransportTest
-{
+public class SelectorAndTransportTest {
     private static final int RCV_PORT = 40123;
     private static final int SRC_PORT = 40124;
     private static final int SESSION_ID = 0xdeadbeef;
@@ -73,8 +72,7 @@ public class SelectorAndTransportTest
     private MediaDriver.Context context = new MediaDriver.Context();
 
     @Before
-    public void setup()
-    {
+    public void setup() {
         when(mockSystemCounters.statusMessagesReceived()).thenReturn(mockStatusMessagesReceivedCounter);
         when(mockPublication.streamId()).thenReturn(STREAM_ID);
         when(mockPublication.sessionId()).thenReturn(SESSION_ID);
@@ -86,37 +84,29 @@ public class SelectorAndTransportTest
     }
 
     @After
-    public void tearDown()
-    {
-        try
-        {
-            if (null != sendChannelEndpoint)
-            {
+    public void tearDown() {
+        try {
+            if (null != sendChannelEndpoint) {
                 sendChannelEndpoint.close();
                 processLoop(controlTransportPoller, 5);
             }
 
-            if (null != receiveChannelEndpoint)
-            {
+            if (null != receiveChannelEndpoint) {
                 receiveChannelEndpoint.close();
                 processLoop(dataTransportPoller, 5);
             }
 
-            if (null != dataTransportPoller)
-            {
+            if (null != dataTransportPoller) {
                 dataTransportPoller.close();
                 controlTransportPoller.close();
             }
-        }
-        catch (final Exception ex)
-        {
+        } catch (final Exception ex) {
             ex.printStackTrace();
         }
     }
 
     @Test(timeout = 1000)
-    public void shouldHandleBasicSetupAndTearDown() throws Exception
-    {
+    public void shouldHandleBasicSetupAndTearDown() throws Exception {
         receiveChannelEndpoint = new ReceiveChannelEndpoint(RCV_DST, mockDispatcher, context);
         sendChannelEndpoint = new SendChannelEndpoint(SRC_DST, context);
 
@@ -129,22 +119,21 @@ public class SelectorAndTransportTest
     }
 
     @Test(timeout = 1000)
-    public void shouldSendEmptyDataFrameUnicastFromSourceToReceiver() throws Exception
-    {
+    public void shouldSendEmptyDataFrameUnicastFromSourceToReceiver() throws Exception {
         final AtomicInteger dataHeadersReceived = new AtomicInteger(0);
 
         doAnswer(
-            (invocation) ->
-            {
-                dataHeadersReceived.incrementAndGet();
-                return null;
-            })
-            .when(mockDispatcher).onDataPacket(
-            any(ReceiveChannelEndpoint.class),
-            any(DataHeaderFlyweight.class),
-            any(UnsafeBuffer.class),
-            anyInt(),
-            any(InetSocketAddress.class));
+                (invocation) ->
+                {
+                    dataHeadersReceived.incrementAndGet();
+                    return null;
+                })
+                .when(mockDispatcher).onDataPacket(
+                any(ReceiveChannelEndpoint.class),
+                any(DataHeaderFlyweight.class),
+                any(UnsafeBuffer.class),
+                anyInt(),
+                any(InetSocketAddress.class));
 
         receiveChannelEndpoint = new ReceiveChannelEndpoint(RCV_DST, mockDispatcher, context);
         sendChannelEndpoint = new SendChannelEndpoint(SRC_DST, context);
@@ -156,20 +145,19 @@ public class SelectorAndTransportTest
 
         encodeDataHeader.wrap(buffer);
         encodeDataHeader
-            .version(HeaderFlyweight.CURRENT_VERSION)
-            .flags(DataHeaderFlyweight.BEGIN_AND_END_FLAGS)
-            .headerType(HeaderFlyweight.HDR_TYPE_DATA)
-            .frameLength(FRAME_LENGTH);
+                .version(HeaderFlyweight.CURRENT_VERSION)
+                .flags(DataHeaderFlyweight.BEGIN_AND_END_FLAGS)
+                .headerType(HeaderFlyweight.HDR_TYPE_DATA)
+                .frameLength(FRAME_LENGTH);
         encodeDataHeader
-            .sessionId(SESSION_ID)
-            .streamId(STREAM_ID)
-            .termId(TERM_ID);
+                .sessionId(SESSION_ID)
+                .streamId(STREAM_ID)
+                .termId(TERM_ID);
         byteBuffer.position(0).limit(FRAME_LENGTH);
 
         processLoop(dataTransportPoller, 5);
         sendChannelEndpoint.send(byteBuffer);
-        while (dataHeadersReceived.get() < 1)
-        {
+        while (dataHeadersReceived.get() < 1) {
             processLoop(dataTransportPoller, 1);
         }
 
@@ -177,22 +165,21 @@ public class SelectorAndTransportTest
     }
 
     @Test(timeout = 1000)
-    public void shouldSendMultipleDataFramesPerDatagramUnicastFromSourceToReceiver() throws Exception
-    {
+    public void shouldSendMultipleDataFramesPerDatagramUnicastFromSourceToReceiver() throws Exception {
         final AtomicInteger dataHeadersReceived = new AtomicInteger(0);
 
         doAnswer(
-            (invocation) ->
-            {
-                dataHeadersReceived.incrementAndGet();
-                return null;
-            })
-            .when(mockDispatcher).onDataPacket(
-            any(ReceiveChannelEndpoint.class),
-            any(DataHeaderFlyweight.class),
-            any(UnsafeBuffer.class),
-            anyInt(),
-            any(InetSocketAddress.class));
+                (invocation) ->
+                {
+                    dataHeadersReceived.incrementAndGet();
+                    return null;
+                })
+                .when(mockDispatcher).onDataPacket(
+                any(ReceiveChannelEndpoint.class),
+                any(DataHeaderFlyweight.class),
+                any(UnsafeBuffer.class),
+                anyInt(),
+                any(InetSocketAddress.class));
 
         receiveChannelEndpoint = new ReceiveChannelEndpoint(RCV_DST, mockDispatcher, context);
         sendChannelEndpoint = new SendChannelEndpoint(SRC_DST, context);
@@ -204,33 +191,32 @@ public class SelectorAndTransportTest
 
         encodeDataHeader.wrap(buffer);
         encodeDataHeader
-            .version(HeaderFlyweight.CURRENT_VERSION)
-            .flags(DataHeaderFlyweight.BEGIN_AND_END_FLAGS)
-            .headerType(HeaderFlyweight.HDR_TYPE_DATA)
-            .frameLength(FRAME_LENGTH);
+                .version(HeaderFlyweight.CURRENT_VERSION)
+                .flags(DataHeaderFlyweight.BEGIN_AND_END_FLAGS)
+                .headerType(HeaderFlyweight.HDR_TYPE_DATA)
+                .frameLength(FRAME_LENGTH);
         encodeDataHeader
-            .sessionId(SESSION_ID)
-            .streamId(STREAM_ID)
-            .termId(TERM_ID);
+                .sessionId(SESSION_ID)
+                .streamId(STREAM_ID)
+                .termId(TERM_ID);
 
         final int alignedFrameLength = BitUtil.align(FRAME_LENGTH, FrameDescriptor.FRAME_ALIGNMENT);
         encodeDataHeader.wrap(buffer, alignedFrameLength, buffer.capacity() - alignedFrameLength);
         encodeDataHeader
-            .version(HeaderFlyweight.CURRENT_VERSION)
-            .flags(DataHeaderFlyweight.BEGIN_AND_END_FLAGS)
-            .headerType(HeaderFlyweight.HDR_TYPE_DATA)
-            .frameLength(24);
+                .version(HeaderFlyweight.CURRENT_VERSION)
+                .flags(DataHeaderFlyweight.BEGIN_AND_END_FLAGS)
+                .headerType(HeaderFlyweight.HDR_TYPE_DATA)
+                .frameLength(24);
         encodeDataHeader
-            .sessionId(SESSION_ID)
-            .streamId(STREAM_ID)
-            .termId(TERM_ID);
+                .sessionId(SESSION_ID)
+                .streamId(STREAM_ID)
+                .termId(TERM_ID);
 
         byteBuffer.position(0).limit(2 * alignedFrameLength);
 
         processLoop(dataTransportPoller, 5);
         sendChannelEndpoint.send(byteBuffer);
-        while (dataHeadersReceived.get() < 1)
-        {
+        while (dataHeadersReceived.get() < 1) {
             processLoop(dataTransportPoller, 1);
         }
 
@@ -238,17 +224,16 @@ public class SelectorAndTransportTest
     }
 
     @Test(timeout = 1000)
-    public void shouldHandleSmFrameFromReceiverToSender() throws Exception
-    {
+    public void shouldHandleSmFrameFromReceiverToSender() throws Exception {
         final AtomicInteger controlMessagesReceived = new AtomicInteger(0);
 
         doAnswer(
-            (invocation) ->
-            {
-                controlMessagesReceived.incrementAndGet();
-                return null;
-            })
-            .when(mockPublication).onStatusMessage(anyInt(), anyInt(), anyInt(), any(InetSocketAddress.class));
+                (invocation) ->
+                {
+                    controlMessagesReceived.incrementAndGet();
+                    return null;
+                })
+                .when(mockPublication).onStatusMessage(anyInt(), anyInt(), anyInt(), any(InetSocketAddress.class));
 
         receiveChannelEndpoint = new ReceiveChannelEndpoint(RCV_DST, mockDispatcher, context);
         sendChannelEndpoint = new SendChannelEndpoint(SRC_DST, context);
@@ -261,32 +246,29 @@ public class SelectorAndTransportTest
 
         statusMessage.wrap(buffer);
         statusMessage
-            .streamId(STREAM_ID)
-            .sessionId(SESSION_ID)
-            .consumptionTermId(TERM_ID)
-            .receiverWindowLength(1000)
-            .consumptionTermOffset(0)
-            .version(HeaderFlyweight.CURRENT_VERSION)
-            .flags((short)0)
-            .headerType(HeaderFlyweight.HDR_TYPE_SM)
-            .frameLength(StatusMessageFlyweight.HEADER_LENGTH);
+                .streamId(STREAM_ID)
+                .sessionId(SESSION_ID)
+                .consumptionTermId(TERM_ID)
+                .receiverWindowLength(1000)
+                .consumptionTermOffset(0)
+                .version(HeaderFlyweight.CURRENT_VERSION)
+                .flags((short) 0)
+                .headerType(HeaderFlyweight.HDR_TYPE_SM)
+                .frameLength(StatusMessageFlyweight.HEADER_LENGTH);
         byteBuffer.position(0).limit(statusMessage.frameLength());
 
         processLoop(dataTransportPoller, 5);
         receiveChannelEndpoint.sendTo(byteBuffer, rcvRemoteAddress);
 
-        while (controlMessagesReceived.get() < 1)
-        {
+        while (controlMessagesReceived.get() < 1) {
             processLoop(controlTransportPoller, 1);
         }
 
         verify(mockStatusMessagesReceivedCounter, times(1)).orderedIncrement();
     }
 
-    private void processLoop(final UdpTransportPoller transportPoller, final int iterations) throws Exception
-    {
-        for (int i = 0; i < iterations; i++)
-        {
+    private void processLoop(final UdpTransportPoller transportPoller, final int iterations) throws Exception {
+        for (int i = 0; i < iterations; i++) {
             transportPoller.pollTransports();
         }
     }

@@ -36,15 +36,12 @@ import static uk.co.real_logic.agrona.BitUtil.SIZE_OF_LONG;
  *
  * @see SendHackSelectReceiveUdpPing
  */
-public class HackSelectReceiveSendUdpPong
-{
-    public static void main(final String[] args) throws IOException
-    {
+public class HackSelectReceiveSendUdpPong {
+    public static void main(final String[] args) throws IOException {
         new HackSelectReceiveSendUdpPong().run();
     }
 
-    private void run() throws IOException
-    {
+    private void run() throws IOException {
         final InetSocketAddress sendAddress = new InetSocketAddress("localhost", Common.PONG_PORT);
         final ByteBuffer buffer = ByteBuffer.allocateDirect(MTU_LENGTH_DEFAULT);
 
@@ -59,42 +56,36 @@ public class HackSelectReceiveSendUdpPong
         final NioSelectedKeySet keySet = Common.keySet(selector);
 
         final ToIntFunction<SelectionKey> handler =
-            (key) ->
-            {
-                try
+                (key) ->
                 {
-                    buffer.clear();
-                    receiveChannel.receive(buffer);
+                    try {
+                        buffer.clear();
+                        receiveChannel.receive(buffer);
 
-                    final long receivedSequenceNumber = buffer.getLong(0);
-                    final long receivedTimestamp = buffer.getLong(SIZE_OF_LONG);
+                        final long receivedSequenceNumber = buffer.getLong(0);
+                        final long receivedTimestamp = buffer.getLong(SIZE_OF_LONG);
 
-                    buffer.clear();
-                    buffer.putLong(receivedSequenceNumber);
-                    buffer.putLong(receivedTimestamp);
-                    buffer.flip();
+                        buffer.clear();
+                        buffer.putLong(receivedSequenceNumber);
+                        buffer.putLong(receivedTimestamp);
+                        buffer.flip();
 
-                    sendChannel.send(buffer, sendAddress);
-                }
-                catch (final IOException ex)
-                {
-                    ex.printStackTrace();
-                }
+                        sendChannel.send(buffer, sendAddress);
+                    } catch (final IOException ex) {
+                        ex.printStackTrace();
+                    }
 
-                return 1;
-            };
+                    return 1;
+                };
 
         receiveChannel.register(selector, OP_READ, null);
 
         final AtomicBoolean running = new AtomicBoolean(true);
         SigInt.register(() -> running.set(false));
 
-        while (true)
-        {
-            while (selector.selectNow() == 0)
-            {
-                if (!running.get())
-                {
+        while (true) {
+            while (selector.selectNow() == 0) {
+                if (!running.get()) {
                     return;
                 }
             }

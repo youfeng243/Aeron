@@ -21,10 +21,8 @@ import uk.co.real_logic.aeron.driver.media.UdpChannel;
 /**
  * Supply the default implementation of the {@link SendChannelEndpoint}.
  */
-public class DefaultSendChannelEndpointSupplier implements SendChannelEndpointSupplier
-{
-    public SendChannelEndpoint newInstance(final UdpChannel udpChannel, final MediaDriver.Context context)
-    {
+public class DefaultSendChannelEndpointSupplier implements SendChannelEndpointSupplier {
+    public SendChannelEndpoint newInstance(final UdpChannel udpChannel, final MediaDriver.Context context) {
         return new SendChannelEndpoint(udpChannel, context);
     }
 }

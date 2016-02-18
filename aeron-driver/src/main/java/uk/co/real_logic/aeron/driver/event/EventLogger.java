@@ -28,43 +28,36 @@ import static uk.co.real_logic.aeron.driver.event.EventCode.*;
 /**
  * Event logger interface for applications/libraries
  */
-public class EventLogger
-{
+public class EventLogger {
     public static final long ENABLED_EVENT_CODES = EventConfiguration.getEnabledEventCodes();
 
     public static final boolean IS_FRAME_IN_ENABLED =
-        (ENABLED_EVENT_CODES & FRAME_IN.tagBit()) == FRAME_IN.tagBit();
+            (ENABLED_EVENT_CODES & FRAME_IN.tagBit()) == FRAME_IN.tagBit();
 
     public static final boolean IS_FRAME_IN_DROPPED_ENABLED =
-        (ENABLED_EVENT_CODES & FRAME_IN_DROPPED.tagBit()) == FRAME_IN_DROPPED.tagBit();
+            (ENABLED_EVENT_CODES & FRAME_IN_DROPPED.tagBit()) == FRAME_IN_DROPPED.tagBit();
 
     public static final boolean IS_FRAME_OUT_ENABLED =
-        (ENABLED_EVENT_CODES & FRAME_OUT.tagBit()) == FRAME_OUT.tagBit();
+            (ENABLED_EVENT_CODES & FRAME_OUT.tagBit()) == FRAME_OUT.tagBit();
 
     public static final boolean IS_FRAME_LOGGING_ENABLED =
-        IS_FRAME_IN_ENABLED || IS_FRAME_IN_DROPPED_ENABLED || IS_FRAME_OUT_ENABLED;
+            IS_FRAME_IN_ENABLED || IS_FRAME_IN_DROPPED_ENABLED || IS_FRAME_OUT_ENABLED;
 
     private static final ThreadLocal<MutableDirectBuffer> ENCODING_BUFFER = ThreadLocal.withInitial(
-        () -> new UnsafeBuffer(ByteBuffer.allocateDirect(EventConfiguration.MAX_EVENT_LENGTH)));
+            () -> new UnsafeBuffer(ByteBuffer.allocateDirect(EventConfiguration.MAX_EVENT_LENGTH)));
 
     private final ManyToOneRingBuffer ringBuffer;
 
-    public EventLogger(final ByteBuffer buffer)
-    {
-        if (null != buffer)
-        {
+    public EventLogger(final ByteBuffer buffer) {
+        if (null != buffer) {
             this.ringBuffer = new ManyToOneRingBuffer(new UnsafeBuffer(buffer));
-        }
-        else
-        {
+        } else {
             this.ringBuffer = null;
         }
     }
 
-    public void log(final EventCode code, final MutableDirectBuffer buffer, final int offset, final int length)
-    {
-        if (isEnabled(code, ENABLED_EVENT_CODES))
-        {
+    public void log(final EventCode code, final MutableDirectBuffer buffer, final int offset, final int length) {
+        if (isEnabled(code, ENABLED_EVENT_CODES)) {
             final MutableDirectBuffer encodedBuffer = ENCODING_BUFFER.get();
             final int encodedLength = EventEncoder.encode(encodedBuffer, buffer, offset, length);
 
@@ -72,22 +65,18 @@ public class EventLogger
         }
     }
 
-    public void log(final EventCode code, final File file)
-    {
-        if (isEnabled(code, ENABLED_EVENT_CODES))
-        {
+    public void log(final EventCode code, final File file) {
+        if (isEnabled(code, ENABLED_EVENT_CODES)) {
             logString(code, file.toString());
         }
     }
 
     public void logFrameIn(
-        final ByteBuffer buffer,
-        final int offset,
-        final int length,
-        final InetSocketAddress dstAddress)
-    {
-        if (IS_FRAME_IN_ENABLED)
-        {
+            final ByteBuffer buffer,
+            final int offset,
+            final int length,
+            final InetSocketAddress dstAddress) {
+        if (IS_FRAME_IN_ENABLED) {
             final MutableDirectBuffer encodedBuffer = ENCODING_BUFFER.get();
             final int encodedLength = EventEncoder.encode(encodedBuffer, buffer, offset, length, dstAddress);
 
@@ -96,13 +85,11 @@ public class EventLogger
     }
 
     public void logFrameInDropped(
-        final ByteBuffer buffer,
-        final int offset,
-        final int length,
-        final InetSocketAddress dstAddress)
-    {
-        if (IS_FRAME_IN_DROPPED_ENABLED)
-        {
+            final ByteBuffer buffer,
+            final int offset,
+            final int length,
+            final InetSocketAddress dstAddress) {
+        if (IS_FRAME_IN_DROPPED_ENABLED) {
             final MutableDirectBuffer encodedBuffer = ENCODING_BUFFER.get();
             final int encodedLength = EventEncoder.encode(encodedBuffer, buffer, offset, length, dstAddress);
 
@@ -110,74 +97,58 @@ public class EventLogger
         }
     }
 
-    public void logFrameOut(final ByteBuffer buffer, final InetSocketAddress dstAddress)
-    {
-        if (IS_FRAME_OUT_ENABLED)
-        {
+    public void logFrameOut(final ByteBuffer buffer, final InetSocketAddress dstAddress) {
+        if (IS_FRAME_OUT_ENABLED) {
             final MutableDirectBuffer encodedBuffer = ENCODING_BUFFER.get();
             final int encodedLength =
-                EventEncoder.encode(encodedBuffer, buffer, buffer.position(), buffer.remaining(), dstAddress);
+                    EventEncoder.encode(encodedBuffer, buffer, buffer.position(), buffer.remaining(), dstAddress);
 
             ringBuffer.write(FRAME_OUT.id(), encodedBuffer, 0, encodedLength);
         }
     }
 
-    public void logPublicationRemoval(final CharSequence uri, final int sessionId, final int streamId)
-    {
-        if (isEnabled(EventCode.REMOVE_PUBLICATION_CLEANUP, ENABLED_EVENT_CODES))
-        {
+    public void logPublicationRemoval(final CharSequence uri, final int sessionId, final int streamId) {
+        if (isEnabled(EventCode.REMOVE_PUBLICATION_CLEANUP, ENABLED_EVENT_CODES)) {
             logString(EventCode.REMOVE_PUBLICATION_CLEANUP, String.format("%s %d:%d", uri, sessionId, streamId));
         }
     }
 
-    public void logSubscriptionRemoval(final CharSequence uri, final int streamId, final long id)
-    {
-        if (isEnabled(EventCode.REMOVE_SUBSCRIPTION_CLEANUP, ENABLED_EVENT_CODES))
-        {
+    public void logSubscriptionRemoval(final CharSequence uri, final int streamId, final long id) {
+        if (isEnabled(EventCode.REMOVE_SUBSCRIPTION_CLEANUP, ENABLED_EVENT_CODES)) {
             logString(EventCode.REMOVE_SUBSCRIPTION_CLEANUP, String.format("%s %d [%d]", uri, streamId, id));
         }
     }
 
-    public void logImageRemoval(final CharSequence uri, final int sessionId, final int streamId, final long id)
-    {
-        if (isEnabled(EventCode.REMOVE_IMAGE_CLEANUP, ENABLED_EVENT_CODES))
-        {
+    public void logImageRemoval(final CharSequence uri, final int sessionId, final int streamId, final long id) {
+        if (isEnabled(EventCode.REMOVE_IMAGE_CLEANUP, ENABLED_EVENT_CODES)) {
             logString(EventCode.REMOVE_IMAGE_CLEANUP, String.format("%s %d:%d [%d]", uri, sessionId, streamId, id));
         }
     }
 
-    public void logChannelCreated(final String description)
-    {
-        if (isEnabled(EventCode.CHANNEL_CREATION, ENABLED_EVENT_CODES))
-        {
+    public void logChannelCreated(final String description) {
+        if (isEnabled(EventCode.CHANNEL_CREATION, ENABLED_EVENT_CODES)) {
             logString(EventCode.CHANNEL_CREATION, description);
         }
     }
 
-    public void logException(final Throwable ex)
-    {
-        if (isEnabled(EXCEPTION, ENABLED_EVENT_CODES))
-        {
+    public void logException(final Throwable ex) {
+        if (isEnabled(EXCEPTION, ENABLED_EVENT_CODES)) {
             final MutableDirectBuffer encodedBuffer = ENCODING_BUFFER.get();
             final int encodedLength = EventEncoder.encode(encodedBuffer, ex);
 
             ringBuffer.write(EXCEPTION.id(), encodedBuffer, 0, encodedLength);
-        }
-        else
-        {
+        } else {
             ex.printStackTrace();
         }
     }
 
-    private void logString(final EventCode code, final String value)
-    {
+    private void logString(final EventCode code, final String value) {
         final MutableDirectBuffer encodedBuffer = ENCODING_BUFFER.get();
         final int encodingLength = EventEncoder.encode(encodedBuffer, value);
         ringBuffer.write(code.id(), encodedBuffer, 0, encodingLength);
     }
 
-    private static boolean isEnabled(final EventCode code, final long enabledEventCodes)
-    {
+    private static boolean isEnabled(final EventCode code, final long enabledEventCodes) {
         final long tagBit = code.tagBit();
         return (enabledEventCodes & tagBit) == tagBit;
     }

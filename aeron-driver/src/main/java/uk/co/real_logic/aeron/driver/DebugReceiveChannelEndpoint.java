@@ -26,22 +26,19 @@ import java.nio.ByteBuffer;
  * Debug implementation which can record transmission frames to the {@link MediaDriver.Context#eventLogger()} and introduce
  * loss via {@link MediaDriver.Context#controlLossGenerator()} and {@link MediaDriver.Context#dataLossGenerator()} .
  */
-public class DebugReceiveChannelEndpoint extends ReceiveChannelEndpoint
-{
+public class DebugReceiveChannelEndpoint extends ReceiveChannelEndpoint {
     private final LossGenerator dataLossGenerator;
     private final LossGenerator controlLossGenerator;
 
     public DebugReceiveChannelEndpoint(
-        final UdpChannel udpChannel, final DataPacketDispatcher dispatcher, final MediaDriver.Context context)
-    {
+            final UdpChannel udpChannel, final DataPacketDispatcher dispatcher, final MediaDriver.Context context) {
         super(udpChannel, dispatcher, context);
 
         dataLossGenerator = context.dataLossGenerator();
         controlLossGenerator = context.controlLossGenerator();
     }
 
-    public int sendTo(final ByteBuffer buffer, final InetSocketAddress remoteAddress)
-    {
+    public int sendTo(final ByteBuffer buffer, final InetSocketAddress remoteAddress) {
         logger.logFrameOut(buffer, remoteAddress);
 
         // TODO: call controlLossGenerator and drop (call log to inform) - need a shouldDropAllFrame() method
@@ -49,16 +46,12 @@ public class DebugReceiveChannelEndpoint extends ReceiveChannelEndpoint
         return super.sendTo(buffer, remoteAddress);
     }
 
-    protected int dispatch(final UnsafeBuffer buffer, final int length, final InetSocketAddress srcAddress)
-    {
+    protected int dispatch(final UnsafeBuffer buffer, final int length, final InetSocketAddress srcAddress) {
         int result = 0;
 
-        if (dataLossGenerator.shouldDropFrame(srcAddress, buffer, length))
-        {
+        if (dataLossGenerator.shouldDropFrame(srcAddress, buffer, length)) {
             logger.logFrameInDropped(receiveByteBuffer, 0, length, srcAddress);
-        }
-        else
-        {
+        } else {
             logger.logFrameIn(receiveByteBuffer, 0, length, srcAddress);
 
             result = super.dispatch(buffer, length, srcAddress);

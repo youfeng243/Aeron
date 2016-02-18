@@ -25,8 +25,7 @@ import java.util.Arrays;
 /**
  * Builder for appending buffers that grows capacity as needed.
  */
-public class BufferBuilder
-{
+public class BufferBuilder {
     public static final int INITIAL_CAPACITY = 4096;
 
     private final MutableDirectBuffer mutableDirectBuffer;
@@ -38,8 +37,7 @@ public class BufferBuilder
     /**
      * Construct a buffer builder with a default growth increment of {@link #INITIAL_CAPACITY}
      */
-    public BufferBuilder()
-    {
+    public BufferBuilder() {
         this(INITIAL_CAPACITY);
     }
 
@@ -48,8 +46,7 @@ public class BufferBuilder
      *
      * @param initialCapacity at which the capacity will start.
      */
-    public BufferBuilder(final int initialCapacity)
-    {
+    public BufferBuilder(final int initialCapacity) {
         capacity = BitUtil.findNextPositivePowerOfTwo(initialCapacity);
         buffer = new byte[capacity];
         mutableDirectBuffer = new UnsafeBuffer(buffer);
@@ -60,8 +57,7 @@ public class BufferBuilder
      *
      * @return the current capacity of the buffer.
      */
-    public int capacity()
-    {
+    public int capacity() {
         return capacity;
     }
 
@@ -70,8 +66,7 @@ public class BufferBuilder
      *
      * @return the current limit of the buffer that has been used by append operations.
      */
-    public int limit()
-    {
+    public int limit() {
         return limit;
     }
 
@@ -80,12 +75,10 @@ public class BufferBuilder
      *
      * @param limit to be the new value.
      */
-    public void limit(final int limit)
-    {
-        if (limit < 0 || limit >= capacity)
-        {
+    public void limit(final int limit) {
+        if (limit < 0 || limit >= capacity) {
             throw new IllegalArgumentException(String.format(
-                "Limit outside range: capacity=%d limit=%d", capacity, limit));
+                    "Limit outside range: capacity=%d limit=%d", capacity, limit));
         }
 
         this.limit = limit;
@@ -96,8 +89,7 @@ public class BufferBuilder
      *
      * @return the {@link MutableDirectBuffer} that encapsulates the internal buffer.
      */
-    public MutableDirectBuffer buffer()
-    {
+    public MutableDirectBuffer buffer() {
         return mutableDirectBuffer;
     }
 
@@ -106,8 +98,7 @@ public class BufferBuilder
      *
      * @return the builder for fluent API usage.
      */
-    public BufferBuilder reset()
-    {
+    public BufferBuilder reset() {
         limit = 0;
         return this;
     }
@@ -117,8 +108,7 @@ public class BufferBuilder
      *
      * @return the builder for fluent API usage.
      */
-    public BufferBuilder compact()
-    {
+    public BufferBuilder compact() {
         capacity = Math.max(INITIAL_CAPACITY, BitUtil.findNextPositivePowerOfTwo(limit));
         buffer = Arrays.copyOf(buffer, capacity);
         mutableDirectBuffer.wrap(buffer);
@@ -131,11 +121,10 @@ public class BufferBuilder
      *
      * @param srcBuffer from which to copy.
      * @param srcOffset in the source buffer from which to copy.
-     * @param length in bytes to copy from the source buffer.
+     * @param length    in bytes to copy from the source buffer.
      * @return the builder for fluent API usage.
      */
-    public BufferBuilder append(final DirectBuffer srcBuffer, final int srcOffset, final int length)
-    {
+    public BufferBuilder append(final DirectBuffer srcBuffer, final int srcOffset, final int length) {
         ensureCapacity(length);
 
         srcBuffer.getBytes(srcOffset, buffer, limit, length);
@@ -144,18 +133,15 @@ public class BufferBuilder
         return this;
     }
 
-    private void ensureCapacity(final int additionalCapacity)
-    {
+    private void ensureCapacity(final int additionalCapacity) {
         final int requiredCapacity = limit + additionalCapacity;
 
-        if (requiredCapacity < 0)
-        {
+        if (requiredCapacity < 0) {
             final String s = String.format("Insufficient capacity: limit=%d additional=%d", limit, additionalCapacity);
             throw new IllegalStateException(s);
         }
 
-        if (requiredCapacity > capacity)
-        {
+        if (requiredCapacity > capacity) {
             final int newCapacity = findSuitableCapacity(capacity, requiredCapacity);
             final byte[] newBuffer = Arrays.copyOf(buffer, newCapacity);
 
@@ -165,10 +151,8 @@ public class BufferBuilder
         }
     }
 
-    private static int findSuitableCapacity(int capacity, final int requiredCapacity)
-    {
-        do
-        {
+    private static int findSuitableCapacity(int capacity, final int requiredCapacity) {
+        do {
             capacity <<= 1;
         }
         while (capacity < requiredCapacity);

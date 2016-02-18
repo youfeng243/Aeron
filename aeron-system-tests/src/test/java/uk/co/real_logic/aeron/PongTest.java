@@ -34,8 +34,7 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-public class PongTest
-{
+public class PongTest {
     public static final String PING_URI = "aeron:udp?remote=localhost:54325";
     public static final String PONG_URI = "aeron:udp?remote=localhost:54326";
 
@@ -59,8 +58,7 @@ public class PongTest
     private FragmentHandler pongHandler = mock(FragmentHandler.class);
 
     @Before
-    public void setUp() throws Exception
-    {
+    public void setUp() throws Exception {
         context.threadingMode(THREADING_MODE);
 
         driver = MediaDriver.launch(context);
@@ -75,25 +73,20 @@ public class PongTest
     }
 
     @After
-    public void closeEverything() throws Exception
-    {
-        if (null != pingPublication)
-        {
+    public void closeEverything() throws Exception {
+        if (null != pingPublication) {
             pingPublication.close();
         }
 
-        if (null != pongPublication)
-        {
+        if (null != pongPublication) {
             pongPublication.close();
         }
 
-        if (null != pingSubscription)
-        {
+        if (null != pingSubscription) {
             pingSubscription.close();
         }
 
-        if (null != pongSubscription)
-        {
+        if (null != pongSubscription) {
             pongSubscription.close();
         }
 
@@ -105,51 +98,47 @@ public class PongTest
     }
 
     @Test
-    public void playPingPong()
-    {
+    public void playPingPong() {
         buffer.putInt(0, 1);
 
-        while (pingPublication.offer(buffer, 0, BitUtil.SIZE_OF_INT) < 0L)
-        {
+        while (pingPublication.offer(buffer, 0, BitUtil.SIZE_OF_INT) < 0L) {
             Thread.yield();
         }
 
         final int fragmentsRead[] = new int[1];
 
         SystemTestHelper.executeUntil(
-            () -> fragmentsRead[0] > 0,
-            (i) ->
-            {
-                fragmentsRead[0] += pingSubscription.poll(this::pingHandler, 10);
-                Thread.yield();
-            },
-            Integer.MAX_VALUE,
-            TimeUnit.MILLISECONDS.toNanos(5900));
+                () -> fragmentsRead[0] > 0,
+                (i) ->
+                {
+                    fragmentsRead[0] += pingSubscription.poll(this::pingHandler, 10);
+                    Thread.yield();
+                },
+                Integer.MAX_VALUE,
+                TimeUnit.MILLISECONDS.toNanos(5900));
 
         fragmentsRead[0] = 0;
 
         SystemTestHelper.executeUntil(
-            () -> fragmentsRead[0] > 0,
-            (i) ->
-            {
-                fragmentsRead[0] += pongSubscription.poll(pongHandler, 10);
-                Thread.yield();
-            },
-            Integer.MAX_VALUE,
-            TimeUnit.MILLISECONDS.toNanos(5900));
+                () -> fragmentsRead[0] > 0,
+                (i) ->
+                {
+                    fragmentsRead[0] += pongSubscription.poll(pongHandler, 10);
+                    Thread.yield();
+                },
+                Integer.MAX_VALUE,
+                TimeUnit.MILLISECONDS.toNanos(5900));
 
         verify(pongHandler).onFragment(
-            any(UnsafeBuffer.class),
-            eq(DataHeaderFlyweight.HEADER_LENGTH),
-            eq(BitUtil.SIZE_OF_INT),
-            any(Header.class));
+                any(UnsafeBuffer.class),
+                eq(DataHeaderFlyweight.HEADER_LENGTH),
+                eq(BitUtil.SIZE_OF_INT),
+                any(Header.class));
     }
 
-    public void pingHandler(final DirectBuffer buffer, final int offset, final int length, final Header header)
-    {
+    public void pingHandler(final DirectBuffer buffer, final int offset, final int length, final Header header) {
         // echoes back the ping
-        while (pongPublication.offer(buffer, offset, length) < 0L)
-        {
+        while (pongPublication.offer(buffer, offset, length) < 0L) {
             Thread.yield();
         }
     }

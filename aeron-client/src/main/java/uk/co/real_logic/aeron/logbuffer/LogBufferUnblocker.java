@@ -22,8 +22,7 @@ import static uk.co.real_logic.aeron.logbuffer.LogBufferDescriptor.*;
 /**
  * Provides the functionality to unblock a log at a given position.
  */
-public class LogBufferUnblocker
-{
+public class LogBufferUnblocker {
     /**
      * Attempt to unblock a log buffer at given position
      *
@@ -33,8 +32,7 @@ public class LogBufferUnblocker
      * @return whether unblocked or not
      */
     public static boolean unblock(
-        final LogBufferPartition[] logPartitions, final UnsafeBuffer logMetaDataBuffer, final long blockedPosition)
-    {
+            final LogBufferPartition[] logPartitions, final UnsafeBuffer logMetaDataBuffer, final long blockedPosition) {
         final int termLength = logPartitions[0].termBuffer().capacity();
         final int positionBitsToShift = Integer.numberOfTrailingZeros(termLength);
         final int activeIndex = indexByPosition(blockedPosition, positionBitsToShift);
@@ -47,8 +45,7 @@ public class LogBufferUnblocker
 
         boolean result = false;
 
-        switch (TermUnblocker.unblock(logMetaDataBuffer, termBuffer, blockedOffset, tailOffset, termId))
-        {
+        switch (TermUnblocker.unblock(logMetaDataBuffer, termBuffer, blockedOffset, tailOffset, termId)) {
             case UNBLOCKED_TO_END:
                 rotateLog(logPartitions, logMetaDataBuffer, activeIndex, termId + 1);
                 // fall through

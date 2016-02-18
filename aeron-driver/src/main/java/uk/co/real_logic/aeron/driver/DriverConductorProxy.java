@@ -29,8 +29,7 @@ import static uk.co.real_logic.aeron.driver.ThreadingMode.SHARED;
 /**
  * Proxy for sending commands to the media conductor.
  */
-public class DriverConductorProxy
-{
+public class DriverConductorProxy {
     private final ThreadingMode threadingMode;
     private final Queue<DriverConductorCmd> commandQueue;
     private final AtomicCounter failCount;
@@ -38,81 +37,68 @@ public class DriverConductorProxy
     private DriverConductor driverConductor;
 
     public DriverConductorProxy(
-        final ThreadingMode threadingMode, final Queue<DriverConductorCmd> commandQueue, final AtomicCounter failCount)
-    {
+            final ThreadingMode threadingMode, final Queue<DriverConductorCmd> commandQueue, final AtomicCounter failCount) {
         this.threadingMode = threadingMode;
         this.commandQueue = commandQueue;
         this.failCount = failCount;
     }
 
-    public void driverConductor(final DriverConductor driverConductor)
-    {
+    public void driverConductor(final DriverConductor driverConductor) {
         this.driverConductor = driverConductor;
     }
 
     public void createPublicationImage(
-        final int sessionId,
-        final int streamId,
-        final int initialTermId,
-        final int activeTermId,
-        final int termOffset,
-        final int termLength,
-        final int mtuLength,
-        final InetSocketAddress controlAddress,
-        final InetSocketAddress srcAddress,
-        final ReceiveChannelEndpoint channelEndpoint)
-    {
-        if (isShared())
-        {
+            final int sessionId,
+            final int streamId,
+            final int initialTermId,
+            final int activeTermId,
+            final int termOffset,
+            final int termLength,
+            final int mtuLength,
+            final InetSocketAddress controlAddress,
+            final InetSocketAddress srcAddress,
+            final ReceiveChannelEndpoint channelEndpoint) {
+        if (isShared()) {
             driverConductor.onCreatePublicationImage(
-                sessionId,
-                streamId,
-                initialTermId,
-                activeTermId,
-                termOffset,
-                termLength,
-                mtuLength,
-                controlAddress,
-                srcAddress,
-                channelEndpoint);
-        }
-        else
-        {
+                    sessionId,
+                    streamId,
+                    initialTermId,
+                    activeTermId,
+                    termOffset,
+                    termLength,
+                    mtuLength,
+                    controlAddress,
+                    srcAddress,
+                    channelEndpoint);
+        } else {
             offer(new CreatePublicationImageCmd(
-                sessionId,
-                streamId,
-                initialTermId,
-                activeTermId,
-                termOffset,
-                termLength,
-                mtuLength,
-                controlAddress,
-                srcAddress,
-                channelEndpoint));
+                    sessionId,
+                    streamId,
+                    initialTermId,
+                    activeTermId,
+                    termOffset,
+                    termLength,
+                    mtuLength,
+                    controlAddress,
+                    srcAddress,
+                    channelEndpoint));
         }
     }
 
-    public void closeResource(final AutoCloseable resource)
-    {
-        if (isShared())
-        {
+    public void closeResource(final AutoCloseable resource) {
+        if (isShared()) {
             driverConductor.onCloseResource(resource);
-        }
-        else
-        {
+        } else {
             offer(new CloseResourceCmd(resource));
         }
     }
 
-    private boolean isShared()
-    {
+    private boolean isShared() {
         return threadingMode == SHARED;
     }
 
-    private void offer(final DriverConductorCmd cmd)
-    {
-        while (!commandQueue.offer(cmd))
-        {
+    private void offer(final DriverConductorCmd cmd) {
+        while (!commandQueue.offer(cmd)) {
             failCount.orderedIncrement();
             Thread.yield();
         }

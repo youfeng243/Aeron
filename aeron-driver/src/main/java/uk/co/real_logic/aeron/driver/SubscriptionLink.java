@@ -26,8 +26,7 @@ import static uk.co.real_logic.aeron.driver.Configuration.CLIENT_LIVENESS_TIMEOU
 /**
  * Subscription registration from a client used for liveness tracking
  */
-public class SubscriptionLink implements DriverManagedResource
-{
+public class SubscriptionLink implements DriverManagedResource {
     private final long registrationId;
     private final int streamId;
     private final ReceiveChannelEndpoint channelEndpoint;
@@ -39,11 +38,10 @@ public class SubscriptionLink implements DriverManagedResource
     private boolean reachedEndOfLife = false;
 
     public SubscriptionLink(
-        final long registrationId,
-        final ReceiveChannelEndpoint channelEndpoint,
-        final int streamId,
-        final AeronClient aeronClient)
-    {
+            final long registrationId,
+            final ReceiveChannelEndpoint channelEndpoint,
+            final int streamId,
+            final AeronClient aeronClient) {
         this.registrationId = registrationId;
         this.channelEndpoint = channelEndpoint;
         this.streamId = streamId;
@@ -53,12 +51,11 @@ public class SubscriptionLink implements DriverManagedResource
     }
 
     public SubscriptionLink(
-        final long registrationId,
-        final int streamId,
-        final DirectPublication directPublication,
-        final ReadablePosition subscriberPosition,
-        final AeronClient aeronClient)
-    {
+            final long registrationId,
+            final int streamId,
+            final DirectPublication directPublication,
+            final ReadablePosition subscriberPosition,
+            final AeronClient aeronClient) {
         this.registrationId = registrationId;
         this.channelEndpoint = null; // will prevent matches between PublicationImages and DirectPublications
         this.streamId = streamId;
@@ -68,73 +65,59 @@ public class SubscriptionLink implements DriverManagedResource
         this.directPublicationSubscriberPosition = subscriberPosition;
     }
 
-    public long registrationId()
-    {
+    public long registrationId() {
         return registrationId;
     }
 
-    public ReceiveChannelEndpoint channelEndpoint()
-    {
+    public ReceiveChannelEndpoint channelEndpoint() {
         return channelEndpoint;
     }
 
-    public int streamId()
-    {
+    public int streamId() {
         return streamId;
     }
 
-    public boolean matches(final ReceiveChannelEndpoint channelEndpoint, final int streamId)
-    {
+    public boolean matches(final ReceiveChannelEndpoint channelEndpoint, final int streamId) {
         return channelEndpoint == this.channelEndpoint && streamId == this.streamId;
     }
 
-    public void addImage(final PublicationImage image, final ReadablePosition position)
-    {
+    public void addImage(final PublicationImage image, final ReadablePosition position) {
         positionByImageMap.put(image, position);
     }
 
-    public void removeImage(final PublicationImage image)
-    {
+    public void removeImage(final PublicationImage image) {
         positionByImageMap.remove(image);
     }
 
-    public void close()
-    {
+    public void close() {
         positionByImageMap.forEach(PublicationImage::removeSubscriber);
 
-        if (null != directPublication)
-        {
+        if (null != directPublication) {
             directPublication.removeSubscription(directPublicationSubscriberPosition);
             directPublication.decRef();
         }
     }
 
-    public void onTimeEvent(final long time, final DriverConductor conductor)
-    {
-        if (time > (aeronClient.timeOfLastKeepalive() + CLIENT_LIVENESS_TIMEOUT_NS))
-        {
+    public void onTimeEvent(final long time, final DriverConductor conductor) {
+        if (time > (aeronClient.timeOfLastKeepalive() + CLIENT_LIVENESS_TIMEOUT_NS)) {
             reachedEndOfLife = true;
             conductor.cleanupSubscriptionLink(SubscriptionLink.this);
         }
     }
 
-    public boolean hasReachedEndOfLife()
-    {
+    public boolean hasReachedEndOfLife() {
         return reachedEndOfLife;
     }
 
-    public void timeOfLastStateChange(final long time)
-    {
+    public void timeOfLastStateChange(final long time) {
         // not set this way
     }
 
-    public long timeOfLastStateChange()
-    {
+    public long timeOfLastStateChange() {
         return aeronClient.timeOfLastKeepalive();
     }
 
-    public void delete()
-    {
+    public void delete() {
         close();
     }
 }

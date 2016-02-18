@@ -29,14 +29,13 @@ import static uk.co.real_logic.aeron.protocol.HeaderFlyweight.TYPE_FIELD_OFFSET;
 
 /**
  * Represents a claimed range in a buffer to be used for recording a message without copy semantics for later commit.
- * <p>
+ *
  * The claimed space is in {@link #buffer()} between {@link #offset()} and {@link #offset()} + {@link #length()}.
  * When the buffer is filled with message data, use {@link #commit()} to make it available to subscribers.
- * <p>
+ *
  * If the claimed space is no longer required it can be aborted by calling {@link #abort()}.
  */
-public class BufferClaim
-{
+public class BufferClaim {
     private final UnsafeBuffer buffer = new UnsafeBuffer(0, 0);
 
     /**
@@ -46,8 +45,7 @@ public class BufferClaim
      * @param offset at which the claimed region begins including space for the header.
      * @param length length of the underlying claimed region including space for the header.
      */
-    public void wrap(final AtomicBuffer buffer, final int offset, final int length)
-    {
+    public void wrap(final AtomicBuffer buffer, final int offset, final int length) {
         this.buffer.wrap(buffer, offset, length);
     }
 
@@ -56,8 +54,7 @@ public class BufferClaim
      *
      * @return the referenced buffer to be used..
      */
-    public MutableDirectBuffer buffer()
-    {
+    public MutableDirectBuffer buffer() {
         return buffer;
     }
 
@@ -66,8 +63,7 @@ public class BufferClaim
      *
      * @return offset in the buffer at which the range begins.
      */
-    public int offset()
-    {
+    public int offset() {
         return DataHeaderFlyweight.HEADER_LENGTH;
     }
 
@@ -76,19 +72,16 @@ public class BufferClaim
      *
      * @return length of the range in the buffer.
      */
-    public int length()
-    {
+    public int length() {
         return buffer.capacity() - DataHeaderFlyweight.HEADER_LENGTH;
     }
 
     /**
      * Commit the message to the log buffer so that is it available to subscribers.
      */
-    public void commit()
-    {
+    public void commit() {
         int frameLength = buffer.capacity();
-        if (ByteOrder.nativeOrder() != LITTLE_ENDIAN)
-        {
+        if (ByteOrder.nativeOrder() != LITTLE_ENDIAN) {
             frameLength = Integer.reverseBytes(frameLength);
         }
 
@@ -98,15 +91,13 @@ public class BufferClaim
     /**
      * Abort a claim of the message space to the log buffer so that log can progress ignoring this claim.
      */
-    public void abort()
-    {
+    public void abort() {
         int frameLength = buffer.capacity();
-        if (ByteOrder.nativeOrder() != LITTLE_ENDIAN)
-        {
+        if (ByteOrder.nativeOrder() != LITTLE_ENDIAN) {
             frameLength = Integer.reverseBytes(frameLength);
         }
 
-        buffer.putShort(TYPE_FIELD_OFFSET, (short)HDR_TYPE_PAD, LITTLE_ENDIAN);
+        buffer.putShort(TYPE_FIELD_OFFSET, (short) HDR_TYPE_PAD, LITTLE_ENDIAN);
         buffer.putIntOrdered(FRAME_LENGTH_FIELD_OFFSET, frameLength);
     }
 }

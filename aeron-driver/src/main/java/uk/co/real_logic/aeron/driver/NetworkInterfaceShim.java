@@ -21,26 +21,23 @@ import java.net.SocketException;
 import java.util.Enumeration;
 import java.util.List;
 
-interface NetworkInterfaceShim
-{
+interface NetworkInterfaceShim {
     Enumeration<NetworkInterface> getNetworkInterfaces() throws SocketException;
+
     List<InterfaceAddress> getInterfaceAddresses(NetworkInterface ifc);
+
     boolean isLoopback(NetworkInterface ifc) throws SocketException;
 
-    NetworkInterfaceShim DEFAULT = new NetworkInterfaceShim()
-    {
-        public Enumeration<NetworkInterface> getNetworkInterfaces() throws SocketException
-        {
+    NetworkInterfaceShim DEFAULT = new NetworkInterfaceShim() {
+        public Enumeration<NetworkInterface> getNetworkInterfaces() throws SocketException {
             return NetworkInterface.getNetworkInterfaces();
         }
 
-        public List<InterfaceAddress> getInterfaceAddresses(final NetworkInterface ifc)
-        {
+        public List<InterfaceAddress> getInterfaceAddresses(final NetworkInterface ifc) {
             return ifc.getInterfaceAddresses();
         }
 
-        public boolean isLoopback(final NetworkInterface ifc) throws SocketException
-        {
+        public boolean isLoopback(final NetworkInterface ifc) throws SocketException {
             return ifc.isLoopback();
         }
     };

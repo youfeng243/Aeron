@@ -20,23 +20,22 @@ import uk.co.real_logic.agrona.collections.Long2LongHashMap;
 /**
  * Callback interface for receiving messages from the driver.
  */
-interface DriverListener
-{
+interface DriverListener {
     void onNewPublication(
-        String channel,
-        int streamId,
-        int sessionId,
-        int publicationLimitId,
-        String logFileName,
-        long correlationId);
+            String channel,
+            int streamId,
+            int sessionId,
+            int publicationLimitId,
+            String logFileName,
+            long correlationId);
 
     void onAvailableImage(
-        int streamId,
-        int sessionId,
-        Long2LongHashMap subscriberPositionMap,
-        String logFileName,
-        String sourceIdentity,
-        long correlationId);
+            int streamId,
+            int sessionId,
+            Long2LongHashMap subscriberPositionMap,
+            String logFileName,
+            String sourceIdentity,
+            long correlationId);
 
     void onUnavailableImage(int streamId, long correlationId);
 

@@ -20,7 +20,7 @@ import static uk.co.real_logic.agrona.BitUtil.SIZE_OF_LONG;
 /**
  * Control message for removing a Publication or Subscription.
  *
- * <p>
+ *
  * 0                   1                   2                   3
  * 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
  * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -31,8 +31,7 @@ import static uk.co.real_logic.agrona.BitUtil.SIZE_OF_LONG;
  * |                         Registration ID                       |
  * +---------------------------------------------------------------+
  */
-public class RemoveMessageFlyweight extends CorrelatedMessageFlyweight
-{
+public class RemoveMessageFlyweight extends CorrelatedMessageFlyweight {
     private static final int REGISTRATION_ID_OFFSET = CORRELATION_ID_FIELD_OFFSET + SIZE_OF_LONG;
 
     /**
@@ -40,8 +39,7 @@ public class RemoveMessageFlyweight extends CorrelatedMessageFlyweight
      *
      * @return registration id field
      */
-    public long registrationId()
-    {
+    public long registrationId() {
         return buffer.getLong(offset + REGISTRATION_ID_OFFSET);
     }
 
@@ -51,15 +49,13 @@ public class RemoveMessageFlyweight extends CorrelatedMessageFlyweight
      * @param registrationId field value
      * @return flyweight
      */
-    public RemoveMessageFlyweight registrationId(final long registrationId)
-    {
+    public RemoveMessageFlyweight registrationId(final long registrationId) {
         buffer.putLong(offset + REGISTRATION_ID_OFFSET, registrationId);
 
         return this;
     }
 
-    public static int length()
-    {
+    public static int length() {
         return LENGTH + SIZE_OF_LONG;
     }
 }

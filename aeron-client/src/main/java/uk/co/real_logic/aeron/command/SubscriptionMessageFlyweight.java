@@ -23,7 +23,7 @@ import static uk.co.real_logic.agrona.BitUtil.SIZE_OF_LONG;
 /**
  * Control message for adding or removing a subscription.
  *
- * <p>
+ *
  * 0                   1                   2                   3
  * 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
  * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -37,8 +37,7 @@ import static uk.co.real_logic.agrona.BitUtil.SIZE_OF_LONG;
  * |                                                             ...
  * +---------------------------------------------------------------+
  */
-public class SubscriptionMessageFlyweight extends CorrelatedMessageFlyweight
-{
+public class SubscriptionMessageFlyweight extends CorrelatedMessageFlyweight {
     private static final int REGISTRATION_CORRELATION_ID_OFFSET = CORRELATION_ID_FIELD_OFFSET + SIZE_OF_LONG;
     private static final int STREAM_ID_OFFSET = REGISTRATION_CORRELATION_ID_OFFSET + SIZE_OF_LONG;
     private static final int CHANNEL_OFFSET = STREAM_ID_OFFSET + SIZE_OF_INT;
@@ -50,8 +49,7 @@ public class SubscriptionMessageFlyweight extends CorrelatedMessageFlyweight
      *
      * @return correlation id field
      */
-    public long registrationCorrelationId()
-    {
+    public long registrationCorrelationId() {
         return buffer.getLong(offset + REGISTRATION_CORRELATION_ID_OFFSET);
     }
 
@@ -61,8 +59,7 @@ public class SubscriptionMessageFlyweight extends CorrelatedMessageFlyweight
      * @param correlationId field value
      * @return flyweight
      */
-    public SubscriptionMessageFlyweight registrationCorrelationId(final long correlationId)
-    {
+    public SubscriptionMessageFlyweight registrationCorrelationId(final long correlationId) {
         buffer.putLong(offset + REGISTRATION_CORRELATION_ID_OFFSET, correlationId);
 
         return this;
@@ -73,8 +70,7 @@ public class SubscriptionMessageFlyweight extends CorrelatedMessageFlyweight
      *
      * @return the stream id
      */
-    public int streamId()
-    {
+    public int streamId() {
         return buffer.getInt(offset + STREAM_ID_OFFSET);
     }
 
@@ -84,8 +80,7 @@ public class SubscriptionMessageFlyweight extends CorrelatedMessageFlyweight
      * @param streamId the channel id
      * @return flyweight
      */
-    public SubscriptionMessageFlyweight streamId(final int streamId)
-    {
+    public SubscriptionMessageFlyweight streamId(final int streamId) {
         buffer.putInt(offset + STREAM_ID_OFFSET, streamId);
 
         return this;
@@ -96,8 +91,7 @@ public class SubscriptionMessageFlyweight extends CorrelatedMessageFlyweight
      *
      * @return channel field
      */
-    public String channel()
-    {
+    public String channel() {
         return buffer.getStringUtf8(offset + CHANNEL_OFFSET, ByteOrder.nativeOrder());
     }
 
@@ -107,15 +101,13 @@ public class SubscriptionMessageFlyweight extends CorrelatedMessageFlyweight
      * @param channel field value
      * @return flyweight
      */
-    public SubscriptionMessageFlyweight channel(final String channel)
-    {
+    public SubscriptionMessageFlyweight channel(final String channel) {
         lengthOfChannel = buffer.putStringUtf8(offset + CHANNEL_OFFSET, channel, ByteOrder.nativeOrder());
 
         return this;
     }
 
-    public int length()
-    {
+    public int length() {
         return CHANNEL_OFFSET + lengthOfChannel;
     }
 }

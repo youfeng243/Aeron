@@ -27,16 +27,15 @@ import static uk.co.real_logic.aeron.logbuffer.FrameDescriptor.*;
 /**
  * A {@link ControlledFragmentHandler} that sits in a chain-of-responsibility pattern that reassembles fragmented messages
  * so that the next handler in the chain only sees whole messages.
- * <p>
+ *
  * Unfragmented messages are delegated without copy. Fragmented messages are copied to a temporary
  * buffer for reassembly before delegation.
- * <p>
+ *
  * Session based buffers will be allocated and grown as necessary based on the length of messages to be assembled.
  * When sessions go inactive see {@link UnavailableImageHandler}, it is possible to free the buffer by calling
  * {@link #freeSessionBuffer(int)}.
  */
-public class ControlledFragmentAssembler implements ControlledFragmentHandler
-{
+public class ControlledFragmentAssembler implements ControlledFragmentHandler {
     private final ControlledFragmentHandler delegate;
     private final AssemblyHeader assemblyHeader = new AssemblyHeader();
     private final Int2ObjectHashMap<BufferBuilder> builderBySessionIdMap = new Int2ObjectHashMap<>();
@@ -47,8 +46,7 @@ public class ControlledFragmentAssembler implements ControlledFragmentHandler
      *
      * @param delegate onto which whole messages are forwarded.
      */
-    public ControlledFragmentAssembler(final ControlledFragmentHandler delegate)
-    {
+    public ControlledFragmentAssembler(final ControlledFragmentHandler delegate) {
         this(delegate, BufferBuilder.INITIAL_CAPACITY);
     }
 
@@ -58,8 +56,7 @@ public class ControlledFragmentAssembler implements ControlledFragmentHandler
      * @param delegate            onto which whole messages are forwarded.
      * @param initialBufferLength to be used for each session.
      */
-    public ControlledFragmentAssembler(final ControlledFragmentHandler delegate, final int initialBufferLength)
-    {
+    public ControlledFragmentAssembler(final ControlledFragmentHandler delegate, final int initialBufferLength) {
         this.delegate = delegate;
         builderFunc = (ignore) -> new BufferBuilder(initialBufferLength);
     }
@@ -72,42 +69,30 @@ public class ControlledFragmentAssembler implements ControlledFragmentHandler
      * @param length of the data in bytes.
      * @param header representing the meta data for the data.
      */
-    public Action onFragment(final DirectBuffer buffer, final int offset, final int length, final Header header)
-    {
+    public Action onFragment(final DirectBuffer buffer, final int offset, final int length, final Header header) {
         final byte flags = header.flags();
 
         Action action = Action.CONTINUE;
 
-        if ((flags & UNFRAGMENTED) == UNFRAGMENTED)
-        {
+        if ((flags & UNFRAGMENTED) == UNFRAGMENTED) {
             action = delegate.onFragment(buffer, offset, length, header);
-        }
-        else
-        {
-            if ((flags & BEGIN_FRAG_FLAG) == BEGIN_FRAG_FLAG)
-            {
+        } else {
+            if ((flags & BEGIN_FRAG_FLAG) == BEGIN_FRAG_FLAG) {
                 final BufferBuilder builder = builderBySessionIdMap.computeIfAbsent(header.sessionId(), builderFunc);
                 builder.reset().append(buffer, offset, length);
-            }
-            else
-            {
+            } else {
                 final BufferBuilder builder = builderBySessionIdMap.get(header.sessionId());
-                if (null != builder && builder.limit() != 0)
-                {
+                if (null != builder && builder.limit() != 0) {
                     final int limit = builder.limit();
                     builder.append(buffer, offset, length);
 
-                    if ((flags & END_FRAG_FLAG) == END_FRAG_FLAG)
-                    {
+                    if ((flags & END_FRAG_FLAG) == END_FRAG_FLAG) {
                         final int msgLength = builder.limit();
                         action = delegate.onFragment(builder.buffer(), 0, msgLength, assemblyHeader.reset(header, msgLength));
 
-                        if (Action.ABORT == action)
-                        {
+                        if (Action.ABORT == action) {
                             builder.limit(limit);
-                        }
-                        else
-                        {
+                        } else {
                             builder.reset();
                         }
                     }
@@ -125,8 +110,7 @@ public class ControlledFragmentAssembler implements ControlledFragmentHandler
      * @param sessionId to have its buffer freed
      * @return true if a buffer has been freed otherwise false.
      */
-    public boolean freeSessionBuffer(final int sessionId)
-    {
+    public boolean freeSessionBuffer(final int sessionId) {
         return null != builderBySessionIdMap.remove(sessionId);
     }
 }

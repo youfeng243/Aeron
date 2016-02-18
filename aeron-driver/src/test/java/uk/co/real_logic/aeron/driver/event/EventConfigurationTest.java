@@ -26,36 +26,30 @@ import static uk.co.real_logic.aeron.driver.event.EventCode.EXCEPTION;
 import static uk.co.real_logic.aeron.driver.event.EventCode.FRAME_IN;
 import static uk.co.real_logic.aeron.driver.event.EventConfiguration.*;
 
-public class EventConfigurationTest
-{
+public class EventConfigurationTest {
     @Test
-    public void nullPropertyShouldDefaultToProductionEventCodes()
-    {
+    public void nullPropertyShouldDefaultToProductionEventCodes() {
         assertThat(getEnabledEventCodes(null), is(PRODUCTION_LOGGER_EVENT_CODES));
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void malformedPropertyShouldDefaultToProductionEventCodes()
-    {
+    public void malformedPropertyShouldDefaultToProductionEventCodes() {
         getEnabledEventCodes("list of invalid options");
     }
 
     @Test
-    public void allPropertyShouldReturnAllEventCodes()
-    {
+    public void allPropertyShouldReturnAllEventCodes() {
         assertThat(getEnabledEventCodes("all"), is(ALL_LOGGER_EVENT_CODES));
     }
 
     @Test
-    public void eventCodesPropertyShouldBeParsedAsAListOfEventCodes()
-    {
+    public void eventCodesPropertyShouldBeParsedAsAListOfEventCodes() {
         final Set<EventCode> expectedCodes = EnumSet.of(EXCEPTION, FRAME_IN);
         assertThat(getEnabledEventCodes("EXCEPTION,FRAME_IN"), is(expectedCodes));
     }
 
     @Test
-    public void makeTagBitSet()
-    {
+    public void makeTagBitSet() {
         final Set<EventCode> eventCodes = EnumSet.of(EXCEPTION, FRAME_IN);
         final long bitSet = EventConfiguration.makeTagBitSet(eventCodes);
         assertThat(bitSet, is(EXCEPTION.tagBit() | FRAME_IN.tagBit()));

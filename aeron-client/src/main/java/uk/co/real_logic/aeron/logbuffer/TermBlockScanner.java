@@ -24,8 +24,7 @@ import static uk.co.real_logic.agrona.BitUtil.align;
 /**
  * Scan a term buffer for a block of messages including padding. The block must include complete messages.
  */
-public class TermBlockScanner
-{
+public class TermBlockScanner {
     /**
      * Scan a term buffer for a block of messages from and offset up to a limit.
      *
@@ -34,22 +33,17 @@ public class TermBlockScanner
      * @param limit      at which the scan should stop.
      * @return the offset at which the scan terminated.
      */
-    public static int scan(final UnsafeBuffer termBuffer, int offset, final int limit)
-    {
-        do
-        {
+    public static int scan(final UnsafeBuffer termBuffer, int offset, final int limit) {
+        do {
             final int frameLength = frameLengthVolatile(termBuffer, offset);
-            if (frameLength <= 0)
-            {
+            if (frameLength <= 0) {
                 break;
             }
 
             final int alignedFrameLength = align(frameLength, FRAME_ALIGNMENT);
             offset += alignedFrameLength;
-            if (offset >= limit)
-            {
-                if (offset > limit)
-                {
+            if (offset >= limit) {
+                if (offset > limit) {
                     offset -= alignedFrameLength;
                 }
 

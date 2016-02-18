@@ -26,82 +26,60 @@ import static uk.co.real_logic.aeron.driver.ThreadingMode.SHARED;
 /**
  * Proxy for offering into the Sender Thread's command queue.
  */
-public class SenderProxy
-{
+public class SenderProxy {
     private final ThreadingMode threadingMode;
     private final Queue<SenderCmd> commandQueue;
     private final AtomicCounter failCount;
     private Sender sender;
 
-    public SenderProxy(final ThreadingMode threadingMode, final Queue<SenderCmd> commandQueue, final AtomicCounter failCount)
-    {
+    public SenderProxy(final ThreadingMode threadingMode, final Queue<SenderCmd> commandQueue, final AtomicCounter failCount) {
         this.threadingMode = threadingMode;
         this.commandQueue = commandQueue;
         this.failCount = failCount;
     }
 
-    public void sender(final Sender sender)
-    {
+    public void sender(final Sender sender) {
         this.sender = sender;
     }
 
-    public void registerSendChannelEndpoint(final SendChannelEndpoint channelEndpoint)
-    {
-        if (isSharedThread())
-        {
+    public void registerSendChannelEndpoint(final SendChannelEndpoint channelEndpoint) {
+        if (isSharedThread()) {
             sender.onRegisterSendChannelEndpoint(channelEndpoint);
-        }
-        else
-        {
+        } else {
             offer(new RegisterSendChannelEndpointCmd(channelEndpoint));
         }
     }
 
-    public void closeSendChannelEndpoint(final SendChannelEndpoint channelEndpoint)
-    {
-        if (isSharedThread())
-        {
+    public void closeSendChannelEndpoint(final SendChannelEndpoint channelEndpoint) {
+        if (isSharedThread()) {
             sender.onCloseSendChannelEndpoint(channelEndpoint);
-        }
-        else
-        {
+        } else {
             offer(new CloseSendChannelEndpointCmd(channelEndpoint));
         }
     }
 
-    public void removeNetworkPublication(final NetworkPublication publication)
-    {
-        if (isSharedThread())
-        {
+    public void removeNetworkPublication(final NetworkPublication publication) {
+        if (isSharedThread()) {
             sender.onRemoveNetworkPublication(publication);
-        }
-        else
-        {
+        } else {
             offer(new RemovePublicationCmd(publication));
         }
     }
 
-    public void newNetworkPublication(final NetworkPublication publication)
-    {
-        if (isSharedThread())
-        {
+    public void newNetworkPublication(final NetworkPublication publication) {
+        if (isSharedThread()) {
             sender.onNewNetworkPublication(publication);
-        }
-        else
-        {
+        } else {
             offer(new NewPublicationCmd(publication));
         }
     }
 
-    private boolean isSharedThread()
-    {
+    private boolean isSharedThread() {
         return threadingMode == SHARED;
     }
 
-    private void offer(final SenderCmd cmd)
-    {
-        while (!commandQueue.offer(cmd))
-        {
+    private void offer(final SenderCmd cmd) {
+        while (!commandQueue.offer(cmd)) {
             failCount.orderedIncrement();
             Thread.yield();
         }

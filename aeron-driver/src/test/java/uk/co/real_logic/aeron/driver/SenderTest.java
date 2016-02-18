@@ -49,8 +49,7 @@ import static uk.co.real_logic.aeron.logbuffer.FrameDescriptor.FRAME_ALIGNMENT;
 import static uk.co.real_logic.aeron.logbuffer.LogBufferDescriptor.TERM_META_DATA_LENGTH;
 import static uk.co.real_logic.agrona.BitUtil.align;
 
-public class SenderTest
-{
+public class SenderTest {
     private static final int TERM_BUFFER_LENGTH = LogBufferDescriptor.TERM_MIN_LENGTH;
     private static final int MAX_FRAME_LENGTH = 1024;
     private static final int SESSION_ID = 1;
@@ -59,7 +58,7 @@ public class SenderTest
     private static final byte[] PAYLOAD = "Payload is here!".getBytes();
 
     private static final UnsafeBuffer HEADER =
-        DataHeaderFlyweight.createDefaultHeader(SESSION_ID, STREAM_ID, INITIAL_TERM_ID);
+            DataHeaderFlyweight.createDefaultHeader(SESSION_ID, STREAM_ID, INITIAL_TERM_ID);
     private static final int ALIGNED_FRAME_LENGTH = align(HEADER.capacity() + PAYLOAD.length, FRAME_ALIGNMENT);
 
     private final EventLogger mockLogger = mock(EventLogger.class);
@@ -88,21 +87,20 @@ public class SenderTest
     private final HeaderWriter headerWriter = new HeaderWriter(HEADER);
 
     private Answer<Integer> saveByteBufferAnswer =
-        (invocation) ->
-        {
-            final Object args[] = invocation.getArguments();
-            final ByteBuffer buffer = (ByteBuffer)args[0];
+            (invocation) ->
+            {
+                final Object args[] = invocation.getArguments();
+                final ByteBuffer buffer = (ByteBuffer) args[0];
 
-            final int length = buffer.limit() - buffer.position();
-            receivedFrames.add(ByteBuffer.allocateDirect(length).put(buffer));
+                final int length = buffer.limit() - buffer.position();
+                receivedFrames.add(ByteBuffer.allocateDirect(length).put(buffer));
 
-            // we don't pass on the args, so don't reset buffer.position() back
-            return length;
-        };
+                // we don't pass on the args, so don't reset buffer.position() back
+                return length;
+            };
 
     @Before
-    public void setUp() throws Exception
-    {
+    public void setUp() throws Exception {
         final SendChannelEndpoint mockSendChannelEndpoint = mock(SendChannelEndpoint.class);
         when(mockSendChannelEndpoint.udpChannel()).thenReturn(udpChannel);
         when(mockSendChannelEndpoint.send(anyObject())).thenAnswer(saveByteBufferAnswer);
@@ -111,47 +109,45 @@ public class SenderTest
         when(mockSystemCounters.senderFlowControlLimits()).thenReturn(mock(AtomicCounter.class));
 
         sender = new Sender(
-            new MediaDriver.Context()
-                .senderTransportPoller(mockTransportPoller)
-                .systemCounters(mockSystemCounters)
-                .senderCommandQueue(senderCommandQueue)
-                .eventLogger(mockLogger)
-                .nanoClock(() -> currentTimestamp));
+                new MediaDriver.Context()
+                        .senderTransportPoller(mockTransportPoller)
+                        .systemCounters(mockSystemCounters)
+                        .senderCommandQueue(senderCommandQueue)
+                        .eventLogger(mockLogger)
+                        .nanoClock(() -> currentTimestamp));
 
         final UnsafeBuffer termMetaData = rawLog.partitions()[0].metaDataBuffer();
         LogBufferDescriptor.initialiseTailWithTermId(termMetaData, INITIAL_TERM_ID);
 
         termAppenders = rawLog
-            .stream()
-            .map((log) -> new TermAppender(log.termBuffer(), log.metaDataBuffer()))
-            .toArray(TermAppender[]::new);
+                .stream()
+                .map((log) -> new TermAppender(log.termBuffer(), log.metaDataBuffer()))
+                .toArray(TermAppender[]::new);
 
         publication = new NetworkPublication(
-            mockSendChannelEndpoint,
-            () -> currentTimestamp,
-            rawLog,
-            new AtomicLongPosition(),
-            mock(Position.class),
-            SESSION_ID,
-            STREAM_ID,
-            INITIAL_TERM_ID,
-            MAX_FRAME_LENGTH,
-            mockSystemCounters,
-            flowControl,
-            mockRetransmitHandler);
+                mockSendChannelEndpoint,
+                () -> currentTimestamp,
+                rawLog,
+                new AtomicLongPosition(),
+                mock(Position.class),
+                SESSION_ID,
+                STREAM_ID,
+                INITIAL_TERM_ID,
+                MAX_FRAME_LENGTH,
+                mockSystemCounters,
+                flowControl,
+                mockRetransmitHandler);
 
         senderCommandQueue.offer(new NewPublicationCmd(publication));
     }
 
     @After
-    public void tearDown() throws Exception
-    {
+    public void tearDown() throws Exception {
         sender.onClose();
     }
 
     @Test
-    public void shouldSendSetupFrameOnChannelWhenTimeoutWithoutStatusMessage() throws Exception
-    {
+    public void shouldSendSetupFrameOnChannelWhenTimeoutWithoutStatusMessage() throws Exception {
         sender.doWork();
         assertThat(receivedFrames.size(), is(1));
         currentTimestamp += Configuration.PUBLICATION_SETUP_TIMEOUT_NS - 1;
@@ -168,13 +164,12 @@ public class SenderTest
         assertThat(setupHeader.streamId(), is(STREAM_ID));
         assertThat(setupHeader.sessionId(), is(SESSION_ID));
         assertThat(setupHeader.headerType(), is(HeaderFlyweight.HDR_TYPE_SETUP));
-        assertThat(setupHeader.flags(), is((short)0));
-        assertThat(setupHeader.version(), is((short)HeaderFlyweight.CURRENT_VERSION));
+        assertThat(setupHeader.flags(), is((short) 0));
+        assertThat(setupHeader.version(), is((short) HeaderFlyweight.CURRENT_VERSION));
     }
 
     @Test
-    public void shouldSendMultipleSetupFramesOnChannelWhenTimeoutWithoutStatusMessage() throws Exception
-    {
+    public void shouldSendMultipleSetupFramesOnChannelWhenTimeoutWithoutStatusMessage() throws Exception {
         sender.doWork();
         assertThat(receivedFrames.size(), is(1));
 
@@ -187,8 +182,7 @@ public class SenderTest
     }
 
     @Test
-    public void shouldNotSendSetupFrameAfterReceivingStatusMessage() throws Exception
-    {
+    public void shouldNotSendSetupFrameAfterReceivingStatusMessage() throws Exception {
         publication.senderPositionLimit(flowControl.onStatusMessage(INITIAL_TERM_ID, 0, 0, rcvAddress));
         sender.doWork();
         assertThat(receivedFrames.size(), is(1));
@@ -205,10 +199,9 @@ public class SenderTest
     }
 
     @Test
-    public void shouldSendSetupFrameAfterReceivingStatusMessageWithSetupBit() throws Exception
-    {
+    public void shouldSendSetupFrameAfterReceivingStatusMessageWithSetupBit() throws Exception {
         publication.senderPositionLimit(
-            flowControl.onStatusMessage(INITIAL_TERM_ID, 0, ALIGNED_FRAME_LENGTH, rcvAddress));
+                flowControl.onStatusMessage(INITIAL_TERM_ID, 0, ALIGNED_FRAME_LENGTH, rcvAddress));
 
         final UnsafeBuffer buffer = new UnsafeBuffer(ByteBuffer.allocateDirect(PAYLOAD.length));
         buffer.putBytes(0, PAYLOAD);
@@ -236,10 +229,9 @@ public class SenderTest
     }
 
     @Test
-    public void shouldBeAbleToSendOnChannel() throws Exception
-    {
+    public void shouldBeAbleToSendOnChannel() throws Exception {
         publication.senderPositionLimit(
-            flowControl.onStatusMessage(INITIAL_TERM_ID, 0, ALIGNED_FRAME_LENGTH, rcvAddress));
+                flowControl.onStatusMessage(INITIAL_TERM_ID, 0, ALIGNED_FRAME_LENGTH, rcvAddress));
 
         final UnsafeBuffer buffer = new UnsafeBuffer(ByteBuffer.allocateDirect(PAYLOAD.length));
         buffer.putBytes(0, PAYLOAD);
@@ -259,14 +251,13 @@ public class SenderTest
         assertThat(dataHeader.termOffset(), is(offsetOfMessage(1)));
         assertThat(dataHeader.headerType(), is(HeaderFlyweight.HDR_TYPE_DATA));
         assertThat(dataHeader.flags(), is(DataHeaderFlyweight.BEGIN_AND_END_FLAGS));
-        assertThat(dataHeader.version(), is((short)HeaderFlyweight.CURRENT_VERSION));
+        assertThat(dataHeader.version(), is((short) HeaderFlyweight.CURRENT_VERSION));
     }
 
     @Test
-    public void shouldBeAbleToSendOnChannelTwice() throws Exception
-    {
+    public void shouldBeAbleToSendOnChannelTwice() throws Exception {
         publication.senderPositionLimit(
-            flowControl.onStatusMessage(INITIAL_TERM_ID, 0, (2 * ALIGNED_FRAME_LENGTH), rcvAddress));
+                flowControl.onStatusMessage(INITIAL_TERM_ID, 0, (2 * ALIGNED_FRAME_LENGTH), rcvAddress));
 
         final UnsafeBuffer buffer = new UnsafeBuffer(ByteBuffer.allocateDirect(PAYLOAD.length));
         buffer.putBytes(0, PAYLOAD);
@@ -289,7 +280,7 @@ public class SenderTest
         assertThat(dataHeader.termOffset(), is(offsetOfMessage(1)));
         assertThat(dataHeader.headerType(), is(HeaderFlyweight.HDR_TYPE_DATA));
         assertThat(dataHeader.flags(), is(DataHeaderFlyweight.BEGIN_AND_END_FLAGS));
-        assertThat(dataHeader.version(), is((short)HeaderFlyweight.CURRENT_VERSION));
+        assertThat(dataHeader.version(), is((short) HeaderFlyweight.CURRENT_VERSION));
 
         dataHeader.wrap(new UnsafeBuffer(receivedFrames.remove()));
         assertThat(dataHeader.frameLength(), is(ALIGNED_FRAME_LENGTH));
@@ -299,12 +290,11 @@ public class SenderTest
         assertThat(dataHeader.termOffset(), is(offsetOfMessage(2)));
         assertThat(dataHeader.headerType(), is(HeaderFlyweight.HDR_TYPE_DATA));
         assertThat(dataHeader.flags(), is(DataHeaderFlyweight.BEGIN_AND_END_FLAGS));
-        assertThat(dataHeader.version(), is((short)HeaderFlyweight.CURRENT_VERSION));
+        assertThat(dataHeader.version(), is((short) HeaderFlyweight.CURRENT_VERSION));
     }
 
     @Test
-    public void shouldNotSendUntilStatusMessageReceived() throws Exception
-    {
+    public void shouldNotSendUntilStatusMessageReceived() throws Exception {
         final UnsafeBuffer buffer = new UnsafeBuffer(ByteBuffer.allocateDirect(PAYLOAD.length));
         buffer.putBytes(0, PAYLOAD);
         termAppenders[0].appendUnfragmentedMessage(headerWriter, buffer, 0, PAYLOAD.length);
@@ -315,7 +305,7 @@ public class SenderTest
         assertThat(setupHeader.headerType(), is(HeaderFlyweight.HDR_TYPE_SETUP));
 
         publication.senderPositionLimit(
-            flowControl.onStatusMessage(INITIAL_TERM_ID, 0, ALIGNED_FRAME_LENGTH, rcvAddress));
+                flowControl.onStatusMessage(INITIAL_TERM_ID, 0, ALIGNED_FRAME_LENGTH, rcvAddress));
         sender.doWork();
 
         assertThat(receivedFrames.size(), is(1));
@@ -329,17 +319,16 @@ public class SenderTest
         assertThat(dataHeader.termOffset(), is(offsetOfMessage(1)));
         assertThat(dataHeader.headerType(), is(HeaderFlyweight.HDR_TYPE_DATA));
         assertThat(dataHeader.flags(), is(DataHeaderFlyweight.BEGIN_AND_END_FLAGS));
-        assertThat(dataHeader.version(), is((short)HeaderFlyweight.CURRENT_VERSION));
+        assertThat(dataHeader.version(), is((short) HeaderFlyweight.CURRENT_VERSION));
     }
 
     @Test
-    public void shouldNotBeAbleToSendAfterUsingUpYourWindow() throws Exception
-    {
+    public void shouldNotBeAbleToSendAfterUsingUpYourWindow() throws Exception {
         final UnsafeBuffer buffer = new UnsafeBuffer(ByteBuffer.allocateDirect(PAYLOAD.length));
         buffer.putBytes(0, PAYLOAD);
         termAppenders[0].appendUnfragmentedMessage(headerWriter, buffer, 0, PAYLOAD.length);
         publication.senderPositionLimit(
-            flowControl.onStatusMessage(INITIAL_TERM_ID, 0, ALIGNED_FRAME_LENGTH, rcvAddress));
+                flowControl.onStatusMessage(INITIAL_TERM_ID, 0, ALIGNED_FRAME_LENGTH, rcvAddress));
 
         sender.doWork();
 
@@ -354,7 +343,7 @@ public class SenderTest
         assertThat(dataHeader.termOffset(), is(offsetOfMessage(1)));
         assertThat(dataHeader.headerType(), is(HeaderFlyweight.HDR_TYPE_DATA));
         assertThat(dataHeader.flags(), is(DataHeaderFlyweight.BEGIN_AND_END_FLAGS));
-        assertThat(dataHeader.version(), is((short)HeaderFlyweight.CURRENT_VERSION));
+        assertThat(dataHeader.version(), is((short) HeaderFlyweight.CURRENT_VERSION));
 
         termAppenders[0].appendUnfragmentedMessage(headerWriter, buffer, 0, PAYLOAD.length);
         sender.doWork();
@@ -363,10 +352,9 @@ public class SenderTest
     }
 
     @Test
-    public void shouldSendLastDataFrameAsHeartbeatWhenIdle() throws Exception
-    {
+    public void shouldSendLastDataFrameAsHeartbeatWhenIdle() throws Exception {
         publication.senderPositionLimit(
-            flowControl.onStatusMessage(INITIAL_TERM_ID, 0, ALIGNED_FRAME_LENGTH, rcvAddress));
+                flowControl.onStatusMessage(INITIAL_TERM_ID, 0, ALIGNED_FRAME_LENGTH, rcvAddress));
 
         final UnsafeBuffer buffer = new UnsafeBuffer(ByteBuffer.allocateDirect(PAYLOAD.length));
         buffer.putBytes(0, PAYLOAD);
@@ -393,10 +381,9 @@ public class SenderTest
     }
 
     @Test
-    public void shouldSendMultipleDataFramesAsHeartbeatsWhenIdle()
-    {
+    public void shouldSendMultipleDataFramesAsHeartbeatsWhenIdle() {
         publication.senderPositionLimit(
-            flowControl.onStatusMessage(INITIAL_TERM_ID, 0, ALIGNED_FRAME_LENGTH, rcvAddress));
+                flowControl.onStatusMessage(INITIAL_TERM_ID, 0, ALIGNED_FRAME_LENGTH, rcvAddress));
 
         final UnsafeBuffer buffer = new UnsafeBuffer(ByteBuffer.allocateDirect(PAYLOAD.length));
         buffer.putBytes(0, PAYLOAD);
@@ -431,8 +418,7 @@ public class SenderTest
         assertThat(dataHeader.termOffset(), is(offsetOfMessage(2)));
     }
 
-    private int offsetOfMessage(final int offset)
-    {
+    private int offsetOfMessage(final int offset) {
         return (offset - 1) * align(HEADER.capacity() + PAYLOAD.length, FRAME_ALIGNMENT);
     }
 }

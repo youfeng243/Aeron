@@ -28,33 +28,29 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static uk.co.real_logic.aeron.driver.UriUtil.parseQueryString;
 
-public class UriUtilTest
-{
+public class UriUtilTest {
     @Test
-    public void shouldParseSimpleQueryParameters() throws Exception
-    {
+    public void shouldParseSimpleQueryParameters() throws Exception {
         final Map<String, String> params =
-            doParse(URI.create("http://example.com:12345/foo/bar.html?mask=24"));
+                doParse(URI.create("http://example.com:12345/foo/bar.html?mask=24"));
 
         assertThat(params.size(), is(1));
         assertThat(params.get("mask"), is("24"));
     }
 
     @Test
-    public void shouldParseWithMissingValuePart() throws Exception
-    {
+    public void shouldParseWithMissingValuePart() throws Exception {
         final Map<String, String> params =
-            doParse(URI.create("http://example.com:12345/foo/bar.html?mask"));
+                doParse(URI.create("http://example.com:12345/foo/bar.html?mask"));
 
         assertThat(params.containsKey("mask"), is(true));
         assertThat(params.get("mask"), is(""));
     }
 
     @Test
-    public void shouldParseWithMultipleArguments() throws Exception
-    {
+    public void shouldParseWithMultipleArguments() throws Exception {
         final Map<String, String> params =
-            doParse(URI.create("http://example.com:12345/foo/bar.html?mask=24&wibble&bits=0110102"));
+                doParse(URI.create("http://example.com:12345/foo/bar.html?mask=24&wibble&bits=0110102"));
 
         assertThat(params.get("mask"), is("24"));
         assertThat(params.get("bits"), is("0110102"));
@@ -62,35 +58,31 @@ public class UriUtilTest
     }
 
     @Test
-    public void shouldParseEncodedArguments() throws Exception
-    {
+    public void shouldParseEncodedArguments() throws Exception {
         final Map<String, String> params =
-            doParse(URI.create(format(
-                "http://example.com:12345/foo/bar.html?mask=24&ip=%s",
-                URLEncoder.encode("FE80::0202:B3FF:FE1E:8329", "UTF-8"))));
+                doParse(URI.create(format(
+                        "http://example.com:12345/foo/bar.html?mask=24&ip=%s",
+                        URLEncoder.encode("FE80::0202:B3FF:FE1E:8329", "UTF-8"))));
 
         assertThat(params.get("ip"), is("FE80::0202:B3FF:FE1E:8329"));
     }
 
     @Test
-    public void shouldAllowArgumentsThatAreNotEncodedButShouldBe() throws Exception
-    {
+    public void shouldAllowArgumentsThatAreNotEncodedButShouldBe() throws Exception {
         final Map<String, String> params =
-            doParse(URI.create(format(
-                "http://example.com:12345/foo/bar.html?mask=24&ip=%s",
-                "FE80::0202:B3FF:FE1E:8329")));
+                doParse(URI.create(format(
+                        "http://example.com:12345/foo/bar.html?mask=24&ip=%s",
+                        "FE80::0202:B3FF:FE1E:8329")));
 
         assertThat(params.get("ip"), is("FE80::0202:B3FF:FE1E:8329"));
     }
 
     @Test(expected = URISyntaxException.class)
-    public void shouldThrowMalformedUriExceptionIfQueryParametersAreInvalid() throws Exception
-    {
+    public void shouldThrowMalformedUriExceptionIfQueryParametersAreInvalid() throws Exception {
         doParse(URI.create("http://example.com:12345/foo/bar.html?mask=24&ip=abc=4"));
     }
 
-    private static Map<String, String> doParse(final URI uri) throws URISyntaxException
-    {
+    private static Map<String, String> doParse(final URI uri) throws URISyntaxException {
         return parseQueryString(uri, new HashMap<>());
     }
 }

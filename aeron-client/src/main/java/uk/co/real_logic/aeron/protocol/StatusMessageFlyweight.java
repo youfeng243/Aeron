@@ -26,12 +26,15 @@ import static java.nio.ByteOrder.LITTLE_ENDIAN;
  *
  * @see <a href="https://github.com/real-logic/Aeron/wiki/Protocol-Specification#status-messages">Status Message</a>
  */
-public class StatusMessageFlyweight extends HeaderFlyweight
-{
-    /** Length of the Status Message Packet */
+public class StatusMessageFlyweight extends HeaderFlyweight {
+    /**
+     * Length of the Status Message Packet
+     */
     public static final int HEADER_LENGTH = 28;
 
-    /** Publisher should send SETUP frame */
+    /**
+     * Publisher should send SETUP frame
+     */
     public static final short SEND_SETUP_FLAG = 0x80;
 
     private static final int SESSION_ID_FIELD_OFFSET = 8;
@@ -40,36 +43,33 @@ public class StatusMessageFlyweight extends HeaderFlyweight
     private static final int CONSUMPTION_TERM_OFFSET_FIELD_OFFSET = 20;
     private static final int RECEIVER_WINDOW_FIELD_OFFSET = 24;
 
-    public StatusMessageFlyweight()
-    {
+    public StatusMessageFlyweight() {
     }
 
-    public StatusMessageFlyweight(final ByteBuffer buffer)
-    {
+    public StatusMessageFlyweight(final ByteBuffer buffer) {
         super(buffer);
     }
 
-    public StatusMessageFlyweight(final UnsafeBuffer buffer)
-    {
+    public StatusMessageFlyweight(final UnsafeBuffer buffer) {
         super(buffer);
     }
 
     /**
      * return session id field
+     *
      * @return session id field
      */
-    public int sessionId()
-    {
+    public int sessionId() {
         return getInt(SESSION_ID_FIELD_OFFSET, LITTLE_ENDIAN);
     }
 
     /**
      * set session id field
+     *
      * @param sessionId field value
      * @return flyweight
      */
-    public StatusMessageFlyweight sessionId(final int sessionId)
-    {
+    public StatusMessageFlyweight sessionId(final int sessionId) {
         putInt(SESSION_ID_FIELD_OFFSET, sessionId, LITTLE_ENDIAN);
 
         return this;
@@ -80,8 +80,7 @@ public class StatusMessageFlyweight extends HeaderFlyweight
      *
      * @return stream id field
      */
-    public int streamId()
-    {
+    public int streamId() {
         return getInt(STREAM_ID_FIELD_OFFSET, LITTLE_ENDIAN);
     }
 
@@ -91,8 +90,7 @@ public class StatusMessageFlyweight extends HeaderFlyweight
      * @param streamId field value
      * @return flyweight
      */
-    public StatusMessageFlyweight streamId(final int streamId)
-    {
+    public StatusMessageFlyweight streamId(final int streamId) {
         putInt(STREAM_ID_FIELD_OFFSET, streamId, LITTLE_ENDIAN);
 
         return this;
@@ -103,8 +101,7 @@ public class StatusMessageFlyweight extends HeaderFlyweight
      *
      * @return highest consumption term offset field
      */
-    public int consumptionTermOffset()
-    {
+    public int consumptionTermOffset() {
         return getInt(CONSUMPTION_TERM_OFFSET_FIELD_OFFSET, LITTLE_ENDIAN);
     }
 
@@ -114,8 +111,7 @@ public class StatusMessageFlyweight extends HeaderFlyweight
      * @param termOffset field value
      * @return flyweight
      */
-    public StatusMessageFlyweight consumptionTermOffset(final int termOffset)
-    {
+    public StatusMessageFlyweight consumptionTermOffset(final int termOffset) {
         putInt(CONSUMPTION_TERM_OFFSET_FIELD_OFFSET, termOffset, LITTLE_ENDIAN);
 
         return this;
@@ -126,8 +122,7 @@ public class StatusMessageFlyweight extends HeaderFlyweight
      *
      * @return highest consumption term id field
      */
-    public int consumptionTermId()
-    {
+    public int consumptionTermId() {
         return getInt(CONSUMPTION_TERM_ID_FIELD_OFFSET, LITTLE_ENDIAN);
     }
 
@@ -137,8 +132,7 @@ public class StatusMessageFlyweight extends HeaderFlyweight
      * @param termId field value
      * @return flyweight
      */
-    public StatusMessageFlyweight consumptionTermId(final int termId)
-    {
+    public StatusMessageFlyweight consumptionTermId(final int termId) {
         putInt(CONSUMPTION_TERM_ID_FIELD_OFFSET, termId, LITTLE_ENDIAN);
 
         return this;
@@ -149,8 +143,7 @@ public class StatusMessageFlyweight extends HeaderFlyweight
      *
      * @return receiver window field
      */
-    public int receiverWindowLength()
-    {
+    public int receiverWindowLength() {
         return getInt(RECEIVER_WINDOW_FIELD_OFFSET, LITTLE_ENDIAN);
     }
 
@@ -160,8 +153,7 @@ public class StatusMessageFlyweight extends HeaderFlyweight
      * @param receiverWindowLength field value
      * @return flyweight
      */
-    public StatusMessageFlyweight receiverWindowLength(final int receiverWindowLength)
-    {
+    public StatusMessageFlyweight receiverWindowLength(final int receiverWindowLength) {
         putInt(RECEIVER_WINDOW_FIELD_OFFSET, receiverWindowLength, LITTLE_ENDIAN);
 
         return this;

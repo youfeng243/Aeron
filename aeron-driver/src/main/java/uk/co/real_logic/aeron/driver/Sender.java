@@ -28,8 +28,7 @@ import java.util.function.Consumer;
 /**
  * Agent that iterates over networkPublications for sending them to registered subscribers.
  */
-public class Sender implements Agent, Consumer<SenderCmd>
-{
+public class Sender implements Agent, Consumer<SenderCmd> {
     private static final NetworkPublication[] EMPTY_PUBLICATIONS = new NetworkPublication[0];
 
     private final ControlTransportPoller controlTransportPoller;
@@ -41,8 +40,7 @@ public class Sender implements Agent, Consumer<SenderCmd>
     private NetworkPublication[] networkPublications = EMPTY_PUBLICATIONS;
     private int roundRobinIndex = 0;
 
-    public Sender(final MediaDriver.Context ctx)
-    {
+    public Sender(final MediaDriver.Context ctx) {
         this.controlTransportPoller = ctx.senderTransportPoller();
         this.commandQueue = ctx.senderCommandQueue();
         this.conductorProxy = ctx.fromSenderDriverConductorProxy();
@@ -50,8 +48,7 @@ public class Sender implements Agent, Consumer<SenderCmd>
         this.nanoClock = ctx.nanoClock();
     }
 
-    public int doWork()
-    {
+    public int doWork() {
         final long now = nanoClock.nanoTime();
         final int workCount = commandQueue.drain(this);
         final int bytesSent = doSend(now);
@@ -60,61 +57,51 @@ public class Sender implements Agent, Consumer<SenderCmd>
         return workCount + bytesSent + bytesReceived;
     }
 
-    public String roleName()
-    {
+    public String roleName() {
         return "sender";
     }
 
-    public void onRegisterSendChannelEndpoint(final SendChannelEndpoint channelEndpoint)
-    {
+    public void onRegisterSendChannelEndpoint(final SendChannelEndpoint channelEndpoint) {
         channelEndpoint.openChannel();
         channelEndpoint.registerForRead(controlTransportPoller);
         controlTransportPoller.selectNowWithoutProcessing();
     }
 
-    public void onCloseSendChannelEndpoint(final SendChannelEndpoint channelEndpoint)
-    {
+    public void onCloseSendChannelEndpoint(final SendChannelEndpoint channelEndpoint) {
         channelEndpoint.close();
         controlTransportPoller.selectNowWithoutProcessing();
     }
 
-    public void onNewNetworkPublication(final NetworkPublication publication)
-    {
+    public void onNewNetworkPublication(final NetworkPublication publication) {
         networkPublications = ArrayUtil.add(networkPublications, publication);
         publication.sendChannelEndpoint().registerForSend(publication);
     }
 
-    public void onRemoveNetworkPublication(final NetworkPublication publication)
-    {
+    public void onRemoveNetworkPublication(final NetworkPublication publication) {
         networkPublications = ArrayUtil.remove(networkPublications, publication);
         publication.sendChannelEndpoint().unregisterForSend(publication);
         conductorProxy.closeResource(publication);
     }
 
-    public void accept(final SenderCmd cmd)
-    {
+    public void accept(final SenderCmd cmd) {
         cmd.execute(this);
     }
 
-    private int doSend(final long now)
-    {
+    private int doSend(final long now) {
         int bytesSent = 0;
         final NetworkPublication[] publications = this.networkPublications;
         final int length = publications.length;
 
         int startingIndex = roundRobinIndex++;
-        if (startingIndex >= length)
-        {
+        if (startingIndex >= length) {
             roundRobinIndex = startingIndex = 0;
         }
 
-        for (int i = startingIndex; i < length; i++)
-        {
+        for (int i = startingIndex; i < length; i++) {
             bytesSent += publications[i].send(now);
         }
 
-        for (int i = 0; i < startingIndex; i++)
-        {
+        for (int i = 0; i < startingIndex; i++) {
             bytesSent += publications[i].send(now);
         }
 

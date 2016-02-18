@@ -22,11 +22,10 @@ import static uk.co.real_logic.aeron.logbuffer.TermGapScanner.scanForGap;
 
 /**
  * Detecting and handling of gaps in a stream
- * <p>
+ *
  * This detector only notifies a single NAK at a time.
  */
-public class LossDetector implements GapHandler
-{
+public class LossDetector implements GapHandler {
     private static final long TIMER_INACTIVE = -1;
 
     private final FeedbackDelayGenerator delayGenerator;
@@ -43,8 +42,7 @@ public class LossDetector implements GapHandler
      * @param delayGenerator   to use for delay determination
      * @param nakMessageSender to call when sending a NAK is indicated
      */
-    public LossDetector(final FeedbackDelayGenerator delayGenerator, final NakMessageSender nakMessageSender)
-    {
+    public LossDetector(final FeedbackDelayGenerator delayGenerator, final NakMessageSender nakMessageSender) {
         this.delayGenerator = delayGenerator;
         this.nakMessageSender = nakMessageSender;
     }
@@ -54,63 +52,56 @@ public class LossDetector implements GapHandler
      *
      * @return the offset to which the term is rebuilt after a {@link #scan(UnsafeBuffer, long, long, long, int, int, int)}.
      */
-    public int rebuildOffset()
-    {
+    public int rebuildOffset() {
         return rebuildOffset;
     }
 
     /**
      * Scan for gaps and handle received data.
-     * <p>
+     *
      * The handler keeps track from scan to scan what is a gap and what must have been repaired.
      *
-     * @param termBuffer to scan
-     * @param rebuildPosition to start scanning from
-     * @param hwmPosition to scan up to
-     * @param now time in nanoseconds
-     * @param termLengthMask used for offset calculation
+     * @param termBuffer          to scan
+     * @param rebuildPosition     to start scanning from
+     * @param hwmPosition         to scan up to
+     * @param now                 time in nanoseconds
+     * @param termLengthMask      used for offset calculation
      * @param positionBitsToShift used for position calculation
-     * @param initialTermId used by the scanner
+     * @param initialTermId       used by the scanner
      * @return the work count for this operation.
      */
     public int scan(
-        final UnsafeBuffer termBuffer,
-        final long rebuildPosition,
-        final long hwmPosition,
-        final long now,
-        final int termLengthMask,
-        final int positionBitsToShift,
-        final int initialTermId)
-    {
+            final UnsafeBuffer termBuffer,
+            final long rebuildPosition,
+            final long hwmPosition,
+            final long now,
+            final int termLengthMask,
+            final int positionBitsToShift,
+            final int initialTermId) {
         int workCount = 0;
 
-        final int rebuildTermOffset = (int)rebuildPosition & termLengthMask;
-        final int hwmTermOffset = (int)hwmPosition & termLengthMask;
+        final int rebuildTermOffset = (int) rebuildPosition & termLengthMask;
+        final int hwmTermOffset = (int) hwmPosition & termLengthMask;
 
-        if (rebuildPosition < hwmPosition)
-        {
-            final int rebuildTermsCount = (int)(rebuildPosition >>> positionBitsToShift);
-            final int hwmTermsCount = (int)(hwmPosition >>> positionBitsToShift);
+        if (rebuildPosition < hwmPosition) {
+            final int rebuildTermsCount = (int) (rebuildPosition >>> positionBitsToShift);
+            final int hwmTermsCount = (int) (hwmPosition >>> positionBitsToShift);
 
             final int activeTermId = initialTermId + rebuildTermsCount;
             final int activeTermLimit = (rebuildTermsCount == hwmTermsCount) ? hwmTermOffset : termBuffer.capacity();
             rebuildOffset = activeTermLimit;
 
             rebuildOffset = scanForGap(termBuffer, activeTermId, rebuildTermOffset, activeTermLimit, this);
-            if (rebuildOffset < activeTermLimit)
-            {
+            if (rebuildOffset < activeTermLimit) {
                 final Gap gap = scannedGap;
-                if (TIMER_INACTIVE == expire || !gap.matches(activeGap.termId, activeGap.termOffset))
-                {
+                if (TIMER_INACTIVE == expire || !gap.matches(activeGap.termId, activeGap.termOffset)) {
                     activateGap(now, gap.termId, gap.termOffset, gap.length);
                     workCount = 1;
                 }
 
                 rebuildOffset = gap.termOffset;
             }
-        }
-        else
-        {
+        } else {
             expire = TIMER_INACTIVE;
             rebuildOffset = rebuildTermOffset;
         }
@@ -127,41 +118,33 @@ public class LossDetector implements GapHandler
      * @param termId     in the NAK
      * @param termOffset in the NAK
      */
-    public void onNak(final long now, final int termId, final int termOffset)
-    {
-        if (TIMER_INACTIVE != expire && activeGap.matches(termId, termOffset))
-        {
+    public void onNak(final long now, final int termId, final int termOffset) {
+        if (TIMER_INACTIVE != expire && activeGap.matches(termId, termOffset)) {
             expire = now + determineNakDelay();
         }
     }
 
-    public void onGap(final int termId, final UnsafeBuffer buffer, final int offset, final int length)
-    {
+    public void onGap(final int termId, final UnsafeBuffer buffer, final int offset, final int length) {
         scannedGap.reset(termId, offset, length);
     }
 
-    private void activateGap(final long now, final int termId, final int termOffset, final int length)
-    {
+    private void activateGap(final long now, final int termId, final int termOffset, final int length) {
         activeGap.reset(termId, termOffset, length);
-        if (determineNakDelay() == -1)
-        {
+        if (determineNakDelay() == -1) {
             return;
         }
 
         expire = now + determineNakDelay();
 
-        if (delayGenerator.shouldFeedbackImmediately())
-        {
+        if (delayGenerator.shouldFeedbackImmediately()) {
             sendNakMessage();
         }
     }
 
-    private int checkTimerExpire(final long now)
-    {
+    private int checkTimerExpire(final long now) {
         int result = 0;
 
-        if (TIMER_INACTIVE != expire && now > expire)
-        {
+        if (TIMER_INACTIVE != expire && now > expire) {
             sendNakMessage();
             expire = now + determineNakDelay();
             result = 1;
@@ -170,31 +153,26 @@ public class LossDetector implements GapHandler
         return result;
     }
 
-    private void sendNakMessage()
-    {
+    private void sendNakMessage() {
         nakMessageSender.onLossDetected(activeGap.termId, activeGap.termOffset, activeGap.length);
     }
 
-    private long determineNakDelay()
-    {
+    private long determineNakDelay() {
         return delayGenerator.generateDelay();
     }
 
-    static final class Gap
-    {
+    static final class Gap {
         int termId;
         int termOffset;
         int length;
 
-        public void reset(final int termId, final int termOffset, final int length)
-        {
+        public void reset(final int termId, final int termOffset, final int length) {
             this.termId = termId;
             this.termOffset = termOffset;
             this.length = length;
         }
 
-        public boolean matches(final int termId, final int termOffset)
-        {
+        public boolean matches(final int termId, final int termOffset) {
             return termId == this.termId && termOffset == this.termOffset;
         }
     }

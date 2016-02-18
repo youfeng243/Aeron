@@ -15,10 +15,8 @@
  */
 package uk.co.real_logic.aeron.driver.exceptions;
 
-public class ActiveDriverException extends IllegalStateException
-{
-    public ActiveDriverException(final String message)
-    {
+public class ActiveDriverException extends IllegalStateException {
+    public ActiveDriverException(final String message) {
         super(message);
     }
 }

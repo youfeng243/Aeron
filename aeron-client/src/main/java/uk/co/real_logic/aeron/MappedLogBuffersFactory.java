@@ -18,10 +18,8 @@ package uk.co.real_logic.aeron;
 /**
  * Default mapping byteBuffer lifecycle strategy for the client
  */
-class MappedLogBuffersFactory implements LogBuffersFactory
-{
-    public LogBuffers map(final String logFileName)
-    {
+class MappedLogBuffersFactory implements LogBuffersFactory {
+    public LogBuffers map(final String logFileName) {
         return new LogBuffers(logFileName);
     }
 }

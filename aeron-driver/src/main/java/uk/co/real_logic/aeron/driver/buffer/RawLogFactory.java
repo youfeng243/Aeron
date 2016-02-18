@@ -28,8 +28,7 @@ import static uk.co.real_logic.aeron.driver.buffer.FileMappingConvention.streamL
 /**
  * Factory for creating new {@link RawLog} in the source publications or rebuilt publication images directories as appropriate.
  */
-public class RawLogFactory implements AutoCloseable
-{
+public class RawLogFactory implements AutoCloseable {
     private final int publicationTermBufferLength;
     private final int imagesTermBufferMaxLength;
     private final int ipcPublicationTermBufferLength;
@@ -39,12 +38,11 @@ public class RawLogFactory implements AutoCloseable
     private final EventLogger logger;
 
     public RawLogFactory(
-        final String dataDirectoryName,
-        final int publicationTermBufferLength,
-        final int imagesTermBufferMaxLength,
-        final int ipcPublicationTermBufferLength,
-        final EventLogger logger)
-    {
+            final String dataDirectoryName,
+            final int publicationTermBufferLength,
+            final int imagesTermBufferMaxLength,
+            final int ipcPublicationTermBufferLength,
+            final EventLogger logger) {
         this.logger = logger;
 
         final FileMappingConvention fileMappingConvention = new FileMappingConvention(dataDirectoryName);
@@ -68,14 +66,10 @@ public class RawLogFactory implements AutoCloseable
     /**
      * Close the template files.
      */
-    public void close()
-    {
-        try
-        {
+    public void close() {
+        try {
             blankTemplate.close();
-        }
-        catch (final Exception ex)
-        {
+        } catch (final Exception ex) {
             LangUtil.rethrowUnchecked(ex);
         }
     }
@@ -89,8 +83,7 @@ public class RawLogFactory implements AutoCloseable
      * @param correlationId to use to distinguish this publication
      * @return the newly allocated {@link RawLog}
      */
-    public RawLog newNetworkPublication(final String channel, final int sessionId, final int streamId, final long correlationId)
-    {
+    public RawLog newNetworkPublication(final String channel, final int sessionId, final int streamId, final long correlationId) {
         return newInstance(publicationsDir, channel, sessionId, streamId, correlationId, publicationTermBufferLength);
     }
 
@@ -105,12 +98,10 @@ public class RawLogFactory implements AutoCloseable
      * @return the newly allocated {@link RawLog}
      */
     public RawLog newNetworkedImage(
-        final String channel, final int sessionId, final int streamId, final long correlationId, final int termBufferLength)
-    {
-        if (termBufferLength > imagesTermBufferMaxLength)
-        {
+            final String channel, final int sessionId, final int streamId, final long correlationId, final int termBufferLength) {
+        if (termBufferLength > imagesTermBufferMaxLength) {
             throw new IllegalArgumentException(
-                "image term buffer larger than max length: " + termBufferLength + " > " + imagesTermBufferMaxLength);
+                    "image term buffer larger than max length: " + termBufferLength + " > " + imagesTermBufferMaxLength);
         }
 
         return newInstance(imagesDir, channel, sessionId, streamId, correlationId, termBufferLength);
@@ -124,13 +115,11 @@ public class RawLogFactory implements AutoCloseable
      * @param correlationId to use to distinguish this shared log
      * @return the newly allocated {@link RawLog}
      */
-    public RawLog newDirectPublication(final int sessionId, final int streamId, final long correlationId)
-    {
+    public RawLog newDirectPublication(final int sessionId, final int streamId, final long correlationId) {
         return newInstance(publicationsDir, "ipc", sessionId, streamId, correlationId, ipcPublicationTermBufferLength);
     }
 
-    private static FileChannel createTemplateFile(final String dataDir, final String name, final long length)
-    {
+    private static FileChannel createTemplateFile(final String dataDir, final String name, final long length) {
         final File file = new File(dataDir, name);
         file.deleteOnExit();
 
@@ -138,13 +127,12 @@ public class RawLogFactory implements AutoCloseable
     }
 
     private RawLog newInstance(
-        final File rootDir,
-        final String channel,
-        final int sessionId,
-        final int streamId,
-        final long correlationId,
-        final int termBufferLength)
-    {
+            final File rootDir,
+            final String channel,
+            final int sessionId,
+            final int streamId,
+            final long correlationId,
+            final int termBufferLength) {
         final File location = streamLocation(rootDir, channel, sessionId, streamId, correlationId);
 
         return new MappedRawLog(location, blankTemplate, termBufferLength, logger);

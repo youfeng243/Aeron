@@ -21,10 +21,8 @@ import uk.co.real_logic.aeron.driver.media.UdpChannel;
 /**
  * Supply a debug implementation of a {@link SendChannelEndpoint}.
  */
-public class DebugSendChannelEndpointSupplier implements SendChannelEndpointSupplier
-{
-    public SendChannelEndpoint newInstance(final UdpChannel udpChannel, final MediaDriver.Context context)
-    {
+public class DebugSendChannelEndpointSupplier implements SendChannelEndpointSupplier {
+    public SendChannelEndpoint newInstance(final UdpChannel udpChannel, final MediaDriver.Context context) {
         return new DebugSendChannelEndpoint(udpChannel, context);
     }
 }

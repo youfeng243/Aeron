@@ -30,8 +30,7 @@ import java.nio.channels.Selector;
 
 import static uk.co.real_logic.aeron.driver.Configuration.MTU_LENGTH_DEFAULT;
 
-public class Common
-{
+public class Common {
     public static final int NUM_MESSAGES = 10_000;
 
     public static final int PONG_PORT = 40123;
@@ -40,61 +39,49 @@ public class Common
     static final Field SELECTED_KEYS_FIELD;
     static final Field PUBLIC_SELECTED_KEYS_FIELD;
 
-    static
-    {
+    static {
         Field selectKeysField = null;
         Field publicSelectKeysField = null;
 
-        try
-        {
+        try {
             final Class<?> clazz = Class.forName("sun.nio.ch.SelectorImpl", false, ClassLoader.getSystemClassLoader());
 
-            if (clazz.isAssignableFrom(Selector.open().getClass()))
-            {
+            if (clazz.isAssignableFrom(Selector.open().getClass())) {
                 selectKeysField = clazz.getDeclaredField("selectedKeys");
                 selectKeysField.setAccessible(true);
 
                 publicSelectKeysField = clazz.getDeclaredField("publicSelectedKeys");
                 publicSelectKeysField.setAccessible(true);
             }
-        }
-        catch (final Exception ignore)
-        {
+        } catch (final Exception ignore) {
         }
 
         SELECTED_KEYS_FIELD = selectKeysField;
         PUBLIC_SELECTED_KEYS_FIELD = publicSelectKeysField;
     }
 
-    public static void init(final DatagramChannel channel) throws IOException
-    {
+    public static void init(final DatagramChannel channel) throws IOException {
         channel.configureBlocking(false);
         channel.setOption(StandardSocketOptions.SO_REUSEADDR, true);
     }
 
     public static void init(final DatagramChannel channel, final InetSocketAddress sendAddress)
-        throws IOException
-    {
+            throws IOException {
         channel.configureBlocking(false);
         channel.setOption(StandardSocketOptions.SO_REUSEADDR, true);
         channel.connect(sendAddress);
     }
 
-    public static NioSelectedKeySet keySet(final Selector selector)
-    {
+    public static NioSelectedKeySet keySet(final Selector selector) {
         NioSelectedKeySet tmpSet = null;
 
-        if (null != PUBLIC_SELECTED_KEYS_FIELD)
-        {
-            try
-            {
+        if (null != PUBLIC_SELECTED_KEYS_FIELD) {
+            try {
                 tmpSet = new NioSelectedKeySet();
 
                 SELECTED_KEYS_FIELD.set(selector, tmpSet);
                 PUBLIC_SELECTED_KEYS_FIELD.set(selector, tmpSet);
-            }
-            catch (final Exception ignore)
-            {
+            } catch (final Exception ignore) {
                 tmpSet = null;
             }
         }
@@ -102,14 +89,13 @@ public class Common
         return tmpSet;
     }
 
-    public static FileChannel createTmpFileChannel() throws IOException
-    {
+    public static FileChannel createTmpFileChannel() throws IOException {
         final File file = File.createTempFile("buffer-", ".dat");
         file.deleteOnExit();
 
         final RandomAccessFile randomAccessFile = new RandomAccessFile(file, "rw");
         final FileChannel fileChannel = randomAccessFile.getChannel();
-        IoUtil.fill(fileChannel, 0, MTU_LENGTH_DEFAULT, (byte)0);
+        IoUtil.fill(fileChannel, 0, MTU_LENGTH_DEFAULT, (byte) 0);
 
         return fileChannel;
     }

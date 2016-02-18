@@ -35,25 +35,22 @@ import static uk.co.real_logic.aeron.samples.SamplesUtil.rateReporterHandler;
 /**
  * Example that displays current rate while receiving data
  */
-public class RateSubscriber
-{
+public class RateSubscriber {
     private static final int STREAM_ID = SampleConfiguration.STREAM_ID;
     private static final String CHANNEL = SampleConfiguration.CHANNEL;
     private static final int FRAGMENT_COUNT_LIMIT = SampleConfiguration.FRAGMENT_COUNT_LIMIT;
     private static final boolean EMBEDDED_MEDIA_DRIVER = SampleConfiguration.EMBEDDED_MEDIA_DRIVER;
 
-    public static void main(final String[] args) throws Exception
-    {
+    public static void main(final String[] args) throws Exception {
         System.out.println("Subscribing to " + CHANNEL + " on stream Id " + STREAM_ID);
 
         final MediaDriver driver = EMBEDDED_MEDIA_DRIVER ? MediaDriver.launchEmbedded() : null;
         final ExecutorService executor = Executors.newFixedThreadPool(1);
         final Aeron.Context ctx = new Aeron.Context()
-            .availableImageHandler(SamplesUtil::printAvailableImage)
-            .unavailableImageHandler(SamplesUtil::printUnavailableImage);
+                .availableImageHandler(SamplesUtil::printAvailableImage)
+                .unavailableImageHandler(SamplesUtil::printUnavailableImage);
 
-        if (EMBEDDED_MEDIA_DRIVER)
-        {
+        if (EMBEDDED_MEDIA_DRIVER) {
             ctx.aeronDirectoryName(driver.aeronDirectoryName());
         }
 
@@ -62,17 +59,16 @@ public class RateSubscriber
         final AtomicBoolean running = new AtomicBoolean(true);
 
         SigInt.register(
-            () ->
-            {
-                reporter.halt();
-                running.set(false);
-            });
+                () ->
+                {
+                    reporter.halt();
+                    running.set(false);
+                });
 
         try (final Aeron aeron = Aeron.connect(ctx);
-             final Subscription subscription = aeron.addSubscription(CHANNEL, STREAM_ID))
-        {
+             final Subscription subscription = aeron.addSubscription(CHANNEL, STREAM_ID)) {
             final Future future = executor.submit(
-                () -> SamplesUtil.subscriberLoop(rateReporterHandler, FRAGMENT_COUNT_LIMIT, running).accept(subscription));
+                    () -> SamplesUtil.subscriberLoop(rateReporterHandler, FRAGMENT_COUNT_LIMIT, running).accept(subscription));
 
             reporter.run();
 
@@ -81,8 +77,7 @@ public class RateSubscriber
         }
 
         executor.shutdown();
-        if (!executor.awaitTermination(5, TimeUnit.SECONDS))
-        {
+        if (!executor.awaitTermination(5, TimeUnit.SECONDS)) {
             System.out.println("Warning: not all tasks completed promptly");
         }
 

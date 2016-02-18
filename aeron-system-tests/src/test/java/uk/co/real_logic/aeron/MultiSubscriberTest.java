@@ -28,16 +28,14 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
-public class MultiSubscriberTest
-{
+public class MultiSubscriberTest {
     public static final String CHANNEL_1 = "aeron:udp?remote=localhost:54325|fruit=banana";
     public static final String CHANNEL_2 = "aeron:udp?remote=localhost:54325|fruit=apple";
     public static final int STREAM_ID = 1;
     public static final int FRAGMENT_COUNT_LIMIT = 10;
 
     @Test(timeout = 10000)
-    public void shouldReceiveMessageOnSeparateSubscriptions() throws Exception
-    {
+    public void shouldReceiveMessageOnSeparateSubscriptions() throws Exception {
         final MediaDriver.Context ctx = new MediaDriver.Context();
 
         final FragmentHandler mockFragmentHandlerOne = mock(FragmentHandler.class);
@@ -50,50 +48,42 @@ public class MultiSubscriberTest
              final Aeron client = Aeron.connect(new Aeron.Context());
              final Publication publication = client.addPublication(CHANNEL_1, STREAM_ID);
              final Subscription subscriptionOne = client.addSubscription(CHANNEL_1, STREAM_ID);
-             final Subscription subscriptionTwo = client.addSubscription(CHANNEL_2, STREAM_ID))
-        {
+             final Subscription subscriptionTwo = client.addSubscription(CHANNEL_2, STREAM_ID)) {
             final byte[] expectedBytes = "Hello, World! here is a small message".getBytes();
             final UnsafeBuffer srcBuffer = new UnsafeBuffer(expectedBytes);
 
             assertThat(subscriptionOne.poll(adapterOne, FRAGMENT_COUNT_LIMIT), is(0));
             assertThat(subscriptionTwo.poll(adapterTwo, FRAGMENT_COUNT_LIMIT), is(0));
 
-            while (publication.offer(srcBuffer) < 0L)
-            {
+            while (publication.offer(srcBuffer) < 0L) {
                 Thread.yield();
             }
 
-            while (subscriptionOne.poll(adapterOne, FRAGMENT_COUNT_LIMIT) == 0)
-            {
+            while (subscriptionOne.poll(adapterOne, FRAGMENT_COUNT_LIMIT) == 0) {
                 Thread.yield();
             }
 
-            while (subscriptionTwo.poll(adapterTwo, FRAGMENT_COUNT_LIMIT) == 0)
-            {
+            while (subscriptionTwo.poll(adapterTwo, FRAGMENT_COUNT_LIMIT) == 0) {
                 Thread.yield();
             }
 
             verifyData(srcBuffer, mockFragmentHandlerOne);
             verifyData(srcBuffer, mockFragmentHandlerTwo);
-        }
-        finally
-        {
+        } finally {
             ctx.deleteAeronDirectory();
         }
     }
 
-    private void verifyData(final UnsafeBuffer srcBuffer, final FragmentHandler mockFragmentHandler)
-    {
+    private void verifyData(final UnsafeBuffer srcBuffer, final FragmentHandler mockFragmentHandler) {
         final ArgumentCaptor<UnsafeBuffer> bufferArg = ArgumentCaptor.forClass(UnsafeBuffer.class);
         final ArgumentCaptor<Integer> offsetArg = ArgumentCaptor.forClass(Integer.class);
 
         verify(mockFragmentHandler, times(1)).onFragment(
-            bufferArg.capture(), offsetArg.capture(), eq(srcBuffer.capacity()), any(Header.class));
+                bufferArg.capture(), offsetArg.capture(), eq(srcBuffer.capacity()), any(Header.class));
 
         final UnsafeBuffer capturedBuffer = bufferArg.getValue();
         final int offset = offsetArg.getValue();
-        for (int i = 0; i < srcBuffer.capacity(); i++)
-        {
+        for (int i = 0; i < srcBuffer.capacity(); i++) {
             final int index = offset + i;
             assertThat("same at " + index, capturedBuffer.getByte(index), is(srcBuffer.getByte(i)));
         }

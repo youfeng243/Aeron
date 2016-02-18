@@ -28,21 +28,18 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertThat;
 import static uk.co.real_logic.aeron.BufferBuilder.INITIAL_CAPACITY;
 
-public class BufferBuilderTest
-{
+public class BufferBuilderTest {
     private final BufferBuilder bufferBuilder = new BufferBuilder();
 
     @Test
-    public void shouldInitialiseToDefaultValues()
-    {
+    public void shouldInitialiseToDefaultValues() {
         assertThat(bufferBuilder.capacity(), is(INITIAL_CAPACITY));
         assertThat(bufferBuilder.buffer().capacity(), is(INITIAL_CAPACITY));
         assertThat(bufferBuilder.limit(), is(0));
     }
 
     @Test
-    public void shouldAppendNothingForZeroLength()
-    {
+    public void shouldAppendNothingForZeroLength() {
         final UnsafeBuffer srcBuffer = new UnsafeBuffer(new byte[INITIAL_CAPACITY]);
 
         bufferBuilder.append(srcBuffer, 0, 0);
@@ -51,8 +48,7 @@ public class BufferBuilderTest
     }
 
     @Test
-    public void shouldAppendThenReset()
-    {
+    public void shouldAppendThenReset() {
         final UnsafeBuffer srcBuffer = new UnsafeBuffer(new byte[INITIAL_CAPACITY]);
 
         bufferBuilder.append(srcBuffer, 0, srcBuffer.capacity());
@@ -65,8 +61,7 @@ public class BufferBuilderTest
     }
 
     @Test
-    public void shouldAppendOneBufferWithoutResizing()
-    {
+    public void shouldAppendOneBufferWithoutResizing() {
         final UnsafeBuffer srcBuffer = new UnsafeBuffer(new byte[INITIAL_CAPACITY]);
         final byte[] bytes = "Hello World".getBytes(StandardCharsets.UTF_8);
         srcBuffer.putBytes(0, bytes, 0, bytes.length);
@@ -82,8 +77,7 @@ public class BufferBuilderTest
     }
 
     @Test
-    public void shouldAppendTwoBuffersWithoutResizing()
-    {
+    public void shouldAppendTwoBuffersWithoutResizing() {
         final UnsafeBuffer srcBuffer = new UnsafeBuffer(new byte[INITIAL_CAPACITY]);
         final byte[] bytes = "1111111122222222".getBytes(StandardCharsets.UTF_8);
         srcBuffer.putBytes(0, bytes, 0, bytes.length);
@@ -100,11 +94,10 @@ public class BufferBuilderTest
     }
 
     @Test
-    public void shouldFillBufferWithoutResizing()
-    {
+    public void shouldFillBufferWithoutResizing() {
         final int bufferLength = 128;
         final byte[] buffer = new byte[bufferLength];
-        Arrays.fill(buffer, (byte)7);
+        Arrays.fill(buffer, (byte) 7);
         final UnsafeBuffer srcBuffer = new UnsafeBuffer(buffer);
 
         final BufferBuilder bufferBuilder = new BufferBuilder(bufferLength);
@@ -120,11 +113,10 @@ public class BufferBuilderTest
     }
 
     @Test
-    public void shouldResizeWhenBufferJustDoesNotFit()
-    {
+    public void shouldResizeWhenBufferJustDoesNotFit() {
         final int bufferLength = 128;
         final byte[] buffer = new byte[bufferLength + 1];
-        Arrays.fill(buffer, (byte)7);
+        Arrays.fill(buffer, (byte) 7);
         final UnsafeBuffer srcBuffer = new UnsafeBuffer(buffer);
 
         final BufferBuilder bufferBuilder = new BufferBuilder(bufferLength);
@@ -140,13 +132,12 @@ public class BufferBuilderTest
     }
 
     @Test
-    public void shouldAppendTwoBuffersAndResize()
-    {
+    public void shouldAppendTwoBuffersAndResize() {
         final int bufferLength = 128;
         final byte[] buffer = new byte[bufferLength];
         final int firstLength = buffer.length / 4;
         final int secondLength = buffer.length / 2;
-        Arrays.fill(buffer, 0, firstLength + secondLength, (byte)7);
+        Arrays.fill(buffer, 0, firstLength + secondLength, (byte) 7);
         final UnsafeBuffer srcBuffer = new UnsafeBuffer(buffer);
 
         final BufferBuilder bufferBuilder = new BufferBuilder(bufferLength / 2);
@@ -163,8 +154,7 @@ public class BufferBuilderTest
     }
 
     @Test
-    public void shouldCompactBufferToLowerLimit()
-    {
+    public void shouldCompactBufferToLowerLimit() {
         final int bufferLength = INITIAL_CAPACITY / 2;
         final byte[] buffer = new byte[bufferLength];
         final UnsafeBuffer srcBuffer = new UnsafeBuffer(buffer);
@@ -172,8 +162,7 @@ public class BufferBuilderTest
         final BufferBuilder bufferBuilder = new BufferBuilder();
 
         final int bufferCount = 5;
-        for (int i = 0; i < bufferCount; i++)
-        {
+        for (int i = 0; i < bufferCount; i++) {
             bufferBuilder.append(srcBuffer, 0, buffer.length);
         }
 

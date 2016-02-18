@@ -23,8 +23,7 @@ import static uk.co.real_logic.aeron.logbuffer.FrameDescriptor.frameLengthOrdere
 /**
  * Rebuild a term buffer based on incoming frames that can be out-of-order.
  */
-public class TermRebuilder
-{
+public class TermRebuilder {
     /**
      * Insert a packet of frames into the log at the appropriate offset as indicated by the term offset header.
      *
@@ -33,8 +32,7 @@ public class TermRebuilder
      * @param packet     containing a sequence of frames.
      * @param length     of the sequence of frames in bytes.
      */
-    public static void insert(final UnsafeBuffer termBuffer, final int offset, final UnsafeBuffer packet, final int length)
-    {
+    public static void insert(final UnsafeBuffer termBuffer, final int offset, final UnsafeBuffer packet, final int length) {
         final int firstFrameLength = packet.getInt(0, LITTLE_ENDIAN);
         packet.putIntOrdered(0, 0);
 

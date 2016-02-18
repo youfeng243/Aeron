@@ -17,8 +17,7 @@ package uk.co.real_logic.aeron.driver;
 
 import uk.co.real_logic.aeron.driver.media.ReceiveChannelEndpoint;
 
-public class PendingSetupMessageFromSource
-{
+public class PendingSetupMessageFromSource {
     private final int sessionId;
     private final int streamId;
     private final ReceiveChannelEndpoint channelEndpoint;
@@ -26,37 +25,31 @@ public class PendingSetupMessageFromSource
     private long timeOfStatusMessage;
 
     public PendingSetupMessageFromSource(
-        final int sessionId,
-        final int streamId,
-        final ReceiveChannelEndpoint channelEndpoint)
-    {
+            final int sessionId,
+            final int streamId,
+            final ReceiveChannelEndpoint channelEndpoint) {
         this.sessionId = sessionId;
         this.streamId = streamId;
         this.channelEndpoint = channelEndpoint;
     }
 
-    public int sessionId()
-    {
+    public int sessionId() {
         return sessionId;
     }
 
-    public int streamId()
-    {
+    public int streamId() {
         return streamId;
     }
 
-    public ReceiveChannelEndpoint channelEndpoint()
-    {
+    public ReceiveChannelEndpoint channelEndpoint() {
         return channelEndpoint;
     }
 
-    public long timeOfStatusMessage()
-    {
+    public long timeOfStatusMessage() {
         return timeOfStatusMessage;
     }
 
-    public void timeOfStatusMessage(final long now)
-    {
+    public void timeOfStatusMessage(final long now) {
         timeOfStatusMessage = now;
     }
 }

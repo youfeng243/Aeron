@@ -17,17 +17,14 @@ package uk.co.real_logic.aeron.driver.cmd;
 
 import uk.co.real_logic.aeron.driver.DriverConductor;
 
-public class CloseResourceCmd implements DriverConductorCmd
-{
+public class CloseResourceCmd implements DriverConductorCmd {
     private final AutoCloseable resource;
 
-    public CloseResourceCmd(final AutoCloseable resource)
-    {
+    public CloseResourceCmd(final AutoCloseable resource) {
         this.resource = resource;
     }
 
-    public void execute(DriverConductor conductor)
-    {
+    public void execute(DriverConductor conductor) {
         conductor.onCloseResource(resource);
     }
 }

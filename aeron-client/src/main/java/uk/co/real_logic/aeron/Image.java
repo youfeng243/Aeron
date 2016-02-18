@@ -39,8 +39,7 @@ import static uk.co.real_logic.aeron.protocol.DataHeaderFlyweight.TERM_ID_FIELD_
  * Represents a replicated publication {@link Image} from a publisher to a {@link Subscription}.
  * Each {@link Image} identifies a source publisher by session id.
  */
-public class Image
-{
+public class Image {
     private final long correlationId;
     private final int sessionId;
     private final int termLengthMask;
@@ -67,14 +66,13 @@ public class Image
      * @param correlationId      of the request to the media driver.
      */
     public Image(
-        final Subscription subscription,
-        final int sessionId,
-        final Position subscriberPosition,
-        final LogBuffers logBuffers,
-        final ErrorHandler errorHandler,
-        final String sourceIdentity,
-        final long correlationId)
-    {
+            final Subscription subscription,
+            final int sessionId,
+            final Position subscriberPosition,
+            final LogBuffers logBuffers,
+            final ErrorHandler errorHandler,
+            final String sourceIdentity,
+            final long correlationId) {
         this.subscription = subscription;
         this.sessionId = sessionId;
         this.subscriberPosition = subscriberPosition;
@@ -97,8 +95,7 @@ public class Image
      *
      * @return the length in bytes for each term partition in the log buffer.
      */
-    public int termBufferLength()
-    {
+    public int termBufferLength() {
         return logBuffers.termLength();
     }
 
@@ -107,8 +104,7 @@ public class Image
      *
      * @return the sessionId for the steam of messages.
      */
-    public int sessionId()
-    {
+    public int sessionId() {
         return sessionId;
     }
 
@@ -117,8 +113,7 @@ public class Image
      *
      * @return source identity of the sending publisher as an abstract concept appropriate for the media.
      */
-    public String sourceIdentity()
-    {
+    public String sourceIdentity() {
         return sourceIdentity;
     }
 
@@ -127,8 +122,7 @@ public class Image
      *
      * @return the initial term id.
      */
-    public int initialTermId()
-    {
+    public int initialTermId() {
         return header.initialTermId();
     }
 
@@ -137,8 +131,7 @@ public class Image
      *
      * @return the correlationId for identification of the image with the media driver.
      */
-    public long correlationId()
-    {
+    public long correlationId() {
         return correlationId;
     }
 
@@ -147,8 +140,7 @@ public class Image
      *
      * @return the {@link Subscription} to which this {@link Image} belongs.
      */
-    public Subscription subscription()
-    {
+    public Subscription subscription() {
         return subscription;
     }
 
@@ -157,8 +149,7 @@ public class Image
      *
      * @return true if it has been closed otherwise false.
      */
-    public boolean isClosed()
-    {
+    public boolean isClosed() {
         return isClosed;
     }
 
@@ -167,10 +158,8 @@ public class Image
      *
      * @return the position this {@link Image} has been consumed to by the subscriber.
      */
-    public long position()
-    {
-        if (isClosed)
-        {
+    public long position() {
+        if (isClosed) {
             return 0;
         }
 
@@ -182,8 +171,7 @@ public class Image
      *
      * @return the {@link FileChannel} to the raw log of the Image.
      */
-    public FileChannel fileChannel()
-    {
+    public FileChannel fileChannel() {
         return logBuffers.fileChannel();
     }
 
@@ -198,15 +186,13 @@ public class Image
      * @return the number of fragments that have been consumed.
      * @see FragmentAssembler
      */
-    public int poll(final FragmentHandler fragmentHandler, final int fragmentLimit)
-    {
-        if (isClosed)
-        {
+    public int poll(final FragmentHandler fragmentHandler, final int fragmentLimit) {
+        if (isClosed) {
             return 0;
         }
 
         final long position = subscriberPosition.get();
-        final int termOffset = (int)position & termLengthMask;
+        final int termOffset = (int) position & termLengthMask;
         final UnsafeBuffer termBuffer = activeTermBuffer(position);
 
         final long outcome = read(termBuffer, termOffset, fragmentHandler, fragmentLimit, header, errorHandler);
@@ -227,27 +213,22 @@ public class Image
      * @return the number of fragments that have been consumed.
      * @see ControlledFragmentAssembler
      */
-    public int controlledPoll(final ControlledFragmentHandler fragmentHandler, final int fragmentLimit)
-    {
-        if (isClosed)
-        {
+    public int controlledPoll(final ControlledFragmentHandler fragmentHandler, final int fragmentLimit) {
+        if (isClosed) {
             return 0;
         }
 
         long position = subscriberPosition.get();
-        int termOffset = (int)position & termLengthMask;
+        int termOffset = (int) position & termLengthMask;
         int offset = termOffset;
         int fragmentsRead = 0;
         final UnsafeBuffer termBuffer = activeTermBuffer(position);
 
-        try
-        {
+        try {
             final int capacity = termBuffer.capacity();
-            do
-            {
+            do {
                 final int length = frameLengthVolatile(termBuffer, offset);
-                if (length <= 0)
-                {
+                if (length <= 0) {
                     break;
                 }
 
@@ -255,28 +236,22 @@ public class Image
                 final int alignedLength = BitUtil.align(length, FRAME_ALIGNMENT);
                 offset += alignedLength;
 
-                if (!isPaddingFrame(termBuffer, frameOffset))
-                {
+                if (!isPaddingFrame(termBuffer, frameOffset)) {
                     header.buffer(termBuffer);
                     header.offset(frameOffset);
 
                     final Action action = fragmentHandler.onFragment(
-                        termBuffer, frameOffset + HEADER_LENGTH, length - HEADER_LENGTH, header);
+                            termBuffer, frameOffset + HEADER_LENGTH, length - HEADER_LENGTH, header);
 
                     ++fragmentsRead;
 
-                    if (action == BREAK)
-                    {
+                    if (action == BREAK) {
                         break;
-                    }
-                    else if (action == ABORT)
-                    {
+                    } else if (action == ABORT) {
                         --fragmentsRead;
                         offset = frameOffset;
                         break;
-                    }
-                    else if (action == COMMIT)
-                    {
+                    } else if (action == COMMIT) {
                         position += alignedLength;
                         termOffset = offset;
                         subscriberPosition.setOrdered(position);
@@ -284,9 +259,7 @@ public class Image
                 }
             }
             while (fragmentsRead < fragmentLimit && offset < capacity);
-        }
-        catch (final Throwable t)
-        {
+        } catch (final Throwable t) {
             errorHandler.onError(t);
         }
 
@@ -303,31 +276,25 @@ public class Image
      * @param blockLengthLimit up to which a block may be in length.
      * @return the number of bytes that have been consumed.
      */
-    public int blockPoll(final BlockHandler blockHandler, final int blockLengthLimit)
-    {
-        if (isClosed)
-        {
+    public int blockPoll(final BlockHandler blockHandler, final int blockLengthLimit) {
+        if (isClosed) {
             return 0;
         }
 
         final long position = subscriberPosition.get();
-        final int termOffset = (int)position & termLengthMask;
+        final int termOffset = (int) position & termLengthMask;
         final UnsafeBuffer termBuffer = activeTermBuffer(position);
         final int limit = Math.min(termOffset + blockLengthLimit, termBuffer.capacity());
 
         final int resultingOffset = TermBlockScanner.scan(termBuffer, termOffset, limit);
 
         final int bytesConsumed = resultingOffset - termOffset;
-        if (resultingOffset > termOffset)
-        {
-            try
-            {
+        if (resultingOffset > termOffset) {
+            try {
                 final int termId = termBuffer.getInt(termOffset + TERM_ID_FIELD_OFFSET, LITTLE_ENDIAN);
 
                 blockHandler.onBlock(termBuffer, termOffset, bytesConsumed, sessionId, termId);
-            }
-            catch (final Throwable t)
-            {
+            } catch (final Throwable t) {
                 errorHandler.onError(t);
             }
 
@@ -345,15 +312,13 @@ public class Image
      * @param blockLengthLimit up to which a block may be in length.
      * @return the number of bytes that have been consumed.
      */
-    public int filePoll(final FileBlockHandler fileBlockHandler, final int blockLengthLimit)
-    {
-        if (isClosed)
-        {
+    public int filePoll(final FileBlockHandler fileBlockHandler, final int blockLengthLimit) {
+        if (isClosed) {
             return 0;
         }
 
         final long position = subscriberPosition.get();
-        final int termOffset = (int)position & termLengthMask;
+        final int termOffset = (int) position & termLengthMask;
         final int activeIndex = indexByPosition(position, positionBitsToShift);
         final UnsafeBuffer termBuffer = termBuffers[activeIndex];
         final int capacity = termBuffer.capacity();
@@ -362,17 +327,13 @@ public class Image
         final int resultingOffset = TermBlockScanner.scan(termBuffer, termOffset, limit);
 
         final int bytesConsumed = resultingOffset - termOffset;
-        if (resultingOffset > termOffset)
-        {
-            try
-            {
-                final long offset = ((long)capacity * activeIndex) + termOffset;
+        if (resultingOffset > termOffset) {
+            try {
+                final long offset = ((long) capacity * activeIndex) + termOffset;
                 final int termId = termBuffer.getInt(termOffset + TERM_ID_FIELD_OFFSET, LITTLE_ENDIAN);
 
                 fileBlockHandler.onBlock(logBuffers.fileChannel(), offset, bytesConsumed, sessionId, termId);
-            }
-            catch (final Throwable t)
-            {
+            } catch (final Throwable t) {
                 errorHandler.onError(t);
             }
 
@@ -382,42 +343,34 @@ public class Image
         return bytesConsumed;
     }
 
-    private void updatePosition(final long positionBefore, final int offsetBefore, final int offsetAfter)
-    {
+    private void updatePosition(final long positionBefore, final int offsetBefore, final int offsetAfter) {
         final long position = positionBefore + (offsetAfter - offsetBefore);
-        if (position > positionBefore)
-        {
+        if (position > positionBefore) {
             subscriberPosition.setOrdered(position);
         }
     }
 
-    private UnsafeBuffer activeTermBuffer(final long position)
-    {
+    private UnsafeBuffer activeTermBuffer(final long position) {
         return termBuffers[indexByPosition(position, positionBitsToShift)];
     }
 
-    ManagedResource managedResource()
-    {
+    ManagedResource managedResource() {
         isClosed = true;
         return new ImageManagedResource();
     }
 
-    private class ImageManagedResource implements ManagedResource
-    {
+    private class ImageManagedResource implements ManagedResource {
         private long timeOfLastStateChange = 0;
 
-        public void timeOfLastStateChange(final long time)
-        {
+        public void timeOfLastStateChange(final long time) {
             this.timeOfLastStateChange = time;
         }
 
-        public long timeOfLastStateChange()
-        {
+        public long timeOfLastStateChange() {
             return timeOfLastStateChange;
         }
 
-        public void delete()
-        {
+        public void delete() {
             logBuffers.close();
         }
     }

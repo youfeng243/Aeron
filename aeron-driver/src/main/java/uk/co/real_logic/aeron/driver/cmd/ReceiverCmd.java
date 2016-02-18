@@ -17,7 +17,6 @@ package uk.co.real_logic.aeron.driver.cmd;
 
 import uk.co.real_logic.aeron.driver.Receiver;
 
-public interface ReceiverCmd
-{
+public interface ReceiverCmd {
     void execute(Receiver receiver);
 }

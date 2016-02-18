@@ -33,17 +33,14 @@ import static uk.co.real_logic.aeron.logbuffer.LogBufferDescriptor.*;
  *
  * @see uk.co.real_logic.aeron.logbuffer.LogBufferDescriptor
  */
-public class LogBuffers implements AutoCloseable
-{
+public class LogBuffers implements AutoCloseable {
     private final int termLength;
     private final FileChannel fileChannel;
     private final UnsafeBuffer[] atomicBuffers = new UnsafeBuffer[(PARTITION_COUNT * 2) + 1];
     private final MappedByteBuffer[] mappedByteBuffers;
 
-    public LogBuffers(final String logFileName)
-    {
-        try
-        {
+    public LogBuffers(final String logFileName) {
+        try {
             fileChannel = FileChannel.open(Paths.get(logFileName), StandardOpenOption.READ, StandardOpenOption.WRITE);
 
             final long logLength = fileChannel.size();
@@ -53,15 +50,13 @@ public class LogBuffers implements AutoCloseable
             this.termLength = termLength;
 
             // if log length exceeds MAX_INT we need multiple mapped buffers, (see FileChannel.map doc).
-            if (logLength < Integer.MAX_VALUE)
-            {
+            if (logLength < Integer.MAX_VALUE) {
                 final MappedByteBuffer mappedBuffer = fileChannel.map(READ_WRITE, 0, logLength);
                 mappedByteBuffers = new MappedByteBuffer[]{mappedBuffer};
 
                 final int metaDataSectionOffset = termLength * PARTITION_COUNT;
 
-                for (int i = 0; i < PARTITION_COUNT; i++)
-                {
+                for (int i = 0; i < PARTITION_COUNT; i++) {
                     final int metaDataOffset = metaDataSectionOffset + (i * TERM_META_DATA_LENGTH);
 
                     atomicBuffers[i] = new UnsafeBuffer(mappedBuffer, i * termLength, termLength);
@@ -69,64 +64,53 @@ public class LogBuffers implements AutoCloseable
                 }
 
                 atomicBuffers[atomicBuffers.length - 1] = new UnsafeBuffer(
-                    mappedBuffer, (int)(logLength - LOG_META_DATA_LENGTH), LOG_META_DATA_LENGTH);
-            }
-            else
-            {
+                        mappedBuffer, (int) (logLength - LOG_META_DATA_LENGTH), LOG_META_DATA_LENGTH);
+            } else {
                 mappedByteBuffers = new MappedByteBuffer[PARTITION_COUNT + 1];
-                final long metaDataSectionOffset = termLength * (long)PARTITION_COUNT;
-                final int metaDataSectionLength = (int)(logLength - metaDataSectionOffset);
+                final long metaDataSectionOffset = termLength * (long) PARTITION_COUNT;
+                final int metaDataSectionLength = (int) (logLength - metaDataSectionOffset);
 
                 final MappedByteBuffer metaDataMappedBuffer = fileChannel.map(
-                    READ_WRITE, metaDataSectionOffset, metaDataSectionLength);
+                        READ_WRITE, metaDataSectionOffset, metaDataSectionLength);
                 mappedByteBuffers[mappedByteBuffers.length - 1] = metaDataMappedBuffer;
 
-                for (int i = 0; i < PARTITION_COUNT; i++)
-                {
-                    mappedByteBuffers[i] = fileChannel.map(READ_WRITE, termLength * (long)i, termLength);
+                for (int i = 0; i < PARTITION_COUNT; i++) {
+                    mappedByteBuffers[i] = fileChannel.map(READ_WRITE, termLength * (long) i, termLength);
 
                     atomicBuffers[i] = new UnsafeBuffer(mappedByteBuffers[i]);
                     atomicBuffers[i + PARTITION_COUNT] = new UnsafeBuffer(
-                        metaDataMappedBuffer, i * TERM_META_DATA_LENGTH, TERM_META_DATA_LENGTH);
+                            metaDataMappedBuffer, i * TERM_META_DATA_LENGTH, TERM_META_DATA_LENGTH);
                 }
 
                 atomicBuffers[atomicBuffers.length - 1] = new UnsafeBuffer(
-                    metaDataMappedBuffer, metaDataSectionLength - LOG_META_DATA_LENGTH, LOG_META_DATA_LENGTH);
+                        metaDataMappedBuffer, metaDataSectionLength - LOG_META_DATA_LENGTH, LOG_META_DATA_LENGTH);
             }
-        }
-        catch (final IOException ex)
-        {
+        } catch (final IOException ex) {
             throw new RuntimeException(ex);
         }
 
-        for (final UnsafeBuffer buffer : atomicBuffers)
-        {
+        for (final UnsafeBuffer buffer : atomicBuffers) {
             buffer.verifyAlignment();
         }
     }
 
-    public UnsafeBuffer[] atomicBuffers()
-    {
+    public UnsafeBuffer[] atomicBuffers() {
         return atomicBuffers;
     }
 
-    public FileChannel fileChannel()
-    {
+    public FileChannel fileChannel() {
         return fileChannel;
     }
 
-    public void close()
-    {
+    public void close() {
         CloseHelper.close(fileChannel);
 
-        for (final MappedByteBuffer buffer : mappedByteBuffers)
-        {
+        for (final MappedByteBuffer buffer : mappedByteBuffers) {
             IoUtil.unmap(buffer);
         }
     }
 
-    public int termLength()
-    {
+    public int termLength() {
         return termLength;
     }
 }

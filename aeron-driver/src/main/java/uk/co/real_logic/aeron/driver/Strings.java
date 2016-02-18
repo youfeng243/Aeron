@@ -18,16 +18,14 @@ package uk.co.real_logic.aeron.driver;
 /**
  * Utility functions for using Strings.
  */
-public class Strings
-{
+public class Strings {
     /**
      * Is a string null or empty?
      *
      * @param value to be tested.
      * @return true if the value is null or an empty string.
      */
-    public static boolean isEmpty(final String value)
-    {
+    public static boolean isEmpty(final String value) {
         return null == value || value.isEmpty();
     }
 
@@ -38,10 +36,8 @@ public class Strings
      * @param defaultValue to be used if the String value is null.
      * @return the int value of the string or the default on null.
      */
-    public static int parseIntOrDefault(final String value, final int defaultValue)
-    {
-        if (null == value)
-        {
+    public static int parseIntOrDefault(final String value, final int defaultValue) {
+        if (null == value) {
             return defaultValue;
         }
 

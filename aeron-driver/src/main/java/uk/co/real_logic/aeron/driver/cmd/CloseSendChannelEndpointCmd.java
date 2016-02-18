@@ -19,17 +19,14 @@ package uk.co.real_logic.aeron.driver.cmd;
 import uk.co.real_logic.aeron.driver.Sender;
 import uk.co.real_logic.aeron.driver.media.SendChannelEndpoint;
 
-public class CloseSendChannelEndpointCmd implements SenderCmd
-{
+public class CloseSendChannelEndpointCmd implements SenderCmd {
     private final SendChannelEndpoint channelEndpoint;
 
-    public CloseSendChannelEndpointCmd(final SendChannelEndpoint channelEndpoint)
-    {
+    public CloseSendChannelEndpointCmd(final SendChannelEndpoint channelEndpoint) {
         this.channelEndpoint = channelEndpoint;
     }
 
-    public void execute(final Sender sender)
-    {
+    public void execute(final Sender sender) {
         sender.onCloseSendChannelEndpoint(channelEndpoint);
     }
 }

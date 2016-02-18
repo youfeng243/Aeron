@@ -30,8 +30,7 @@ import static uk.co.real_logic.agrona.BitUtil.SIZE_OF_LONG;
  * |                                                               |
  * +---------------------------------------------------------------+
  */
-public class CorrelatedMessageFlyweight
-{
+public class CorrelatedMessageFlyweight {
     public static final int CLIENT_ID_FIELD_OFFSET = 0;
     public static final int CORRELATION_ID_FIELD_OFFSET = CLIENT_ID_FIELD_OFFSET + SIZE_OF_LONG;
     public static final int LENGTH = 2 * SIZE_OF_LONG;
@@ -46,8 +45,7 @@ public class CorrelatedMessageFlyweight
      * @param offset at which the message begins.
      * @return for fluent API
      */
-    public final CorrelatedMessageFlyweight wrap(final MutableDirectBuffer buffer, final int offset)
-    {
+    public final CorrelatedMessageFlyweight wrap(final MutableDirectBuffer buffer, final int offset) {
         this.buffer = buffer;
         this.offset = offset;
 
@@ -59,8 +57,7 @@ public class CorrelatedMessageFlyweight
      *
      * @return client id field
      */
-    public long clientId()
-    {
+    public long clientId() {
         return buffer.getLong(offset + CLIENT_ID_FIELD_OFFSET);
     }
 
@@ -70,8 +67,7 @@ public class CorrelatedMessageFlyweight
      * @param clientId field value
      * @return for fluent API
      */
-    public CorrelatedMessageFlyweight clientId(final long clientId)
-    {
+    public CorrelatedMessageFlyweight clientId(final long clientId) {
         buffer.putLong(offset + CLIENT_ID_FIELD_OFFSET, clientId);
 
         return this;
@@ -82,8 +78,7 @@ public class CorrelatedMessageFlyweight
      *
      * @return correlation id field
      */
-    public long correlationId()
-    {
+    public long correlationId() {
         return buffer.getLong(offset + CORRELATION_ID_FIELD_OFFSET);
     }
 
@@ -93,8 +88,7 @@ public class CorrelatedMessageFlyweight
      * @param correlationId field value
      * @return for fluent API
      */
-    public CorrelatedMessageFlyweight correlationId(final long correlationId)
-    {
+    public CorrelatedMessageFlyweight correlationId(final long correlationId) {
         buffer.putLong(offset + CORRELATION_ID_FIELD_OFFSET, correlationId);
 
         return this;

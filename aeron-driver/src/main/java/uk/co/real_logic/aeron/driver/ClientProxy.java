@@ -32,8 +32,7 @@ import static uk.co.real_logic.aeron.driver.event.EventCode.CMD_OUT_PUBLICATION_
 /**
  * Proxy for communicating from the driver to the client conductor.
  */
-public class ClientProxy
-{
+public class ClientProxy {
     private static final int WRITE_BUFFER_CAPACITY = 4096;
 
     private final UnsafeBuffer buffer = new UnsafeBuffer(ByteBuffer.allocateDirect(WRITE_BUFFER_CAPACITY));
@@ -46,8 +45,7 @@ public class ClientProxy
     private final ImageMessageFlyweight imageMessage = new ImageMessageFlyweight();
     private final EventLogger logger;
 
-    public ClientProxy(final BroadcastTransmitter transmitter, final EventLogger logger)
-    {
+    public ClientProxy(final BroadcastTransmitter transmitter, final EventLogger logger) {
         this.transmitter = transmitter;
         this.logger = logger;
 
@@ -58,46 +56,42 @@ public class ClientProxy
         imageMessage.wrap(buffer, 0);
     }
 
-    public void onError(final ErrorCode errorCode, String errorMessage, final CorrelatedMessageFlyweight offender)
-    {
-        if (null == errorMessage)
-        {
+    public void onError(final ErrorCode errorCode, String errorMessage, final CorrelatedMessageFlyweight offender) {
+        if (null == errorMessage) {
             errorMessage = "";
         }
 
         errorResponse
-            .offendingCommandCorrelationId(offender.correlationId())
-            .errorCode(errorCode)
-            .errorMessage(errorMessage);
+                .offendingCommandCorrelationId(offender.correlationId())
+                .errorCode(errorCode)
+                .errorMessage(errorMessage);
 
         transmitter.transmit(ON_ERROR, buffer, 0, errorResponse.length());
     }
 
     public void onAvailableImage(
-        final long correlationId,
-        final int streamId,
-        final int sessionId,
-        final String logFileName,
-        final List<SubscriberPosition> subscriberPositions,
-        final String sourceIdentity)
-    {
+            final long correlationId,
+            final int streamId,
+            final int sessionId,
+            final String logFileName,
+            final List<SubscriberPosition> subscriberPositions,
+            final String sourceIdentity) {
         imageReady
-            .sessionId(sessionId)
-            .streamId(streamId)
-            .correlationId(correlationId);
+                .sessionId(sessionId)
+                .streamId(streamId)
+                .correlationId(correlationId);
 
         final int size = subscriberPositions.size();
         imageReady.subscriberPositionCount(size);
-        for (int i = 0; i < size; i++)
-        {
+        for (int i = 0; i < size; i++) {
             final SubscriberPosition position = subscriberPositions.get(i);
             imageReady.subscriberPositionId(i, position.positionCounterId());
             imageReady.positionIndicatorRegistrationId(i, position.subscription().registrationId());
         }
 
         imageReady
-            .logFileName(logFileName)
-            .sourceIdentity(sourceIdentity);
+                .logFileName(logFileName)
+                .sourceIdentity(sourceIdentity);
 
         final int length = imageReady.length();
         transmitter.transmit(ON_AVAILABLE_IMAGE, buffer, 0, length);
@@ -105,38 +99,35 @@ public class ClientProxy
     }
 
     public void onPublicationReady(
-        final long registrationId,
-        final int streamId,
-        final int sessionId,
-        final String logFileName,
-        final int positionCounterId)
-    {
+            final long registrationId,
+            final int streamId,
+            final int sessionId,
+            final String logFileName,
+            final int positionCounterId) {
         publicationReady
-            .sessionId(sessionId)
-            .streamId(streamId)
-            .correlationId(registrationId)
-            .publicationLimitCounterId(positionCounterId)
-            .logFileName(logFileName);
+                .sessionId(sessionId)
+                .streamId(streamId)
+                .correlationId(registrationId)
+                .publicationLimitCounterId(positionCounterId)
+                .logFileName(logFileName);
 
         final int length = publicationReady.length();
         transmitter.transmit(ON_PUBLICATION_READY, buffer, 0, length);
         logger.log(CMD_OUT_PUBLICATION_READY, buffer, 0, length);
     }
 
-    public void operationSucceeded(final long correlationId)
-    {
+    public void operationSucceeded(final long correlationId) {
         correlatedMessage.clientId(0).correlationId(correlationId);
 
         transmitter.transmit(ON_OPERATION_SUCCESS, buffer, 0, CorrelatedMessageFlyweight.LENGTH);
         logger.log(EventCode.CMD_OUT_ON_OPERATION_SUCCESS, buffer, 0, CorrelatedMessageFlyweight.LENGTH);
     }
 
-    public void onUnavailableImage(final long correlationId, final int streamId, final String channel)
-    {
+    public void onUnavailableImage(final long correlationId, final int streamId, final String channel) {
         imageMessage
-            .correlationId(correlationId)
-            .streamId(streamId)
-            .channel(channel);
+                .correlationId(correlationId)
+                .streamId(streamId)
+                .channel(channel);
 
         final int length = imageMessage.length();
         transmitter.transmit(ON_UNAVAILABLE_IMAGE, buffer, 0, length);

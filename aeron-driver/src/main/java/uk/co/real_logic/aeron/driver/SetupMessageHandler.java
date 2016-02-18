@@ -22,8 +22,7 @@ import uk.co.real_logic.agrona.concurrent.UnsafeBuffer;
 import java.net.InetSocketAddress;
 
 @FunctionalInterface
-public interface SetupMessageHandler
-{
+public interface SetupMessageHandler {
     /**
      * Handle a Setup Frame
      *
@@ -33,8 +32,8 @@ public interface SetupMessageHandler
      * @param srcAddress      of the Frame
      */
     void onSetupMessage(
-        ReceiveChannelEndpoint channelEndpoint,
-        SetupFlyweight header,
-        UnsafeBuffer buffer,
-        InetSocketAddress srcAddress);
+            ReceiveChannelEndpoint channelEndpoint,
+            SetupFlyweight header,
+            UnsafeBuffer buffer,
+            InetSocketAddress srcAddress);
 }

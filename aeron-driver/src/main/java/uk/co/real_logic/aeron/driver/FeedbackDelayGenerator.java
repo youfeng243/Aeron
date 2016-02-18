@@ -18,8 +18,7 @@ package uk.co.real_logic.aeron.driver;
 /**
  * Feedback delay generator.
  */
-public interface FeedbackDelayGenerator
-{
+public interface FeedbackDelayGenerator {
     /**
      * Generate a new delay value
      *
@@ -32,8 +31,7 @@ public interface FeedbackDelayGenerator
      *
      * @return whether feedback should be immediate or not
      */
-    default boolean shouldFeedbackImmediately()
-    {
+    default boolean shouldFeedbackImmediately() {
         return false;
     }
 }

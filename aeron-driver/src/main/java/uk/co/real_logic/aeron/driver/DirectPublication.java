@@ -31,8 +31,7 @@ import static uk.co.real_logic.aeron.logbuffer.LogBufferDescriptor.computePositi
 /**
  * Encapsulation of a LogBuffer used directly between publishers and subscribers for IPC.
  */
-public class DirectPublication implements DriverManagedResource
-{
+public class DirectPublication implements DriverManagedResource {
     private final long correlationId;
     private final long tripGain;
     private long tripLimit = 0;
@@ -50,12 +49,11 @@ public class DirectPublication implements DriverManagedResource
     private boolean reachedEndOfLife = false;
 
     public DirectPublication(
-        final long correlationId,
-        final int sessionId,
-        final int streamId,
-        final Position publisherLimit,
-        final RawLog rawLog)
-    {
+            final long correlationId,
+            final int sessionId,
+            final int streamId,
+            final Position publisherLimit,
+            final RawLog rawLog) {
         this.correlationId = correlationId;
         this.sessionId = sessionId;
         this.streamId = streamId;
@@ -71,58 +69,48 @@ public class DirectPublication implements DriverManagedResource
         this.publisherLimit.setOrdered(0);
     }
 
-    public int sessionId()
-    {
+    public int sessionId() {
         return sessionId;
     }
 
-    public int streamId()
-    {
+    public int streamId() {
         return streamId;
     }
 
-    public long correlationId()
-    {
+    public long correlationId() {
         return correlationId;
     }
 
-    public RawLog rawLog()
-    {
+    public RawLog rawLog() {
         return rawLog;
     }
 
-    public int publisherLimitId()
-    {
+    public int publisherLimitId() {
         return publisherLimit.id();
     }
 
-    public void close()
-    {
+    public void close() {
         rawLog.close();
         publisherLimit.close();
         subscriberPositions.forEach(ReadablePosition::close);
     }
 
-    public void addSubscription(final ReadablePosition subscriberPosition)
-    {
+    public void addSubscription(final ReadablePosition subscriberPosition) {
         subscriberPositions.add(subscriberPosition);
     }
 
-    public void removeSubscription(final ReadablePosition subscriberPosition)
-    {
+    public void removeSubscription(final ReadablePosition subscriberPosition) {
         subscriberPositions.remove(subscriberPosition);
         subscriberPosition.close();
     }
 
-    public int updatePublishersLimit()
-    {
+    public int updatePublishersLimit() {
         int workCount = 0;
         long minSubscriberPosition = Long.MAX_VALUE;
         long maxSubscriberPosition = 0;
 
         final List<ReadablePosition> subscriberPositions = this.subscriberPositions;
-        for (int i = 0, size = subscriberPositions.size(); i < size; i++)
-        {
+        for (int i = 0, size = subscriberPositions.size(); i < size; i++) {
             final long position = subscriberPositions.get(i).getVolatile();
             minSubscriberPosition = Math.min(minSubscriberPosition, position);
             maxSubscriberPosition = Math.max(maxSubscriberPosition, position);
@@ -130,8 +118,7 @@ public class DirectPublication implements DriverManagedResource
 
         final long proposedLimit = subscriberPositions.isEmpty() ? 0L : minSubscriberPosition + termWindowLength;
 
-        if (proposedLimit > tripLimit)
-        {
+        if (proposedLimit > tripLimit) {
             publisherLimit.setOrdered(proposedLimit);
             tripLimit = proposedLimit + tripGain;
             workCount = 1;
@@ -142,14 +129,11 @@ public class DirectPublication implements DriverManagedResource
         return workCount;
     }
 
-    public int cleanLogBuffer()
-    {
+    public int cleanLogBuffer() {
         int workCount = 0;
 
-        for (final LogBufferPartition partition : logPartitions)
-        {
-            if (partition.status() == NEEDS_CLEANING)
-            {
+        for (final LogBufferPartition partition : logPartitions) {
+            if (partition.status() == NEEDS_CLEANING) {
                 partition.clean();
                 workCount = 1;
             }
@@ -158,13 +142,11 @@ public class DirectPublication implements DriverManagedResource
         return workCount;
     }
 
-    public long joiningPosition()
-    {
+    public long joiningPosition() {
         long maxSubscriberPosition = producerPosition();
 
         final List<ReadablePosition> subscriberPositions = this.subscriberPositions;
-        for (int i = 0, size = subscriberPositions.size(); i < size; i++)
-        {
+        for (int i = 0, size = subscriberPositions.size(); i < size; i++) {
             final long position = subscriberPositions.get(i).getVolatile();
             maxSubscriberPosition = Math.max(maxSubscriberPosition, position);
         }
@@ -172,8 +154,7 @@ public class DirectPublication implements DriverManagedResource
         return maxSubscriberPosition;
     }
 
-    public long producerPosition()
-    {
+    public long producerPosition() {
         final UnsafeBuffer logMetaDataBuffer = rawLog.logMetaData();
         final int initialTermId = initialTermId(logMetaDataBuffer);
         final long rawTail = logPartitions[activePartitionIndex(logMetaDataBuffer)].rawTailVolatile();
@@ -182,51 +163,41 @@ public class DirectPublication implements DriverManagedResource
         return computePosition(termId(rawTail), termOffset, positionBitsToShift, initialTermId);
     }
 
-    public void onTimeEvent(final long time, final DriverConductor conductor)
-    {
-        if (0 == refCount)
-        {
+    public void onTimeEvent(final long time, final DriverConductor conductor) {
+        if (0 == refCount) {
             reachedEndOfLife = true;
         }
     }
 
-    public boolean hasReachedEndOfLife()
-    {
+    public boolean hasReachedEndOfLife() {
         return reachedEndOfLife;
     }
 
-    public void timeOfLastStateChange(final long time)
-    {
+    public void timeOfLastStateChange(final long time) {
         throw new UnsupportedOperationException("not used");
     }
 
-    public long timeOfLastStateChange()
-    {
+    public long timeOfLastStateChange() {
         throw new UnsupportedOperationException("not used");
     }
 
-    public void delete()
-    {
+    public void delete() {
         close();
     }
 
-    public int incRef()
-    {
+    public int incRef() {
         return ++refCount;
     }
 
-    public int decRef()
-    {
+    public int decRef() {
         return --refCount;
     }
 
-    public long consumerPosition()
-    {
+    public long consumerPosition() {
         return consumerPosition;
     }
 
-    public boolean unblockAtConsumerPosition()
-    {
+    public boolean unblockAtConsumerPosition() {
         return LogBufferUnblocker.unblock(logPartitions, rawLog.logMetaData(), consumerPosition);
     }
 }

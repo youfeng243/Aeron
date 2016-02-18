@@ -20,8 +20,7 @@ import uk.co.real_logic.aeron.driver.media.ReceiveChannelEndpoint;
 
 import java.net.InetSocketAddress;
 
-public class CreatePublicationImageCmd implements DriverConductorCmd
-{
+public class CreatePublicationImageCmd implements DriverConductorCmd {
     private final int sessionId;
     private final int streamId;
     private final int initialTermId;
@@ -34,17 +33,16 @@ public class CreatePublicationImageCmd implements DriverConductorCmd
     private final ReceiveChannelEndpoint channelEndpoint;
 
     public CreatePublicationImageCmd(
-        final int sessionId,
-        final int streamId,
-        final int initialTermId,
-        final int activeTermId,
-        final int termOffset,
-        final int termLength,
-        final int senderMtuLength,
-        final InetSocketAddress controlAddress,
-        final InetSocketAddress srcAddress,
-        final ReceiveChannelEndpoint channelEndpoint)
-    {
+            final int sessionId,
+            final int streamId,
+            final int initialTermId,
+            final int activeTermId,
+            final int termOffset,
+            final int termLength,
+            final int senderMtuLength,
+            final InetSocketAddress controlAddress,
+            final InetSocketAddress srcAddress,
+            final ReceiveChannelEndpoint channelEndpoint) {
         this.sessionId = sessionId;
         this.streamId = streamId;
         this.initialTermId = initialTermId;
@@ -57,38 +55,33 @@ public class CreatePublicationImageCmd implements DriverConductorCmd
         this.channelEndpoint = channelEndpoint;
     }
 
-    public void execute(final DriverConductor conductor)
-    {
+    public void execute(final DriverConductor conductor) {
         conductor.onCreatePublicationImage(
-            sessionId,
-            streamId,
-            initialTermId,
-            activeTermId,
-            termOffset,
-            termLength,
-            senderMtuLength,
-            controlAddress,
-            srcAddress,
-            channelEndpoint);
+                sessionId,
+                streamId,
+                initialTermId,
+                activeTermId,
+                termOffset,
+                termLength,
+                senderMtuLength,
+                controlAddress,
+                srcAddress,
+                channelEndpoint);
     }
 
-    public ReceiveChannelEndpoint channelEndpoint()
-    {
+    public ReceiveChannelEndpoint channelEndpoint() {
         return channelEndpoint;
     }
 
-    public int streamId()
-    {
+    public int streamId() {
         return streamId;
     }
 
-    public int sessionId()
-    {
+    public int sessionId() {
         return sessionId;
     }
 
-    public int termId()
-    {
+    public int termId() {
         return activeTermId;
     }
 }

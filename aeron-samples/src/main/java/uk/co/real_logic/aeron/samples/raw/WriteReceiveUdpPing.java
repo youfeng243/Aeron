@@ -34,13 +34,10 @@ import static uk.co.real_logic.aeron.samples.raw.Common.init;
  *
  * @see ReceiveWriteUdpPong
  */
-public class WriteReceiveUdpPing
-{
-    public static void main(final String[] args) throws IOException
-    {
+public class WriteReceiveUdpPing {
+    public static void main(final String[] args) throws IOException {
         int numChannels = 1;
-        if (1 == args.length)
-        {
+        if (1 == args.length) {
             numChannels = Integer.parseInt(args[0]);
         }
 
@@ -49,8 +46,7 @@ public class WriteReceiveUdpPing
         final ByteBuffer buffer = ByteBuffer.allocateDirect(MTU_LENGTH_DEFAULT);
 
         final DatagramChannel[] receiveChannels = new DatagramChannel[numChannels];
-        for (int i = 0; i < receiveChannels.length; i++)
-        {
+        for (int i = 0; i < receiveChannels.length; i++) {
             receiveChannels[i] = DatagramChannel.open();
             init(receiveChannels[i]);
             receiveChannels[i].bind(new InetSocketAddress("localhost", Common.PONG_PORT + i));
@@ -63,8 +59,7 @@ public class WriteReceiveUdpPing
         final AtomicBoolean running = new AtomicBoolean(true);
         SigInt.register(() -> running.set(false));
 
-        while (running.get())
-        {
+        while (running.get()) {
             measureRoundTrip(histogram, buffer, receiveChannels, writeChannel, running);
 
             histogram.reset();
@@ -74,15 +69,13 @@ public class WriteReceiveUdpPing
     }
 
     private static void measureRoundTrip(
-        final Histogram histogram,
-        final ByteBuffer buffer,
-        final DatagramChannel[] receiveChannels,
-        final DatagramChannel writeChannel,
-        final AtomicBoolean running)
-        throws IOException
-    {
-        for (int sequenceNumber = 0; sequenceNumber < Common.NUM_MESSAGES; sequenceNumber++)
-        {
+            final Histogram histogram,
+            final ByteBuffer buffer,
+            final DatagramChannel[] receiveChannels,
+            final DatagramChannel writeChannel,
+            final AtomicBoolean running)
+            throws IOException {
+        for (int sequenceNumber = 0; sequenceNumber < Common.NUM_MESSAGES; sequenceNumber++) {
             final long timestamp = System.nanoTime();
 
             buffer.clear();
@@ -94,17 +87,13 @@ public class WriteReceiveUdpPing
 
             buffer.clear();
             boolean available = false;
-            while (!available)
-            {
-                if (!running.get())
-                {
+            while (!available) {
+                if (!running.get()) {
                     return;
                 }
 
-                for (int i = receiveChannels.length - 1; i >= 0; i--)
-                {
-                    if (null != receiveChannels[i].receive(buffer))
-                    {
+                for (int i = receiveChannels.length - 1; i >= 0; i--) {
+                    if (null != receiveChannels[i].receive(buffer)) {
                         available = true;
                         break;
                     }
@@ -112,8 +101,7 @@ public class WriteReceiveUdpPing
             }
 
             final long receivedSequenceNumber = buffer.getLong(0);
-            if (receivedSequenceNumber != sequenceNumber)
-            {
+            if (receivedSequenceNumber != sequenceNumber) {
                 throw new IllegalStateException("Data Loss:" + sequenceNumber + " to " + receivedSequenceNumber);
             }
 

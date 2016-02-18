@@ -28,8 +28,7 @@ import java.util.function.Consumer;
 /**
  * Receiver agent for JVM based media driver, uses an event loop with command buffer
  */
-public class Receiver implements Agent, Consumer<ReceiverCmd>
-{
+public class Receiver implements Agent, Consumer<ReceiverCmd> {
     private final long statusMessageTimeout;
     private final DataTransportPoller dataTransportPoller;
     private final OneToOneConcurrentArrayQueue<ReceiverCmd> commandQueue;
@@ -38,8 +37,7 @@ public class Receiver implements Agent, Consumer<ReceiverCmd>
     private final ArrayList<PublicationImage> publicationImages = new ArrayList<>();
     private final ArrayList<PendingSetupMessageFromSource> pendingSetupMessages = new ArrayList<>();
 
-    public Receiver(final MediaDriver.Context ctx)
-    {
+    public Receiver(final MediaDriver.Context ctx) {
         statusMessageTimeout = ctx.statusMessageTimeout();
         dataTransportPoller = ctx.receiverTransportPoller();
         commandQueue = ctx.receiverCommandQueue();
@@ -47,27 +45,21 @@ public class Receiver implements Agent, Consumer<ReceiverCmd>
         clock = ctx.nanoClock();
     }
 
-    public String roleName()
-    {
+    public String roleName() {
         return "receiver";
     }
 
-    public int doWork() throws Exception
-    {
+    public int doWork() throws Exception {
         int workCount = commandQueue.drain(this);
         final int bytesReceived = dataTransportPoller.pollTransports();
 
         final long now = clock.nanoTime();
-        for (int i = publicationImages.size() - 1; i >= 0; i--)
-        {
+        for (int i = publicationImages.size() - 1; i >= 0; i--) {
             final PublicationImage image = publicationImages.get(i);
-            if (!image.checkForActivity(now))
-            {
+            if (!image.checkForActivity(now)) {
                 image.removeFromDispatcher();
                 publicationImages.remove(i);
-            }
-            else
-            {
+            } else {
                 workCount += image.sendPendingStatusMessage(now, statusMessageTimeout);
                 workCount += image.sendPendingNak();
             }
@@ -80,60 +72,49 @@ public class Receiver implements Agent, Consumer<ReceiverCmd>
         return workCount + bytesReceived;
     }
 
-    public void addPendingSetupMessage(final int sessionId, final int streamId, final ReceiveChannelEndpoint channelEndpoint)
-    {
+    public void addPendingSetupMessage(final int sessionId, final int streamId, final ReceiveChannelEndpoint channelEndpoint) {
         final PendingSetupMessageFromSource cmd = new PendingSetupMessageFromSource(sessionId, streamId, channelEndpoint);
         cmd.timeOfStatusMessage(clock.nanoTime());
         pendingSetupMessages.add(cmd);
     }
 
-    public void onAddSubscription(final ReceiveChannelEndpoint channelEndpoint, final int streamId)
-    {
+    public void onAddSubscription(final ReceiveChannelEndpoint channelEndpoint, final int streamId) {
         channelEndpoint.dispatcher().addSubscription(streamId);
     }
 
-    public void onRemoveSubscription(final ReceiveChannelEndpoint channelEndpoint, final int streamId)
-    {
+    public void onRemoveSubscription(final ReceiveChannelEndpoint channelEndpoint, final int streamId) {
         channelEndpoint.dispatcher().removeSubscription(streamId);
     }
 
-    public void onNewPublicationImage(final ReceiveChannelEndpoint channelEndpoint, final PublicationImage image)
-    {
+    public void onNewPublicationImage(final ReceiveChannelEndpoint channelEndpoint, final PublicationImage image) {
         publicationImages.add(image);
         channelEndpoint.dispatcher().addPublicationImage(image);
     }
 
-    public void onRegisterReceiveChannelEndpoint(final ReceiveChannelEndpoint channelEndpoint)
-    {
+    public void onRegisterReceiveChannelEndpoint(final ReceiveChannelEndpoint channelEndpoint) {
         channelEndpoint.openChannel();
         channelEndpoint.registerForRead(dataTransportPoller);
         dataTransportPoller.selectNowWithoutProcessing();
     }
 
-    public void onCloseReceiveChannelEndpoint(final ReceiveChannelEndpoint channelEndpoint)
-    {
+    public void onCloseReceiveChannelEndpoint(final ReceiveChannelEndpoint channelEndpoint) {
         channelEndpoint.close();
         dataTransportPoller.selectNowWithoutProcessing();
     }
 
-    public void onRemoveCoolDown(final ReceiveChannelEndpoint channelEndpoint, final int sessionId, final int streamId)
-    {
+    public void onRemoveCoolDown(final ReceiveChannelEndpoint channelEndpoint, final int sessionId, final int streamId) {
         channelEndpoint.dispatcher().removeCoolDown(sessionId, streamId);
     }
 
-    public void accept(final ReceiverCmd cmd)
-    {
+    public void accept(final ReceiverCmd cmd) {
         cmd.execute(this);
     }
 
-    private void timeoutPendingSetupMessages(final long now)
-    {
-        for (int i = pendingSetupMessages.size() - 1; i >= 0; i--)
-        {
+    private void timeoutPendingSetupMessages(final long now) {
+        for (int i = pendingSetupMessages.size() - 1; i >= 0; i--) {
             final PendingSetupMessageFromSource cmd = pendingSetupMessages.get(i);
 
-            if (now > (cmd.timeOfStatusMessage() + Configuration.PENDING_SETUPS_TIMEOUT_NS))
-            {
+            if (now > (cmd.timeOfStatusMessage() + Configuration.PENDING_SETUPS_TIMEOUT_NS)) {
                 pendingSetupMessages.remove(i);
                 cmd.channelEndpoint().dispatcher().removePendingSetup(cmd.sessionId(), cmd.streamId());
             }

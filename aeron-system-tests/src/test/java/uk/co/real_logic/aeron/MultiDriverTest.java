@@ -38,8 +38,7 @@ import static org.mockito.Mockito.*;
 /**
  * Tests requiring multiple embedded drivers
  */
-public class MultiDriverTest
-{
+public class MultiDriverTest {
     public static final String MULTICAST_URI = "aeron:udp?group=224.20.30.39:54326|interface=localhost";
 
     private static final int STREAM_ID = 1;
@@ -48,9 +47,9 @@ public class MultiDriverTest
     private static final int TERM_BUFFER_SIZE = 64 * 1024;
     private static final int NUM_MESSAGES_PER_TERM = 64;
     private static final int MESSAGE_LENGTH =
-        (TERM_BUFFER_SIZE / NUM_MESSAGES_PER_TERM) - DataHeaderFlyweight.HEADER_LENGTH;
+            (TERM_BUFFER_SIZE / NUM_MESSAGES_PER_TERM) - DataHeaderFlyweight.HEADER_LENGTH;
     private static final String ROOT_DIR =
-        IoUtil.tmpDirName() + "aeron-system-tests-" + UUID.randomUUID().toString() + File.separator;
+            IoUtil.tmpDirName() + "aeron-system-tests-" + UUID.randomUUID().toString() + File.separator;
 
     private final MediaDriver.Context driverAContext = new MediaDriver.Context();
     private final MediaDriver.Context driverBContext = new MediaDriver.Context();
@@ -69,22 +68,21 @@ public class MultiDriverTest
     private FragmentHandler fragmentHandlerA = mock(FragmentHandler.class);
     private FragmentHandler fragmentHandlerB = mock(FragmentHandler.class);
 
-    private void launch()
-    {
+    private void launch() {
         final String baseDirA = ROOT_DIR + "A";
         final String baseDirB = ROOT_DIR + "B";
 
         buffer.putInt(0, 1);
 
         driverAContext.termBufferLength(TERM_BUFFER_SIZE)
-            .aeronDirectoryName(baseDirA)
-            .threadingMode(THREADING_MODE);
+                .aeronDirectoryName(baseDirA)
+                .threadingMode(THREADING_MODE);
 
         aeronAContext.aeronDirectoryName(driverAContext.aeronDirectoryName());
 
         driverBContext.termBufferLength(TERM_BUFFER_SIZE)
-            .aeronDirectoryName(baseDirB)
-            .threadingMode(THREADING_MODE);
+                .aeronDirectoryName(baseDirB)
+                .threadingMode(THREADING_MODE);
 
         aeronBContext.aeronDirectoryName(driverBContext.aeronDirectoryName());
 
@@ -95,8 +93,7 @@ public class MultiDriverTest
     }
 
     @After
-    public void closeEverything()
-    {
+    public void closeEverything() {
         publication.close();
         subscriptionA.close();
         subscriptionB.close();
@@ -110,8 +107,7 @@ public class MultiDriverTest
     }
 
     @Test(timeout = 10000)
-    public void shouldSpinUpAndShutdown() throws Exception
-    {
+    public void shouldSpinUpAndShutdown() throws Exception {
         launch();
 
         publication = clientA.addPublication(MULTICAST_URI, STREAM_ID);
@@ -122,8 +118,7 @@ public class MultiDriverTest
     }
 
     @Test(timeout = 10000)
-    public void shouldJoinExistingStreamWithLockStepSendingReceiving() throws Exception
-    {
+    public void shouldJoinExistingStreamWithLockStepSendingReceiving() throws Exception {
         final int numMessagesToSendPreJoin = NUM_MESSAGES_PER_TERM / 2;
         final int numMessagesToSendPostJoin = NUM_MESSAGES_PER_TERM;
         final CountDownLatch newImageLatch = new CountDownLatch(1);
@@ -135,23 +130,21 @@ public class MultiDriverTest
         publication = clientA.addPublication(MULTICAST_URI, STREAM_ID);
         subscriptionA = clientA.addSubscription(MULTICAST_URI, STREAM_ID);
 
-        for (int i = 0; i < numMessagesToSendPreJoin; i++)
-        {
-            while (publication.offer(buffer, 0, buffer.capacity()) < 0L)
-            {
+        for (int i = 0; i < numMessagesToSendPreJoin; i++) {
+            while (publication.offer(buffer, 0, buffer.capacity()) < 0L) {
                 Thread.yield();
             }
 
             final int fragmentsRead[] = new int[1];
             SystemTestHelper.executeUntil(
-                () -> fragmentsRead[0] > 0,
-                (j) ->
-                {
-                    fragmentsRead[0] += subscriptionA.poll(fragmentHandlerA, 10);
-                    Thread.yield();
-                },
-                Integer.MAX_VALUE,
-                TimeUnit.MILLISECONDS.toNanos(500));
+                    () -> fragmentsRead[0] > 0,
+                    (j) ->
+                    {
+                        fragmentsRead[0] += subscriptionA.poll(fragmentHandlerA, 10);
+                        Thread.yield();
+                    },
+                    Integer.MAX_VALUE,
+                    TimeUnit.MILLISECONDS.toNanos(500));
         }
 
         subscriptionB = clientB.addSubscription(MULTICAST_URI, STREAM_ID);
@@ -159,52 +152,49 @@ public class MultiDriverTest
         // wait until new subscriber gets new image indication
         newImageLatch.await();
 
-        for (int i = 0; i < numMessagesToSendPostJoin; i++)
-        {
-            while (publication.offer(buffer, 0, buffer.capacity()) < 0L)
-            {
+        for (int i = 0; i < numMessagesToSendPostJoin; i++) {
+            while (publication.offer(buffer, 0, buffer.capacity()) < 0L) {
                 Thread.yield();
             }
 
             final int fragmentsRead[] = new int[1];
             SystemTestHelper.executeUntil(
-                () -> fragmentsRead[0] > 0,
-                (j) ->
-                {
-                    fragmentsRead[0] += subscriptionA.poll(fragmentHandlerA, 10);
-                    Thread.yield();
-                },
-                Integer.MAX_VALUE,
-                TimeUnit.MILLISECONDS.toNanos(500));
+                    () -> fragmentsRead[0] > 0,
+                    (j) ->
+                    {
+                        fragmentsRead[0] += subscriptionA.poll(fragmentHandlerA, 10);
+                        Thread.yield();
+                    },
+                    Integer.MAX_VALUE,
+                    TimeUnit.MILLISECONDS.toNanos(500));
 
             fragmentsRead[0] = 0;
             SystemTestHelper.executeUntil(
-                () -> fragmentsRead[0] > 0,
-                (j) ->
-                {
-                    fragmentsRead[0] += subscriptionB.poll(fragmentHandlerB, 10);
-                    Thread.yield();
-                },
-                Integer.MAX_VALUE,
-                TimeUnit.MILLISECONDS.toNanos(500));
+                    () -> fragmentsRead[0] > 0,
+                    (j) ->
+                    {
+                        fragmentsRead[0] += subscriptionB.poll(fragmentHandlerB, 10);
+                        Thread.yield();
+                    },
+                    Integer.MAX_VALUE,
+                    TimeUnit.MILLISECONDS.toNanos(500));
         }
 
         verify(fragmentHandlerA, times(numMessagesToSendPreJoin + numMessagesToSendPostJoin)).onFragment(
-            any(UnsafeBuffer.class),
-            anyInt(),
-            eq(MESSAGE_LENGTH),
-            any(Header.class));
+                any(UnsafeBuffer.class),
+                anyInt(),
+                eq(MESSAGE_LENGTH),
+                any(Header.class));
 
         verify(fragmentHandlerB, times(numMessagesToSendPostJoin)).onFragment(
-            any(UnsafeBuffer.class),
-            anyInt(),
-            eq(MESSAGE_LENGTH),
-            any(Header.class));
+                any(UnsafeBuffer.class),
+                anyInt(),
+                eq(MESSAGE_LENGTH),
+                any(Header.class));
     }
 
     @Test(timeout = 10000)
-    public void shouldJoinExistingIdleStreamWithLockStepSendingReceiving() throws Exception
-    {
+    public void shouldJoinExistingIdleStreamWithLockStepSendingReceiving() throws Exception {
         final int numMessagesToSendPreJoin = 0;
         final int numMessagesToSendPostJoin = NUM_MESSAGES_PER_TERM;
         final CountDownLatch newImageLatch = new CountDownLatch(1);
@@ -223,47 +213,45 @@ public class MultiDriverTest
         // wait until new subscriber gets new image indication
         newImageLatch.await();
 
-        for (int i = 0; i < numMessagesToSendPostJoin; i++)
-        {
-            while (publication.offer(buffer, 0, buffer.capacity()) < 0L)
-            {
+        for (int i = 0; i < numMessagesToSendPostJoin; i++) {
+            while (publication.offer(buffer, 0, buffer.capacity()) < 0L) {
                 Thread.yield();
             }
 
             final int fragmentsRead[] = new int[1];
             SystemTestHelper.executeUntil(
-                () -> fragmentsRead[0] > 0,
-                (j) ->
-                {
-                    fragmentsRead[0] += subscriptionA.poll(fragmentHandlerA, 10);
-                    Thread.yield();
-                },
-                Integer.MAX_VALUE,
-                TimeUnit.MILLISECONDS.toNanos(500));
+                    () -> fragmentsRead[0] > 0,
+                    (j) ->
+                    {
+                        fragmentsRead[0] += subscriptionA.poll(fragmentHandlerA, 10);
+                        Thread.yield();
+                    },
+                    Integer.MAX_VALUE,
+                    TimeUnit.MILLISECONDS.toNanos(500));
 
             fragmentsRead[0] = 0;
             SystemTestHelper.executeUntil(
-                () -> fragmentsRead[0] > 0,
-                (j) ->
-                {
-                    fragmentsRead[0] += subscriptionB.poll(fragmentHandlerB, 10);
-                    Thread.yield();
-                },
-                Integer.MAX_VALUE,
-                TimeUnit.MILLISECONDS.toNanos(500));
+                    () -> fragmentsRead[0] > 0,
+                    (j) ->
+                    {
+                        fragmentsRead[0] += subscriptionB.poll(fragmentHandlerB, 10);
+                        Thread.yield();
+                    },
+                    Integer.MAX_VALUE,
+                    TimeUnit.MILLISECONDS.toNanos(500));
         }
 
         verify(fragmentHandlerA, times(numMessagesToSendPreJoin + numMessagesToSendPostJoin)).onFragment(
-            any(UnsafeBuffer.class),
-            anyInt(),
-            eq(MESSAGE_LENGTH),
-            any(Header.class));
+                any(UnsafeBuffer.class),
+                anyInt(),
+                eq(MESSAGE_LENGTH),
+                any(Header.class));
 
         verify(fragmentHandlerB, times(numMessagesToSendPostJoin)).onFragment(
-            any(UnsafeBuffer.class),
-            anyInt(),
-            eq(MESSAGE_LENGTH),
-            any(Header.class));
+                any(UnsafeBuffer.class),
+                anyInt(),
+                eq(MESSAGE_LENGTH),
+                any(Header.class));
     }
 
 }

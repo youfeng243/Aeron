@@ -25,71 +25,54 @@ import java.nio.channels.SelectionKey;
 /**
  * Encapsulates the polling of a number of {@link UdpChannelTransport}s using whatever means provides the lowest latency.
  */
-public class ControlTransportPoller extends UdpTransportPoller
-{
+public class ControlTransportPoller extends UdpTransportPoller {
     private SendChannelEndpoint[] transports = new SendChannelEndpoint[0];
 
-    public int pollTransports()
-    {
+    public int pollTransports() {
         int bytesReceived = 0;
-        try
-        {
-            if (transports.length <= ITERATION_THRESHOLD)
-            {
-                for (final SendChannelEndpoint transport : transports)
-                {
+        try {
+            if (transports.length <= ITERATION_THRESHOLD) {
+                for (final SendChannelEndpoint transport : transports) {
                     bytesReceived += transport.pollForData();
                 }
-            }
-            else
-            {
+            } else {
                 selector.selectNow();
 
                 final SelectionKey[] keys = selectedKeySet.keys();
-                for (int i = 0, length = selectedKeySet.size(); i < length; i++)
-                {
-                    bytesReceived += ((SendChannelEndpoint)keys[i].attachment()).pollForData();
+                for (int i = 0, length = selectedKeySet.size(); i < length; i++) {
+                    bytesReceived += ((SendChannelEndpoint) keys[i].attachment()).pollForData();
                 }
 
                 selectedKeySet.reset();
             }
-        }
-        catch (final IOException ex)
-        {
+        } catch (final IOException ex) {
             LangUtil.rethrowUnchecked(ex);
         }
 
         return bytesReceived;
     }
 
-    public SelectionKey registerForRead(final UdpChannelTransport transport)
-    {
-        return registerForRead((SendChannelEndpoint)transport);
+    public SelectionKey registerForRead(final UdpChannelTransport transport) {
+        return registerForRead((SendChannelEndpoint) transport);
     }
 
-    public SelectionKey registerForRead(final SendChannelEndpoint transport)
-    {
+    public SelectionKey registerForRead(final SendChannelEndpoint transport) {
         SelectionKey key = null;
-        try
-        {
+        try {
             transports = ArrayUtil.add(transports, transport);
             key = transport.receiveDatagramChannel().register(selector, SelectionKey.OP_READ, transport);
-        }
-        catch (final ClosedChannelException ex)
-        {
+        } catch (final ClosedChannelException ex) {
             LangUtil.rethrowUnchecked(ex);
         }
 
         return key;
     }
 
-    public void cancelRead(final UdpChannelTransport transport)
-    {
-        cancelRead((SendChannelEndpoint)transport);
+    public void cancelRead(final UdpChannelTransport transport) {
+        cancelRead((SendChannelEndpoint) transport);
     }
 
-    public void cancelRead(final SendChannelEndpoint transport)
-    {
+    public void cancelRead(final SendChannelEndpoint transport) {
         transports = ArrayUtil.remove(transports, transport);
     }
 }

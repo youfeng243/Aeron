@@ -26,60 +26,50 @@ import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
-public class SocketAddressUtilTest
-{
+public class SocketAddressUtilTest {
     @Test
-    public void shouldParseIpV4AddressAndPort() throws Exception
-    {
+    public void shouldParseIpV4AddressAndPort() throws Exception {
         assertCorrectParse("192.168.1.20", 55);
     }
 
     @Test
-    public void shouldParseHostAddressAndPort() throws Exception
-    {
+    public void shouldParseHostAddressAndPort() throws Exception {
         assertCorrectParse("localhost", 55);
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void shouldRejectOnInvalidPort() throws Exception
-    {
+    public void shouldRejectOnInvalidPort() throws Exception {
         SocketAddressUtil.parse("192.168.1.20:aa");
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void shouldRejectOnMissingPort() throws Exception
-    {
+    public void shouldRejectOnMissingPort() throws Exception {
         SocketAddressUtil.parse("192.168.1.20");
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void shouldRejectOnEmptyPort() throws Exception
-    {
+    public void shouldRejectOnEmptyPort() throws Exception {
         SocketAddressUtil.parse("192.168.1.20:");
     }
 
     @Test
-    public void shouldParseIpV6() throws Exception
-    {
+    public void shouldParseIpV6() throws Exception {
         assertCorrectParseIpV6("::1", 54321);
     }
 
     @Test
-    public void shouldParseWithScope() throws Exception
-    {
+    public void shouldParseWithScope() throws Exception {
         final InetSocketAddress address = SocketAddressUtil.parse("[::1%12~_.-34]:1234");
         assertThat(address.getAddress(), instanceOf(Inet6Address.class));
     }
 
-    private void assertCorrectParse(final String host, final int port) throws UnknownHostException
-    {
+    private void assertCorrectParse(final String host, final int port) throws UnknownHostException {
         final InetSocketAddress address = SocketAddressUtil.parse(host + ":" + port);
         assertThat(address.getAddress(), is(InetAddress.getByName(host)));
         assertThat(address.getPort(), is(port));
     }
 
-    private void assertCorrectParseIpV6(final String host, final int port) throws UnknownHostException
-    {
+    private void assertCorrectParseIpV6(final String host, final int port) throws UnknownHostException {
         final InetSocketAddress address = SocketAddressUtil.parse("[" + host + "]:" + port);
         assertThat(address.getAddress(), is(InetAddress.getByName(host)));
         assertThat(address.getPort(), is(port));

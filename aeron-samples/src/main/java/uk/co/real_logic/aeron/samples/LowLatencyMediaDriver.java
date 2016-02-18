@@ -24,23 +24,19 @@ import uk.co.real_logic.agrona.concurrent.SigIntBarrier;
 /**
  * Sample setup for a {@link MediaDriver} that is configured for low latency communications.
  */
-public class LowLatencyMediaDriver
-{
-    public static void main(final String[] args) throws Exception
-    {
-        if (1 == args.length)
-        {
+public class LowLatencyMediaDriver {
+    public static void main(final String[] args) throws Exception {
+        if (1 == args.length) {
             MediaDriver.loadPropertiesFile(args[0]);
         }
 
         final MediaDriver.Context ctx = new MediaDriver.Context()
-            .threadingMode(ThreadingMode.DEDICATED)
-            .conductorIdleStrategy(new BackoffIdleStrategy(1, 1, 1, 1))
-            .receiverIdleStrategy(new NoOpIdleStrategy())
-            .senderIdleStrategy(new NoOpIdleStrategy());
+                .threadingMode(ThreadingMode.DEDICATED)
+                .conductorIdleStrategy(new BackoffIdleStrategy(1, 1, 1, 1))
+                .receiverIdleStrategy(new NoOpIdleStrategy())
+                .senderIdleStrategy(new NoOpIdleStrategy());
 
-        try (final MediaDriver ignored = MediaDriver.launch(ctx))
-        {
+        try (final MediaDriver ignored = MediaDriver.launch(ctx)) {
             new SigIntBarrier().await();
 
             System.out.println("Shutdown Driver...");

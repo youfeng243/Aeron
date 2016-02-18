@@ -24,11 +24,10 @@ import static uk.co.real_logic.aeron.protocol.DataHeaderFlyweight.HEADER_LENGTH;
 
 /**
  * A term buffer reader.
- * <p>
+ *
  * <b>Note:</b> Reading from the term is thread safe, but each thread needs its own instance of this class.
  */
-public class TermReader
-{
+public class TermReader {
     /**
      * Reads data from a term in a log buffer.
      *
@@ -43,31 +42,26 @@ public class TermReader
      * @return the number of fragments read
      */
     public static long read(
-        final UnsafeBuffer termBuffer,
-        int offset,
-        final FragmentHandler handler,
-        final int fragmentsLimit,
-        final Header header,
-        final ErrorHandler errorHandler)
-    {
+            final UnsafeBuffer termBuffer,
+            int offset,
+            final FragmentHandler handler,
+            final int fragmentsLimit,
+            final Header header,
+            final ErrorHandler errorHandler) {
         int fragmentsRead = 0;
         final int capacity = termBuffer.capacity();
 
-        try
-        {
-            do
-            {
+        try {
+            do {
                 final int frameLength = frameLengthVolatile(termBuffer, offset);
-                if (frameLength <= 0)
-                {
+                if (frameLength <= 0) {
                     break;
                 }
 
                 final int termOffset = offset;
                 offset += BitUtil.align(frameLength, FRAME_ALIGNMENT);
 
-                if (!isPaddingFrame(termBuffer, termOffset))
-                {
+                if (!isPaddingFrame(termBuffer, termOffset)) {
                     header.buffer(termBuffer);
                     header.offset(termOffset);
 
@@ -77,9 +71,7 @@ public class TermReader
                 }
             }
             while (fragmentsRead < fragmentsLimit && offset < capacity);
-        }
-        catch (final Throwable t)
-        {
+        } catch (final Throwable t) {
             errorHandler.onError(t);
         }
 
@@ -93,9 +85,8 @@ public class TermReader
      * @param fragmentsRead value to be packed.
      * @return a long with both ints packed into it.
      */
-    public static long pack(final int offset, final int fragmentsRead)
-    {
-        return ((long)offset << 32) | fragmentsRead;
+    public static long pack(final int offset, final int fragmentsRead) {
+        return ((long) offset << 32) | fragmentsRead;
     }
 
     /**
@@ -104,9 +95,8 @@ public class TermReader
      * @param readOutcome into which the fragments read value has been packed.
      * @return the number of fragments that have been read.
      */
-    public static int fragmentsRead(final long readOutcome)
-    {
-        return (int)readOutcome;
+    public static int fragmentsRead(final long readOutcome) {
+        return (int) readOutcome;
     }
 
     /**
@@ -115,8 +105,7 @@ public class TermReader
      * @param readOutcome into which the offset value has been packed.
      * @return the offset up to which the term has progressed.
      */
-    public static int offset(final long readOutcome)
-    {
-        return (int)(readOutcome >>> 32);
+    public static int offset(final long readOutcome) {
+        return (int) (readOutcome >>> 32);
     }
 }

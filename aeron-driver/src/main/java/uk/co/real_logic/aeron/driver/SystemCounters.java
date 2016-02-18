@@ -18,8 +18,7 @@ package uk.co.real_logic.aeron.driver;
 import uk.co.real_logic.agrona.concurrent.AtomicCounter;
 import uk.co.real_logic.agrona.concurrent.CountersManager;
 
-public class SystemCounters implements AutoCloseable
-{
+public class SystemCounters implements AutoCloseable {
     private final AtomicCounter bytesSent;
     private final AtomicCounter bytesReceived;
     private final AtomicCounter receiverProxyFails;
@@ -45,8 +44,7 @@ public class SystemCounters implements AutoCloseable
     private final AtomicCounter unblockedPublications;
     private final AtomicCounter unblockedCommands;
 
-    public SystemCounters(final CountersManager countersManager)
-    {
+    public SystemCounters(final CountersManager countersManager) {
         bytesSent = countersManager.newCounter("Bytes sent");
         bytesReceived = countersManager.newCounter("Bytes received");
         receiverProxyFails = countersManager.newCounter("Failed offers to ReceiverProxy");
@@ -73,8 +71,7 @@ public class SystemCounters implements AutoCloseable
         unblockedCommands = countersManager.newCounter("Unblocked Control Commands");
     }
 
-    public void close()
-    {
+    public void close() {
         bytesSent.close();
         bytesReceived.close();
         receiverProxyFails.close();
@@ -101,123 +98,99 @@ public class SystemCounters implements AutoCloseable
         unblockedCommands.close();
     }
 
-    public AtomicCounter bytesSent()
-    {
+    public AtomicCounter bytesSent() {
         return bytesSent;
     }
 
-    public AtomicCounter bytesReceived()
-    {
+    public AtomicCounter bytesReceived() {
         return bytesReceived;
     }
 
-    public AtomicCounter receiverProxyFails()
-    {
+    public AtomicCounter receiverProxyFails() {
         return receiverProxyFails;
     }
 
-    public AtomicCounter senderProxyFails()
-    {
+    public AtomicCounter senderProxyFails() {
         return senderProxyFails;
     }
 
-    public AtomicCounter conductorProxyFails()
-    {
+    public AtomicCounter conductorProxyFails() {
         return conductorProxyFails;
     }
 
-    public AtomicCounter nakMessagesSent()
-    {
+    public AtomicCounter nakMessagesSent() {
         return nakMessagesSent;
     }
 
-    public AtomicCounter nakMessagesReceived()
-    {
+    public AtomicCounter nakMessagesReceived() {
         return nakMessagesReceived;
     }
 
-    public AtomicCounter retransmitsSent()
-    {
+    public AtomicCounter retransmitsSent() {
         return retransmitsSent;
     }
 
-    public AtomicCounter statusMessagesSent()
-    {
+    public AtomicCounter statusMessagesSent() {
         return statusMessagesSent;
     }
 
-    public AtomicCounter statusMessagesReceived()
-    {
+    public AtomicCounter statusMessagesReceived() {
         return statusMessagesReceived;
     }
 
-    public AtomicCounter heartbeatsSent()
-    {
+    public AtomicCounter heartbeatsSent() {
         return heartbeatsSent;
     }
 
-    public AtomicCounter heartbeatsReceived()
-    {
+    public AtomicCounter heartbeatsReceived() {
         return heartbeatsReceived;
     }
 
-    public AtomicCounter flowControlUnderRuns()
-    {
+    public AtomicCounter flowControlUnderRuns() {
         return flowControlUnderRuns;
     }
 
-    public AtomicCounter flowControlOverRuns()
-    {
+    public AtomicCounter flowControlOverRuns() {
         return flowControlOverRuns;
     }
 
-    public AtomicCounter invalidPackets()
-    {
+    public AtomicCounter invalidPackets() {
         return invalidPackets;
     }
 
-    public AtomicCounter errors()
-    {
+    public AtomicCounter errors() {
         return errors;
     }
 
-    public AtomicCounter dataPacketShortSends()
-    {
+    public AtomicCounter dataPacketShortSends() {
         return dataPacketShortSends;
     }
 
-    public AtomicCounter setupMessageShortSends()
-    {
+    public AtomicCounter setupMessageShortSends() {
         return setupMessageShortSends;
     }
 
-    public AtomicCounter statusMessageShortSends()
-    {
+    public AtomicCounter statusMessageShortSends() {
         return statusMessageShortSends;
     }
 
-    public AtomicCounter nakMessageShortSends()
-    {
+    public AtomicCounter nakMessageShortSends() {
         return nakMessageShortSends;
     }
 
-    public AtomicCounter clientKeepAlives()
-    {
+    public AtomicCounter clientKeepAlives() {
         return clientKeepAlives;
     }
 
-    public AtomicCounter senderFlowControlLimits()
-    {
+    public AtomicCounter senderFlowControlLimits() {
         return senderFlowControlLimits;
     }
 
-    public AtomicCounter unblockedPublications()
-    {
+    public AtomicCounter unblockedPublications() {
         return unblockedPublications;
     }
 
-    public AtomicCounter unblockedCommands()
-    {
+    public AtomicCounter unblockedCommands() {
         return unblockedCommands;
     }
 }

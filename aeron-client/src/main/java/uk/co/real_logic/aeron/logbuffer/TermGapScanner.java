@@ -28,14 +28,12 @@ import static uk.co.real_logic.agrona.BitUtil.align;
  *
  * <b>Note:</b> This class is threadsafe to be used across multiple threads.
  */
-public class TermGapScanner
-{
+public class TermGapScanner {
     /**
      * Handler for notifying of gaps in the log.
      */
     @FunctionalInterface
-    public interface GapHandler
-    {
+    public interface GapHandler {
         /**
          * Gap detected in log buffer that is being rebuilt.
          *
@@ -58,13 +56,10 @@ public class TermGapScanner
      * @return offset of last contiguous frame
      */
     public static int scanForGap(
-        final UnsafeBuffer termBuffer, final int termId, int rebuildOffset, final int hwmOffset, final GapHandler handler)
-    {
-        do
-        {
+            final UnsafeBuffer termBuffer, final int termId, int rebuildOffset, final int hwmOffset, final GapHandler handler) {
+        do {
             final int frameLength = frameLengthVolatile(termBuffer, rebuildOffset);
-            if (frameLength <= 0)
-            {
+            if (frameLength <= 0) {
                 break;
             }
 
@@ -73,16 +68,13 @@ public class TermGapScanner
         while (rebuildOffset < hwmOffset);
 
         final int gapBeginOffset = rebuildOffset;
-        if (rebuildOffset < hwmOffset)
-        {
+        if (rebuildOffset < hwmOffset) {
             final int limit = hwmOffset - HEADER_LENGTH;
 
-            while (rebuildOffset < limit)
-            {
+            while (rebuildOffset < limit) {
                 rebuildOffset += FRAME_ALIGNMENT;
 
-                if (0 != termBuffer.getIntVolatile(rebuildOffset))
-                {
+                if (0 != termBuffer.getIntVolatile(rebuildOffset)) {
                     rebuildOffset -= HEADER_LENGTH;
                     break;
                 }

@@ -25,8 +25,7 @@ import java.util.stream.Collectors;
 /**
  * Common configuration elements between event loggers and event reader side
  */
-public class EventConfiguration
-{
+public class EventConfiguration {
     /**
      * Event Buffer length system property name
      */
@@ -43,27 +42,27 @@ public class EventConfiguration
     public static final String ENABLED_LOGGER_EVENT_CODES_PROPERTY_NAME = "aeron.event.log";
 
     public static final Set<EventCode> PRODUCTION_LOGGER_EVENT_CODES = EnumSet.of(
-        EventCode.EXCEPTION,
-        EventCode.MALFORMED_FRAME_LENGTH,
-        EventCode.ERROR_DELETING_FILE);
+            EventCode.EXCEPTION,
+            EventCode.MALFORMED_FRAME_LENGTH,
+            EventCode.ERROR_DELETING_FILE);
 
     public static final Set<EventCode> ADMIN_ONLY_EVENT_CODES = EnumSet.of(
-        EventCode.EXCEPTION,
-        EventCode.MALFORMED_FRAME_LENGTH,
-        EventCode.CMD_IN_ADD_PUBLICATION,
-        EventCode.CMD_IN_ADD_SUBSCRIPTION,
-        EventCode.CMD_IN_KEEPALIVE_CLIENT,
-        EventCode.CMD_IN_REMOVE_PUBLICATION,
-        EventCode.CMD_IN_REMOVE_SUBSCRIPTION,
-        EventCode.REMOVE_IMAGE_CLEANUP,
-        EventCode.REMOVE_PUBLICATION_CLEANUP,
-        EventCode.REMOVE_SUBSCRIPTION_CLEANUP,
-        EventCode.CMD_OUT_PUBLICATION_READY,
-        EventCode.CMD_OUT_AVAILABLE_IMAGE,
-        EventCode.CMD_OUT_ON_UNAVAILABLE_IMAGE,
-        EventCode.CMD_OUT_ON_OPERATION_SUCCESS,
-        EventCode.ERROR_DELETING_FILE,
-        EventCode.CHANNEL_CREATION);
+            EventCode.EXCEPTION,
+            EventCode.MALFORMED_FRAME_LENGTH,
+            EventCode.CMD_IN_ADD_PUBLICATION,
+            EventCode.CMD_IN_ADD_SUBSCRIPTION,
+            EventCode.CMD_IN_KEEPALIVE_CLIENT,
+            EventCode.CMD_IN_REMOVE_PUBLICATION,
+            EventCode.CMD_IN_REMOVE_SUBSCRIPTION,
+            EventCode.REMOVE_IMAGE_CLEANUP,
+            EventCode.REMOVE_PUBLICATION_CLEANUP,
+            EventCode.REMOVE_SUBSCRIPTION_CLEANUP,
+            EventCode.CMD_OUT_PUBLICATION_READY,
+            EventCode.CMD_OUT_AVAILABLE_IMAGE,
+            EventCode.CMD_OUT_ON_UNAVAILABLE_IMAGE,
+            EventCode.CMD_OUT_ON_OPERATION_SUCCESS,
+            EventCode.ERROR_DELETING_FILE,
+            EventCode.CHANNEL_CREATION);
 
     public static final Set<EventCode> ALL_LOGGER_EVENT_CODES = EnumSet.allOf(EventCode.class);
 
@@ -84,25 +83,22 @@ public class EventConfiguration
 
     private static final Pattern COMMA = Pattern.compile(",");
 
-    public static long getEnabledEventCodes()
-    {
+    public static long getEnabledEventCodes() {
         return makeTagBitSet(getEnabledEventCodes(System.getProperty(ENABLED_LOGGER_EVENT_CODES_PROPERTY_NAME)));
     }
 
-    public static int bufferLength()
-    {
+    public static int bufferLength() {
         return Integer.getInteger(
-            EventConfiguration.BUFFER_LENGTH_PROPERTY_NAME,
-            EventConfiguration.BUFFER_LENGTH_DEFAULT) + RingBufferDescriptor.TRAILER_LENGTH;
+                EventConfiguration.BUFFER_LENGTH_PROPERTY_NAME,
+                EventConfiguration.BUFFER_LENGTH_DEFAULT) + RingBufferDescriptor.TRAILER_LENGTH;
     }
 
-    static long makeTagBitSet(final Set<EventCode> eventCodes)
-    {
+    static long makeTagBitSet(final Set<EventCode> eventCodes) {
         return
-            eventCodes
-                .stream()
-                .mapToLong(EventCode::tagBit)
-                .reduce(0L, (acc, x) -> acc | x);
+                eventCodes
+                        .stream()
+                        .mapToLong(EventCode::tagBit)
+                        .reduce(0L, (acc, x) -> acc | x);
     }
 
     /**
@@ -111,15 +107,12 @@ public class EventConfiguration
      * @param enabledLoggerEventCodes that can be "all", "prod" or a comma separated list.
      * @return the {@link Set} of {@link EventCode}s that are enabled for the logger.
      */
-    static Set<EventCode> getEnabledEventCodes(final String enabledLoggerEventCodes)
-    {
-        if (enabledLoggerEventCodes == null)
-        {
+    static Set<EventCode> getEnabledEventCodes(final String enabledLoggerEventCodes) {
+        if (enabledLoggerEventCodes == null) {
             return PRODUCTION_LOGGER_EVENT_CODES;
         }
 
-        switch (enabledLoggerEventCodes)
-        {
+        switch (enabledLoggerEventCodes) {
             case "all":
                 return ALL_LOGGER_EVENT_CODES;
 
@@ -131,9 +124,9 @@ public class EventConfiguration
 
             default:
                 return COMMA
-                    .splitAsStream(enabledLoggerEventCodes)
-                    .map(EventCode::valueOf)
-                    .collect(Collectors.toSet());
+                        .splitAsStream(enabledLoggerEventCodes)
+                        .map(EventCode::valueOf)
+                        .collect(Collectors.toSet());
         }
     }
 }

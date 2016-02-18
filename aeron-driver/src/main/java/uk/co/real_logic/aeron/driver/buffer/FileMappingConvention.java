@@ -28,16 +28,14 @@ import java.io.File;
  *
  * Both publications and images share the same structure of "sessionId/streamId/consumptionTermId".
  */
-class FileMappingConvention
-{
+class FileMappingConvention {
     public static final String PUBLICATIONS = "publications";
     public static final String IMAGES = "images";
 
     private final File publicationsDir;
     private final File imagesDir;
 
-    FileMappingConvention(final String dataDirName)
-    {
+    FileMappingConvention(final String dataDirName) {
         final File dataDir = new File(dataDirName);
         IoUtil.ensureDirectoryExists(dataDir, "data directory");
 
@@ -50,8 +48,7 @@ class FileMappingConvention
      *
      * @return the directory used for files to be sent.
      */
-    public File publicationsDir()
-    {
+    public File publicationsDir() {
         return publicationsDir;
     }
 
@@ -60,30 +57,26 @@ class FileMappingConvention
      *
      * @return the directory used for rebuilt files
      */
-    public File imagesDir()
-    {
+    public File imagesDir() {
         return imagesDir;
     }
 
     public static File streamLocation(
-        final File rootDir,
-        final String channel,
-        final int sessionId,
-        final int streamId,
-        final long correlationId)
-    {
+            final File rootDir,
+            final String channel,
+            final int sessionId,
+            final int streamId,
+            final long correlationId) {
         final String filename = String.format(
-            "%s-%s-%s-%s.logbuffer", channel, toHexString(sessionId), toHexString(streamId), toHexString(correlationId));
+                "%s-%s-%s-%s.logbuffer", channel, toHexString(sessionId), toHexString(streamId), toHexString(correlationId));
         return new File(rootDir, filename);
     }
 
-    private static String toHexString(final int value)
-    {
+    private static String toHexString(final int value) {
         return String.format("%X", value);
     }
 
-    private static String toHexString(final long value)
-    {
+    private static String toHexString(final long value) {
         return String.format("%X", value);
     }
 }

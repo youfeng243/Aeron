@@ -32,8 +32,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
 import static uk.co.real_logic.aeron.logbuffer.LogBufferDescriptor.*;
 
-public class PublicationTest
-{
+public class PublicationTest {
     private static final String CHANNEL = "udp://localhost:40124";
     private static final int STREAM_ID_1 = 2;
     private static final int SESSION_ID_1 = 13;
@@ -54,16 +53,14 @@ public class PublicationTest
     private Publication publication;
 
     @Before
-    public void setUp()
-    {
+    public void setUp() {
         when(publicationLimit.getVolatile()).thenReturn(2L * SEND_BUFFER_CAPACITY);
         when(logBuffers.atomicBuffers()).thenReturn(buffers);
         when(logBuffers.termLength()).thenReturn(TERM_MIN_LENGTH);
 
         initialTermId(logMetaDataBuffer, TERM_ID_1);
 
-        for (int i = 0; i < PARTITION_COUNT; i++)
-        {
+        for (int i = 0; i < PARTITION_COUNT; i++) {
             termBuffers[i] = new UnsafeBuffer(ByteBuffer.allocateDirect(TERM_MIN_LENGTH));
             termMetaDataBuffers[i] = new UnsafeBuffer(ByteBuffer.allocateDirect(TERM_META_DATA_LENGTH));
 
@@ -73,13 +70,13 @@ public class PublicationTest
         buffers[LOG_META_DATA_SECTION_INDEX] = logMetaDataBuffer;
 
         publication = new Publication(
-            conductor,
-            CHANNEL,
-            STREAM_ID_1,
-            SESSION_ID_1,
-            publicationLimit,
-            logBuffers,
-            CORRELATION_ID);
+                conductor,
+                CHANNEL,
+                STREAM_ID_1,
+                SESSION_ID_1,
+                publicationLimit,
+                logBuffers,
+                CORRELATION_ID);
 
         publication.incRef();
 
@@ -87,56 +84,48 @@ public class PublicationTest
     }
 
     @Test
-    public void shouldEnsureThePublicationIsOpenBeforeReadingPosition()
-    {
+    public void shouldEnsureThePublicationIsOpenBeforeReadingPosition() {
         publication.close();
         assertThat(publication.position(), is(Publication.CLOSED));
     }
 
     @Test
-    public void shouldEnsureThePublicationIsOpenBeforeOffer()
-    {
+    public void shouldEnsureThePublicationIsOpenBeforeOffer() {
         publication.close();
         assertTrue(publication.isClosed());
         assertThat(publication.offer(atomicSendBuffer), is(Publication.CLOSED));
     }
 
     @Test
-    public void shouldEnsureThePublicationIsOpenBeforeClaim()
-    {
+    public void shouldEnsureThePublicationIsOpenBeforeClaim() {
         publication.close();
         final BufferClaim bufferClaim = new BufferClaim();
         assertThat(publication.tryClaim(SEND_BUFFER_CAPACITY, bufferClaim), is(Publication.CLOSED));
     }
 
     @Test
-    public void shouldReportThatPublicationHasNotBeenConnectedYet()
-    {
+    public void shouldReportThatPublicationHasNotBeenConnectedYet() {
         when(publicationLimit.getVolatile()).thenReturn(0L);
         assertFalse(publication.hasBeenConnected());
     }
 
     @Test
-    public void shouldReportThatPublicationHasBeenConnectedYet()
-    {
+    public void shouldReportThatPublicationHasBeenConnectedYet() {
         assertTrue(publication.hasBeenConnected());
     }
 
     @Test
-    public void shouldReportInitialPosition()
-    {
+    public void shouldReportInitialPosition() {
         assertThat(publication.position(), is(0L));
     }
 
     @Test
-    public void shouldReportMaxMessageLength()
-    {
+    public void shouldReportMaxMessageLength() {
         assertThat(publication.maxMessageLength(), is(FrameDescriptor.computeMaxMessageLength(TERM_MIN_LENGTH)));
     }
 
     @Test
-    public void shouldUnmapBuffersWhenReleased() throws Exception
-    {
+    public void shouldUnmapBuffersWhenReleased() throws Exception {
         publication.close();
 
         logBuffersClosedOnce();
@@ -144,8 +133,7 @@ public class PublicationTest
     }
 
     @Test
-    public void shouldNotUnmapBuffersBeforeLastRelease() throws Exception
-    {
+    public void shouldNotUnmapBuffersBeforeLastRelease() throws Exception {
         publication.incRef();
         publication.close();
 
@@ -153,8 +141,7 @@ public class PublicationTest
     }
 
     @Test
-    public void shouldUnmapBuffersWithMultipleReferences() throws Exception
-    {
+    public void shouldUnmapBuffersWithMultipleReferences() throws Exception {
         publication.incRef();
         publication.close();
 
@@ -163,8 +150,7 @@ public class PublicationTest
     }
 
     @Test
-    public void shouldReleaseResourcesIdempotently() throws Exception
-    {
+    public void shouldReleaseResourcesIdempotently() throws Exception {
         publication.close();
         publication.close();
 
@@ -172,13 +158,11 @@ public class PublicationTest
         releaseSelfOnce();
     }
 
-    private void logBuffersClosedOnce()
-    {
+    private void logBuffersClosedOnce() {
         verify(logBuffers, times(1)).close();
     }
 
-    private void releaseSelfOnce()
-    {
+    private void releaseSelfOnce() {
         verify(conductor, times(1)).releasePublication(publication);
     }
 }

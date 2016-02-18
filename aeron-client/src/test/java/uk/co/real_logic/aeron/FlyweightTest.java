@@ -27,8 +27,7 @@ import java.nio.ByteBuffer;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
-public class FlyweightTest
-{
+public class FlyweightTest {
     private final ByteBuffer buffer = ByteBuffer.allocateDirect(512);
 
     private final UnsafeBuffer aBuff = new UnsafeBuffer(buffer);
@@ -42,77 +41,73 @@ public class FlyweightTest
     private final NakFlyweight decodeNakHeader = new NakFlyweight();
 
     @Test
-    public void shouldWriteCorrectValuesForGenericHeaderFields()
-    {
+    public void shouldWriteCorrectValuesForGenericHeaderFields() {
         encodeHeader.wrap(aBuff);
 
-        encodeHeader.version((short)1);
+        encodeHeader.version((short) 1);
         encodeHeader.flags(DataHeaderFlyweight.BEGIN_AND_END_FLAGS);
         encodeHeader.headerType(HeaderFlyweight.HDR_TYPE_DATA);
         encodeHeader.frameLength(8);
 
         // little endian
-        assertThat(buffer.get(0), is((byte)0x08));
-        assertThat(buffer.get(1), is((byte)0x00));
-        assertThat(buffer.get(2), is((byte)0x00));
-        assertThat(buffer.get(3), is((byte)0x00));
-        assertThat(buffer.get(4), is((byte)0x01));
-        assertThat(buffer.get(5), is((byte)0xC0));
-        assertThat(buffer.get(6), is((byte)HeaderFlyweight.HDR_TYPE_DATA));
-        assertThat(buffer.get(7), is((byte)0x00));
+        assertThat(buffer.get(0), is((byte) 0x08));
+        assertThat(buffer.get(1), is((byte) 0x00));
+        assertThat(buffer.get(2), is((byte) 0x00));
+        assertThat(buffer.get(3), is((byte) 0x00));
+        assertThat(buffer.get(4), is((byte) 0x01));
+        assertThat(buffer.get(5), is((byte) 0xC0));
+        assertThat(buffer.get(6), is((byte) HeaderFlyweight.HDR_TYPE_DATA));
+        assertThat(buffer.get(7), is((byte) 0x00));
     }
 
     @Test
-    public void shouldReadWhatIsWrittenToGenericHeaderFields()
-    {
+    public void shouldReadWhatIsWrittenToGenericHeaderFields() {
         encodeHeader.wrap(aBuff);
 
-        encodeHeader.version((short)1);
-        encodeHeader.flags((short)0);
+        encodeHeader.version((short) 1);
+        encodeHeader.flags((short) 0);
         encodeHeader.headerType(HeaderFlyweight.HDR_TYPE_DATA);
         encodeHeader.frameLength(8);
 
         decodeHeader.wrap(aBuff);
-        assertThat(decodeHeader.version(), is((short)1));
+        assertThat(decodeHeader.version(), is((short) 1));
         assertThat(decodeHeader.headerType(), is(HeaderFlyweight.HDR_TYPE_DATA));
         assertThat(decodeHeader.frameLength(), is(8));
     }
 
     @Test
-    public void shouldWriteAndReadMultipleFramesCorrectly()
-    {
+    public void shouldWriteAndReadMultipleFramesCorrectly() {
         encodeHeader.wrap(aBuff);
 
-        encodeHeader.version((short)1);
-        encodeHeader.flags((short)0);
+        encodeHeader.version((short) 1);
+        encodeHeader.flags((short) 0);
         encodeHeader.headerType(HeaderFlyweight.HDR_TYPE_DATA);
         encodeHeader.frameLength(8);
 
         encodeHeader.wrap(aBuff, 8, aBuff.capacity() - 8);
-        encodeHeader.version((short)2);
-        encodeHeader.flags((short)0x01);
+        encodeHeader.version((short) 2);
+        encodeHeader.flags((short) 0x01);
         encodeHeader.headerType(HeaderFlyweight.HDR_TYPE_SM);
         encodeHeader.frameLength(8);
 
         decodeHeader.wrap(aBuff);
-        assertThat(decodeHeader.version(), is((short)1));
-        assertThat(decodeHeader.flags(), is((short)0));
+        assertThat(decodeHeader.version(), is((short) 1));
+        assertThat(decodeHeader.flags(), is((short) 0));
         assertThat(decodeHeader.headerType(), is(HeaderFlyweight.HDR_TYPE_DATA));
         assertThat(decodeHeader.frameLength(), is(8));
 
         decodeHeader.wrap(aBuff, 8, aBuff.capacity() - 8);
-        assertThat(decodeHeader.version(), is((short)2));
-        assertThat(decodeHeader.flags(), is((short)0x01));
+        assertThat(decodeHeader.version(), is((short) 2));
+        assertThat(decodeHeader.flags(), is((short) 0x01));
         assertThat(decodeHeader.headerType(), is(HeaderFlyweight.HDR_TYPE_SM));
         assertThat(decodeHeader.frameLength(), is(8));
     }
 
     @Test
-    public void shouldReadAndWriteDataHeaderCorrectly()
-    {
+    public void shouldReadAndWriteDataHeaderCorrectly() {
         encodeDataHeader.wrap(aBuff);
 
-        encodeDataHeader.version((short)1);
+        encodeDataHeader.version((short) 1);
         encodeDataHeader.flags(DataHeaderFlyweight.BEGIN_AND_END_FLAGS);
         encodeDataHeader.headerType(HeaderFlyweight.HDR_TYPE_DATA);
         encodeDataHeader.frameLength(DataHeaderFlyweight.HEADER_LENGTH);
@@ -121,7 +116,7 @@ public class FlyweightTest
         encodeDataHeader.termId(0x99887766);
 
         decodeDataHeader.wrap(aBuff);
-        assertThat(decodeDataHeader.version(), is((short)1));
+        assertThat(decodeDataHeader.version(), is((short) 1));
         assertThat(decodeDataHeader.flags(), is(DataHeaderFlyweight.BEGIN_AND_END_FLAGS));
         assertThat(decodeDataHeader.headerType(), is(HeaderFlyweight.HDR_TYPE_DATA));
         assertThat(decodeDataHeader.frameLength(), is(DataHeaderFlyweight.HEADER_LENGTH));
@@ -132,11 +127,10 @@ public class FlyweightTest
     }
 
     @Test
-    public void shouldEncodeAndDecodeNakCorrectly()
-    {
+    public void shouldEncodeAndDecodeNakCorrectly() {
         encodeNakHeader.wrap(aBuff);
-        encodeNakHeader.version((short)1);
-        encodeNakHeader.flags((byte)0);
+        encodeNakHeader.version((short) 1);
+        encodeNakHeader.flags((byte) 0);
         encodeNakHeader.headerType(HeaderFlyweight.HDR_TYPE_NAK);
         encodeNakHeader.frameLength(NakFlyweight.HEADER_LENGTH);
         encodeNakHeader.sessionId(0xdeadbeef);
@@ -146,8 +140,8 @@ public class FlyweightTest
         encodeNakHeader.length(512);
 
         decodeNakHeader.wrap(aBuff);
-        assertThat(decodeNakHeader.version(), is((short)1));
-        assertThat(decodeNakHeader.flags(), is((short)0));
+        assertThat(decodeNakHeader.version(), is((short) 1));
+        assertThat(decodeNakHeader.flags(), is((short) 0));
         assertThat(decodeNakHeader.headerType(), is(HeaderFlyweight.HDR_TYPE_NAK));
         assertThat(decodeNakHeader.frameLength(), is(NakFlyweight.HEADER_LENGTH));
         assertThat(decodeNakHeader.sessionId(), is(0xdeadbeef));
@@ -158,8 +152,7 @@ public class FlyweightTest
     }
 
     @Test
-    public void shouldEncodeAndDecodeStringsCorrectly()
-    {
+    public void shouldEncodeAndDecodeStringsCorrectly() {
         encodePublication.wrap(aBuff, 0);
 
         final String example = "abcç̀漢字仮名交じり文";

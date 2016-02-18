@@ -25,17 +25,21 @@ import static uk.co.real_logic.aeron.protocol.HeaderFlyweight.HDR_TYPE_PAD;
 /**
  * Unblocks a term buffer if a publisher has died leaving the log with a partial log entry.
  */
-public class TermUnblocker
-{
-    public enum Status
-    {
-        /** No action has been taken during operation. */
+public class TermUnblocker {
+    public enum Status {
+        /**
+         * No action has been taken during operation.
+         */
         NO_ACTION,
 
-        /** The term has been unblocked so that the log can progress. */
+        /**
+         * The term has been unblocked so that the log can progress.
+         */
         UNBLOCKED,
 
-        /** The term has been unblocked from the offset until the end of the term. */
+        /**
+         * The term has been unblocked from the offset until the end of the term.
+         */
         UNBLOCKED_TO_END,
     }
 
@@ -43,16 +47,16 @@ public class TermUnblocker
      * Attempt to unblock the current term at the current offset.
      *
      * <ol>
-     *     <li>Current position length is &gt; 0, then return</li>
-     *     <li>Current position length is 0, scan forward by frame alignment until, one of the following:
-     *     <ol>
-     *         <li>reach a non-0 length, unblock up to indicated position (check original frame length for non-0)</li>
-     *         <li>reach end of term and tail position &gt;= end of term, unblock up to end of term (check original
-     *             frame length for non-0)
-     *         </li>
-     *         <li>reach tail position &lt; end of term, do NOT unblock</li>
-     *     </ol>
-     *     </li>
+     * <li>Current position length is &gt; 0, then return</li>
+     * <li>Current position length is 0, scan forward by frame alignment until, one of the following:
+     * <ol>
+     * <li>reach a non-0 length, unblock up to indicated position (check original frame length for non-0)</li>
+     * <li>reach end of term and tail position &gt;= end of term, unblock up to end of term (check original
+     * frame length for non-0)
+     * </li>
+     * <li>reach tail position &lt; end of term, do NOT unblock</li>
+     * </ol>
+     * </li>
      * </ol>
      *
      * @param logMetaDataBuffer containing the default headers
@@ -63,32 +67,25 @@ public class TermUnblocker
      * @return whether unblocking was done, not done, or applied to end of term
      */
     public static Status unblock(
-        final UnsafeBuffer logMetaDataBuffer,
-        final UnsafeBuffer termBuffer,
-        final int blockedOffset,
-        final int tailOffset,
-        final int termId)
-    {
+            final UnsafeBuffer logMetaDataBuffer,
+            final UnsafeBuffer termBuffer,
+            final int blockedOffset,
+            final int tailOffset,
+            final int termId) {
         Status status = NO_ACTION;
         int frameLength = frameLengthVolatile(termBuffer, blockedOffset);
 
-        if (frameLength < 0)
-        {
+        if (frameLength < 0) {
             resetHeader(logMetaDataBuffer, termBuffer, blockedOffset, termId, -frameLength);
             status = UNBLOCKED;
-        }
-        else if (0 == frameLength)
-        {
+        } else if (0 == frameLength) {
             int currentOffset = blockedOffset + FRAME_ALIGNMENT;
 
-            while (currentOffset < tailOffset)
-            {
+            while (currentOffset < tailOffset) {
                 frameLength = frameLengthVolatile(termBuffer, currentOffset);
 
-                if (frameLength != 0)
-                {
-                    if (scanBackToConfirmZeroed(termBuffer, currentOffset, blockedOffset))
-                    {
+                if (frameLength != 0) {
+                    if (scanBackToConfirmZeroed(termBuffer, currentOffset, blockedOffset)) {
                         final int length = currentOffset - blockedOffset;
                         resetHeader(logMetaDataBuffer, termBuffer, blockedOffset, termId, length);
                         status = UNBLOCKED;
@@ -100,10 +97,8 @@ public class TermUnblocker
                 currentOffset += FRAME_ALIGNMENT;
             }
 
-            if (currentOffset == termBuffer.capacity())
-            {
-                if (0 == frameLengthVolatile(termBuffer, blockedOffset))
-                {
+            if (currentOffset == termBuffer.capacity()) {
+                if (0 == frameLengthVolatile(termBuffer, blockedOffset)) {
                     final int length = currentOffset - blockedOffset;
                     resetHeader(logMetaDataBuffer, termBuffer, blockedOffset, termId, length);
                     status = UNBLOCKED_TO_END;
@@ -115,12 +110,11 @@ public class TermUnblocker
     }
 
     private static void resetHeader(
-        final UnsafeBuffer logMetaDataBuffer,
-        final UnsafeBuffer termBuffer,
-        final int termOffset,
-        final int termId,
-        final int frameLength)
-    {
+            final UnsafeBuffer logMetaDataBuffer,
+            final UnsafeBuffer termBuffer,
+            final int termOffset,
+            final int termId,
+            final int frameLength) {
         applyDefaultHeader(logMetaDataBuffer, termBuffer, termOffset);
         frameType(termBuffer, termOffset, HDR_TYPE_PAD);
         frameTermOffset(termBuffer, termOffset);
@@ -128,14 +122,11 @@ public class TermUnblocker
         frameLengthOrdered(termBuffer, termOffset, frameLength);
     }
 
-    public static boolean scanBackToConfirmZeroed(final UnsafeBuffer buffer, final int from, final int limit)
-    {
+    public static boolean scanBackToConfirmZeroed(final UnsafeBuffer buffer, final int from, final int limit) {
         int i = from - FRAME_ALIGNMENT;
         boolean allZeros = true;
-        while (i >= limit)
-        {
-            if (0 != frameLengthVolatile(buffer, i))
-            {
+        while (i >= limit) {
+            if (0 != frameLengthVolatile(buffer, i)) {
                 allZeros = false;
                 break;
             }

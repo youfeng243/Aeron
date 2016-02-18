@@ -32,8 +32,7 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 
-public class RawLogFactoryTest
-{
+public class RawLogFactoryTest {
     private static final String CHANNEL = "udp://localhost:4321";
     private static final int SESSION_ID = 100;
     private static final int STREAM_ID = 101;
@@ -46,70 +45,65 @@ public class RawLogFactoryTest
     private EventLogger logger = mock(EventLogger.class);
 
     @Before
-    public void createDataDir()
-    {
+    public void createDataDir() {
         IoUtil.ensureDirectoryExists(DATA_DIR, "data");
         rawLogFactory = new RawLogFactory(
-            DATA_DIR.getAbsolutePath(), TERM_BUFFER_LENGTH, TERM_BUFFER_MAX_LENGTH, TERM_BUFFER_LENGTH, logger);
+                DATA_DIR.getAbsolutePath(), TERM_BUFFER_LENGTH, TERM_BUFFER_MAX_LENGTH, TERM_BUFFER_LENGTH, logger);
     }
 
     @After
-    public void cleanupFiles() throws IOException
-    {
+    public void cleanupFiles() throws IOException {
         IoUtil.delete(DATA_DIR, true);
     }
 
     @Test
-    public void shouldCreateCorrectLengthAndZeroedFilesForPublication() throws Exception
-    {
+    public void shouldCreateCorrectLengthAndZeroedFilesForPublication() throws Exception {
         final String canonicalForm = udpChannel.canonicalForm();
         final RawLog rawLog = rawLogFactory.newNetworkPublication(canonicalForm, SESSION_ID, STREAM_ID, CREATION_ID);
 
         rawLog.stream().forEach(
-            (partition) ->
-            {
-                final UnsafeBuffer term = partition.termBuffer();
+                (partition) ->
+                {
+                    final UnsafeBuffer term = partition.termBuffer();
 
-                assertThat(term.capacity(), is(TERM_BUFFER_LENGTH));
-                assertThat(term.getByte(0), is((byte)0));
-                assertThat(term.getByte(TERM_BUFFER_LENGTH - 1), is((byte)0));
+                    assertThat(term.capacity(), is(TERM_BUFFER_LENGTH));
+                    assertThat(term.getByte(0), is((byte) 0));
+                    assertThat(term.getByte(TERM_BUFFER_LENGTH - 1), is((byte) 0));
 
-                final UnsafeBuffer metaData = partition.metaDataBuffer();
+                    final UnsafeBuffer metaData = partition.metaDataBuffer();
 
-                assertThat(metaData.capacity(), is(LogBufferDescriptor.TERM_META_DATA_LENGTH));
-                assertThat(metaData.getByte(0), is((byte)0));
-                assertThat(metaData.getByte(LogBufferDescriptor.TERM_META_DATA_LENGTH - 1), is((byte)0));
-            });
+                    assertThat(metaData.capacity(), is(LogBufferDescriptor.TERM_META_DATA_LENGTH));
+                    assertThat(metaData.getByte(0), is((byte) 0));
+                    assertThat(metaData.getByte(LogBufferDescriptor.TERM_META_DATA_LENGTH - 1), is((byte) 0));
+                });
     }
 
     @Test
-    public void shouldCreateCorrectLengthAndZeroedFilesForImage() throws Exception
-    {
+    public void shouldCreateCorrectLengthAndZeroedFilesForImage() throws Exception {
         final String canonicalForm = udpChannel.canonicalForm();
         final int imageTermBufferMaxLength = TERM_BUFFER_LENGTH / 2;
         final RawLog rawLog = rawLogFactory.newNetworkedImage(
-            canonicalForm, SESSION_ID, STREAM_ID, CREATION_ID, imageTermBufferMaxLength);
+                canonicalForm, SESSION_ID, STREAM_ID, CREATION_ID, imageTermBufferMaxLength);
 
         rawLog.stream().forEach(
-            (partition) ->
-            {
-                final UnsafeBuffer term = partition.termBuffer();
+                (partition) ->
+                {
+                    final UnsafeBuffer term = partition.termBuffer();
 
-                assertThat(term.capacity(), is(imageTermBufferMaxLength));
-                assertThat(term.getByte(0), is((byte)0));
-                assertThat(term.getByte(imageTermBufferMaxLength - 1), is((byte)0));
+                    assertThat(term.capacity(), is(imageTermBufferMaxLength));
+                    assertThat(term.getByte(0), is((byte) 0));
+                    assertThat(term.getByte(imageTermBufferMaxLength - 1), is((byte) 0));
 
-                final UnsafeBuffer metaData = partition.metaDataBuffer();
+                    final UnsafeBuffer metaData = partition.metaDataBuffer();
 
-                assertThat(metaData.capacity(), is(LogBufferDescriptor.TERM_META_DATA_LENGTH));
-                assertThat(metaData.getByte(0), is((byte)0));
-                assertThat(metaData.getByte(LogBufferDescriptor.TERM_META_DATA_LENGTH - 1), is((byte)0));
-            });
+                    assertThat(metaData.capacity(), is(LogBufferDescriptor.TERM_META_DATA_LENGTH));
+                    assertThat(metaData.getByte(0), is((byte) 0));
+                    assertThat(metaData.getByte(LogBufferDescriptor.TERM_META_DATA_LENGTH - 1), is((byte) 0));
+                });
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void shouldExceptionIfRequestedTermBufferLengthGreaterThanMax()
-    {
+    public void shouldExceptionIfRequestedTermBufferLengthGreaterThanMax() {
         final String canonicalForm = udpChannel.canonicalForm();
         final int imageTermBufferMaxLength = TERM_BUFFER_MAX_LENGTH * 2;
         rawLogFactory.newNetworkedImage(canonicalForm, SESSION_ID, STREAM_ID, CREATION_ID, imageTermBufferMaxLength);

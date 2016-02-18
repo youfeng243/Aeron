@@ -21,8 +21,7 @@ import uk.co.real_logic.agrona.collections.Int2ObjectHashMap;
 /**
  * Event types and encoding/decoding
  */
-public enum EventCode
-{
+public enum EventCode {
     FRAME_IN(1, EventDissector::dissectAsFrame),
     FRAME_OUT(2, EventDissector::dissectAsFrame),
     CMD_IN_ADD_PUBLICATION(3, EventDissector::dissectAsCommand),
@@ -53,8 +52,7 @@ public enum EventCode
     private static final Int2ObjectHashMap<EventCode> EVENT_CODE_BY_ID_MAP = new Int2ObjectHashMap<>();
 
     @FunctionalInterface
-    private interface DissectFunction
-    {
+    private interface DissectFunction {
         String dissect(final EventCode code, final MutableDirectBuffer buffer, final int offset);
     }
 
@@ -62,23 +60,19 @@ public enum EventCode
     private final int id;
     private final DissectFunction dissector;
 
-    static
-    {
-        for (final EventCode code : EventCode.values())
-        {
+    static {
+        for (final EventCode code : EventCode.values()) {
             EVENT_CODE_BY_ID_MAP.put(code.id(), code);
         }
     }
 
-    EventCode(final int id, final DissectFunction dissector)
-    {
+    EventCode(final int id, final DissectFunction dissector) {
         this.id = id;
         this.tagBit = 1L << id;
         this.dissector = dissector;
     }
 
-    public int id()
-    {
+    public int id() {
         return id;
     }
 
@@ -88,25 +82,21 @@ public enum EventCode
      *
      * @return the tag bit
      */
-    public long tagBit()
-    {
+    public long tagBit() {
         return tagBit;
     }
 
-    public static EventCode get(final int id)
-    {
+    public static EventCode get(final int id) {
         final EventCode code = EVENT_CODE_BY_ID_MAP.get(id);
 
-        if (null == code)
-        {
+        if (null == code) {
             throw new IllegalArgumentException("No EventCode for ID: " + id);
         }
 
         return code;
     }
 
-    public String decode(final MutableDirectBuffer buffer, final int offset)
-    {
+    public String decode(final MutableDirectBuffer buffer, final int offset) {
         return dissector.dissect(this, buffer, offset);
     }
 }

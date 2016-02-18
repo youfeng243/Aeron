@@ -22,10 +22,8 @@ import uk.co.real_logic.agrona.DirectBuffer;
  * or a fragment of a message to be reassembled. Messages are fragmented if greater than the frame for MTU in length.
  */
 @FunctionalInterface
-public interface ControlledFragmentHandler
-{
-    enum Action
-    {
+public interface ControlledFragmentHandler {
+    enum Action {
         /**
          * Abort the current polling operation and do not advance the position for this fragment.
          */

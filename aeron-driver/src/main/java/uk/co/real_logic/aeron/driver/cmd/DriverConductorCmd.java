@@ -17,7 +17,6 @@ package uk.co.real_logic.aeron.driver.cmd;
 
 import uk.co.real_logic.aeron.driver.DriverConductor;
 
-public interface DriverConductorCmd
-{
+public interface DriverConductorCmd {
     void execute(DriverConductor conductor);
 }

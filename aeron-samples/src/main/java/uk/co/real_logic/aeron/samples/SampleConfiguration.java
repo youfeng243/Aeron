@@ -20,8 +20,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Configuration used for samples all in one place.
  */
-public class SampleConfiguration
-{
+public class SampleConfiguration {
     public static final String CHANNEL_PROP = "aeron.sample.channel";
     public static final String STREAM_ID_PROP = "aeron.sample.streamId";
 
@@ -54,8 +53,7 @@ public class SampleConfiguration
     public static final boolean EMBEDDED_MEDIA_DRIVER;
     public static final boolean RANDOM_MESSAGE_LENGTH;
 
-    static
-    {
+    static {
         CHANNEL = System.getProperty(CHANNEL_PROP, "aeron:udp?remote=localhost:40123");
         STREAM_ID = Integer.getInteger(STREAM_ID_PROP, 10);
         PING_CHANNEL = System.getProperty(PING_CHANNEL_PROP, "aeron:udp?remote=localhost:40123");

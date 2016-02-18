@@ -17,8 +17,7 @@ package uk.co.real_logic.aeron.driver;
 
 import uk.co.real_logic.agrona.ManagedResource;
 
-public interface DriverManagedResource extends ManagedResource
-{
+public interface DriverManagedResource extends ManagedResource {
     /**
      * Inform resource of time passing and pass it DriverConductor to inform of any state transitions.
      *
@@ -39,8 +38,7 @@ public interface DriverManagedResource extends ManagedResource
      *
      * @return new reference count value
      */
-    default int incRef()
-    {
+    default int incRef() {
         return 0;
     }
 
@@ -49,8 +47,7 @@ public interface DriverManagedResource extends ManagedResource
      *
      * @return new reference count value
      */
-    default int decRef()
-    {
+    default int decRef() {
         return 0;
     }
 
@@ -59,8 +56,7 @@ public interface DriverManagedResource extends ManagedResource
      *
      * @return position of the producer
      */
-    default long producerPosition()
-    {
+    default long producerPosition() {
         return 0;
     }
 
@@ -69,8 +65,7 @@ public interface DriverManagedResource extends ManagedResource
      *
      * @return position of the consumer
      */
-    default long consumerPosition()
-    {
+    default long consumerPosition() {
         return 0;
     }
 
@@ -79,8 +74,7 @@ public interface DriverManagedResource extends ManagedResource
      *
      * @return whether unblocking was necessary or not
      */
-    default boolean unblockAtConsumerPosition()
-    {
+    default boolean unblockAtConsumerPosition() {
         return false;
     }
 }

@@ -20,12 +20,10 @@ import uk.co.real_logic.aeron.protocol.DataHeaderFlyweight;
 
 import static uk.co.real_logic.aeron.logbuffer.FrameDescriptor.UNFRAGMENTED;
 
-public class AssemblyHeader extends Header
-{
+public class AssemblyHeader extends Header {
     private int frameLength;
 
-    public AssemblyHeader reset(final Header base, final int msgLength)
-    {
+    public AssemblyHeader reset(final Header base, final int msgLength) {
         positionBitsToShift(base.positionBitsToShift());
         initialTermId(base.initialTermId());
         offset(base.offset());
@@ -35,18 +33,15 @@ public class AssemblyHeader extends Header
         return this;
     }
 
-    public int frameLength()
-    {
+    public int frameLength() {
         return frameLength;
     }
 
-    public byte flags()
-    {
-        return (byte)(super.flags() | UNFRAGMENTED);
+    public byte flags() {
+        return (byte) (super.flags() | UNFRAGMENTED);
     }
 
-    public int termOffset()
-    {
+    public int termOffset() {
         return offset() - (frameLength - super.frameLength());
     }
 }

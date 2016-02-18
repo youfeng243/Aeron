@@ -30,11 +30,10 @@ import uk.co.real_logic.agrona.concurrent.SigInt;
 
 /**
  * Pong component of Ping-Pong.
- * <p>
+ *
  * Echoes back messages
  */
-public class Pong
-{
+public class Pong {
     private static final int PING_STREAM_ID = SampleConfiguration.PING_STREAM_ID;
     private static final int PONG_STREAM_ID = SampleConfiguration.PONG_STREAM_ID;
     private static final String PING_CHANNEL = SampleConfiguration.PING_CHANNEL;
@@ -44,13 +43,11 @@ public class Pong
 
     private static final IdleStrategy PING_HANDLER_IDLE_STRATEGY = new NoOpIdleStrategy();
 
-    public static void main(final String[] args) throws Exception
-    {
+    public static void main(final String[] args) throws Exception {
         final MediaDriver driver = EMBEDDED_MEDIA_DRIVER ? MediaDriver.launchEmbedded() : null;
 
         final Aeron.Context ctx = new Aeron.Context();
-        if (EMBEDDED_MEDIA_DRIVER)
-        {
+        if (EMBEDDED_MEDIA_DRIVER) {
             ctx.aeronDirectoryName(driver.aeronDirectoryName());
         }
 
@@ -64,13 +61,11 @@ public class Pong
 
         try (final Aeron aeron = Aeron.connect(ctx);
              final Publication pongPublication = aeron.addPublication(PONG_CHANNEL, PONG_STREAM_ID);
-             final Subscription pingSubscription = aeron.addSubscription(PING_CHANNEL, PING_STREAM_ID))
-        {
+             final Subscription pingSubscription = aeron.addSubscription(PING_CHANNEL, PING_STREAM_ID)) {
             final FragmentAssembler dataHandler = new FragmentAssembler(
-                (buffer, offset, length, header) -> pingHandler(pongPublication, buffer, offset, length));
+                    (buffer, offset, length, header) -> pingHandler(pongPublication, buffer, offset, length));
 
-            while (running.get())
-            {
+            while (running.get()) {
                 idleStrategy.idle(pingSubscription.poll(dataHandler, FRAME_COUNT_LIMIT));
             }
 
@@ -81,17 +76,14 @@ public class Pong
     }
 
     public static void pingHandler(
-        final Publication pongPublication, final DirectBuffer buffer, final int offset, final int length)
-    {
-        if (pongPublication.offer(buffer, offset, length) > 0L)
-        {
+            final Publication pongPublication, final DirectBuffer buffer, final int offset, final int length) {
+        if (pongPublication.offer(buffer, offset, length) > 0L) {
             return;
         }
 
         PING_HANDLER_IDLE_STRATEGY.reset();
 
-        while (pongPublication.offer(buffer, offset, length) < 0L)
-        {
+        while (pongPublication.offer(buffer, offset, length) < 0L) {
             PING_HANDLER_IDLE_STRATEGY.idle();
         }
     }

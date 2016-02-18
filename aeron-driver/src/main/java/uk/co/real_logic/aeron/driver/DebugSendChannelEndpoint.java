@@ -26,21 +26,18 @@ import java.nio.ByteBuffer;
  * Debug implementation which can record transmission frames to the {@link MediaDriver.Context#eventLogger()} and introduce
  * loss via {@link MediaDriver.Context#controlLossGenerator()} and {@link MediaDriver.Context#dataLossGenerator()} .
  */
-public class DebugSendChannelEndpoint extends SendChannelEndpoint
-{
+public class DebugSendChannelEndpoint extends SendChannelEndpoint {
     private final LossGenerator dataLossGenerator;
     private final LossGenerator controlLossGenerator;
 
-    public DebugSendChannelEndpoint(final UdpChannel udpChannel, final MediaDriver.Context context)
-    {
+    public DebugSendChannelEndpoint(final UdpChannel udpChannel, final MediaDriver.Context context) {
         super(udpChannel, context);
 
         dataLossGenerator = context.dataLossGenerator();
         controlLossGenerator = context.controlLossGenerator();
     }
 
-    public int send(final ByteBuffer buffer)
-    {
+    public int send(final ByteBuffer buffer) {
         logger.logFrameOut(buffer, connectAddress);
 
         // TODO: call dataLossGenerator and drop (call log to inform) - need a shouldDropAllFrame() method
@@ -48,16 +45,12 @@ public class DebugSendChannelEndpoint extends SendChannelEndpoint
         return super.send(buffer);
     }
 
-    protected int dispatch(final UnsafeBuffer buffer, final int length, final InetSocketAddress srcAddress)
-    {
+    protected int dispatch(final UnsafeBuffer buffer, final int length, final InetSocketAddress srcAddress) {
         int result = 0;
 
-        if (controlLossGenerator.shouldDropFrame(srcAddress, buffer, length))
-        {
+        if (controlLossGenerator.shouldDropFrame(srcAddress, buffer, length)) {
             logger.logFrameInDropped(receiveByteBuffer, 0, length, srcAddress);
-        }
-        else
-        {
+        } else {
             logger.logFrameIn(receiveByteBuffer, 0, length, srcAddress);
 
             result = super.dispatch(buffer, length, srcAddress);

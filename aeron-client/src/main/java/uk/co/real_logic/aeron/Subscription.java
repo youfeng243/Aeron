@@ -24,22 +24,21 @@ import java.util.List;
 /**
  * Aeron Subscriber API for receiving a reconstructed {@link Image} for a stream of messages from publishers on
  * a given channel and streamId pair.
- * <p>
+ *
  * Subscribers are created via an {@link Aeron} object, and received messages are delivered
  * to the {@link FragmentHandler}.
- * <p>
+ *
  * By default fragmented messages are not reassembled before delivery. If an application must
  * receive whole messages, whether or not they were fragmented, then the Subscriber
  * should be created with a {@link FragmentAssembler} or a custom implementation.
- * <p>
+ *
  * It is an applications responsibility to {@link #poll} the Subscriber for new messages.
- * <p>
+ *
  * Subscriptions are not threadsafe and should not be shared between subscribers.
  *
  * @see FragmentAssembler
  */
-public class Subscription implements AutoCloseable
-{
+public class Subscription implements AutoCloseable {
     private static final Image[] EMPTY_ARRAY = new Image[0];
 
     private final long registrationId;
@@ -51,8 +50,7 @@ public class Subscription implements AutoCloseable
     private final ClientConductor clientConductor;
     private final String channel;
 
-    Subscription(final ClientConductor conductor, final String channel, final int streamId, final long registrationId)
-    {
+    Subscription(final ClientConductor conductor, final String channel, final int streamId, final long registrationId) {
         this.clientConductor = conductor;
         this.channel = channel;
         this.streamId = streamId;
@@ -64,8 +62,7 @@ public class Subscription implements AutoCloseable
      *
      * @return Media address for delivery to the channel.
      */
-    public String channel()
-    {
+    public String channel() {
         return channel;
     }
 
@@ -74,14 +71,13 @@ public class Subscription implements AutoCloseable
      *
      * @return Stream identity for scoping within the channel media address.
      */
-    public int streamId()
-    {
+    public int streamId() {
         return streamId;
     }
 
     /**
      * Poll the {@link Image}s under the subscription for available message fragments.
-     * <p>
+     *
      * Each fragment read will be a whole message if it is under MTU length. If larger than MTU then it will come
      * as a series of fragments ordered withing a session.
      *
@@ -91,25 +87,21 @@ public class Subscription implements AutoCloseable
      * @param fragmentLimit   number of message fragments to limit for the poll operation across multiple {@link Image}s.
      * @return the number of fragments received
      */
-    public int poll(final FragmentHandler fragmentHandler, final int fragmentLimit)
-    {
+    public int poll(final FragmentHandler fragmentHandler, final int fragmentLimit) {
         final Image[] images = this.images;
         final int length = images.length;
         int fragmentsRead = 0;
 
         int startingIndex = roundRobinIndex++;
-        if (startingIndex >= length)
-        {
+        if (startingIndex >= length) {
             roundRobinIndex = startingIndex = 0;
         }
 
-        for (int i = startingIndex; i < length && fragmentsRead < fragmentLimit; i++)
-        {
+        for (int i = startingIndex; i < length && fragmentsRead < fragmentLimit; i++) {
             fragmentsRead += images[i].poll(fragmentHandler, fragmentLimit - fragmentsRead);
         }
 
-        for (int i = 0; i < startingIndex && fragmentsRead < fragmentLimit; i++)
-        {
+        for (int i = 0; i < startingIndex && fragmentsRead < fragmentLimit; i++) {
             fragmentsRead += images[i].poll(fragmentHandler, fragmentLimit - fragmentsRead);
         }
 
@@ -120,7 +112,7 @@ public class Subscription implements AutoCloseable
      * Poll in a controlled manner the {@link Image}s under the subscription for available message fragments.
      * Control is applied to fragments in the stream. If more fragments can be read on another stream
      * they will even if BREAK or ABORT is returned from the fragment handler.
-     * <p>
+     *
      * Each fragment read will be a whole message if it is under MTU length. If larger than MTU then it will come
      * as a series of fragments ordered withing a session.
      *
@@ -131,26 +123,22 @@ public class Subscription implements AutoCloseable
      * @return the number of fragments received
      * @see ControlledFragmentHandler
      */
-    public int controlledPoll(final ControlledFragmentHandler fragmentHandler, final int fragmentLimit)
-    {
+    public int controlledPoll(final ControlledFragmentHandler fragmentHandler, final int fragmentLimit) {
         final Image[] images = this.images;
         final int length = images.length;
         int fragmentsRead = 0;
 
         int startingIndex = roundRobinIndex++;
-        if (startingIndex >= length)
-        {
+        if (startingIndex >= length) {
             roundRobinIndex = startingIndex = 0;
         }
 
-        for (int i = startingIndex; i < length && fragmentsRead < fragmentLimit; i++)
-        {
+        for (int i = startingIndex; i < length && fragmentsRead < fragmentLimit; i++) {
             fragmentsRead += images[i].controlledPoll(fragmentHandler, fragmentLimit - fragmentsRead);
         }
 
-        for (int i = 0; i < startingIndex && fragmentsRead < fragmentLimit; i++)
-        {
-            fragmentsRead += images[i]. controlledPoll(fragmentHandler, fragmentLimit - fragmentsRead);
+        for (int i = 0; i < startingIndex && fragmentsRead < fragmentLimit; i++) {
+            fragmentsRead += images[i].controlledPoll(fragmentHandler, fragmentLimit - fragmentsRead);
         }
 
         return fragmentsRead;
@@ -165,11 +153,9 @@ public class Subscription implements AutoCloseable
      * @param blockLengthLimit for each {@link Image} polled.
      * @return the number of bytes consumed.
      */
-    public long blockPoll(final BlockHandler blockHandler, final int blockLengthLimit)
-    {
+    public long blockPoll(final BlockHandler blockHandler, final int blockLengthLimit) {
         long bytesConsumed = 0;
-        for (final Image image : images)
-        {
+        for (final Image image : images) {
             bytesConsumed += image.blockPoll(blockHandler, blockLengthLimit);
         }
 
@@ -185,11 +171,9 @@ public class Subscription implements AutoCloseable
      * @param blockLengthLimit for each {@link Image} polled.
      * @return the number of bytes consumed.
      */
-    public long filePoll(final FileBlockHandler fileBlockHandler, final int blockLengthLimit)
-    {
+    public long filePoll(final FileBlockHandler fileBlockHandler, final int blockLengthLimit) {
         long bytesConsumed = 0;
-        for (final Image image : images)
-        {
+        for (final Image image : images) {
             bytesConsumed += image.filePoll(fileBlockHandler, blockLengthLimit);
         }
 
@@ -201,8 +185,7 @@ public class Subscription implements AutoCloseable
      *
      * @return count of images connected to this subscription.
      */
-    public int imageCount()
-    {
+    public int imageCount() {
         return images.length;
     }
 
@@ -212,14 +195,11 @@ public class Subscription implements AutoCloseable
      * @param sessionId associated with the Image.
      * @return Image associated with the given sessionId or null if no Image exist.
      */
-    public Image getImage(final int sessionId)
-    {
+    public Image getImage(final int sessionId) {
         Image result = null;
 
-        for (final Image image : images)
-        {
-            if (sessionId == image.sessionId())
-            {
+        for (final Image image : images) {
+            if (sessionId == image.sessionId()) {
                 result = image;
                 break;
             }
@@ -233,28 +213,23 @@ public class Subscription implements AutoCloseable
      *
      * @return a {@link List} of active {@link Image}s that match this subscription.
      */
-    public List<Image> images()
-    {
+    public List<Image> images() {
         return Arrays.asList(images);
     }
 
     /**
      * Close the Subscription so that associated {@link Image} can be released.
-     * <p>
+     *
      * This method is idempotent.
      */
-    public void close()
-    {
-        synchronized (clientConductor)
-        {
-            if (!isClosed)
-            {
+    public void close() {
+        synchronized (clientConductor) {
+            if (!isClosed) {
                 isClosed = true;
 
                 clientConductor.releaseSubscription(this);
 
-                for (final Image image : images)
-                {
+                for (final Image image : images) {
                     clientConductor.lingerResource(image.managedResource());
                 }
 
@@ -268,8 +243,7 @@ public class Subscription implements AutoCloseable
      *
      * @return true if it has been closed otherwise false.
      */
-    public boolean isClosed()
-    {
+    public boolean isClosed() {
         return isClosed;
     }
 
@@ -278,39 +252,30 @@ public class Subscription implements AutoCloseable
      *
      * @return registration id
      */
-    public long registrationId()
-    {
+    public long registrationId() {
         return registrationId;
     }
 
-    void addImage(final Image image)
-    {
-        if (isClosed)
-        {
+    void addImage(final Image image) {
+        if (isClosed) {
             clientConductor.lingerResource(image.managedResource());
-        }
-        else
-        {
+        } else {
             images = ArrayUtil.add(images, image);
         }
     }
 
-    Image removeImage(final long correlationId)
-    {
+    Image removeImage(final long correlationId) {
         final Image[] oldArray = images;
         Image removedImage = null;
 
-        for (final Image image : oldArray)
-        {
-            if (image.correlationId() == correlationId)
-            {
+        for (final Image image : oldArray) {
+            if (image.correlationId() == correlationId) {
                 removedImage = image;
                 break;
             }
         }
 
-        if (null != removedImage)
-        {
+        if (null != removedImage) {
             images = ArrayUtil.remove(oldArray, removedImage);
             clientConductor.lingerResource(removedImage.managedResource());
         }
@@ -318,14 +283,11 @@ public class Subscription implements AutoCloseable
         return removedImage;
     }
 
-    boolean hasImage(final int sessionId)
-    {
+    boolean hasImage(final int sessionId) {
         boolean hasImage = false;
 
-        for (final Image image : images)
-        {
-            if (sessionId == image.sessionId())
-            {
+        for (final Image image : images) {
+            if (sessionId == image.sessionId()) {
                 hasImage = true;
                 break;
             }
@@ -334,8 +296,7 @@ public class Subscription implements AutoCloseable
         return hasImage;
     }
 
-    boolean hasNoImages()
-    {
+    boolean hasNoImages() {
         return images.length == 0;
     }
 }

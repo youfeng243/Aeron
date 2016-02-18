@@ -25,46 +25,38 @@ import java.util.regex.Pattern;
 
 import static uk.co.real_logic.aeron.driver.Strings.parseIntOrDefault;
 
-public class InterfaceSearchAddress
-{
+public class InterfaceSearchAddress {
     private static final Pattern IPV4_ADDRESS_PATTERN =
-        Pattern.compile("([^:/]+)(?::(?<port>[0-9]+))?(?:/(?<subnet>[0-9]+))?");
+            Pattern.compile("([^:/]+)(?::(?<port>[0-9]+))?(?:/(?<subnet>[0-9]+))?");
     private static final Pattern IPV6_ADDRESS_PATTERN =
-        Pattern.compile("\\[([0-9A-Fa-f:]+)\\](?::(?<port>[0-9]+))?(?:/(?<subnet>[0-9]+))?");
+            Pattern.compile("\\[([0-9A-Fa-f:]+)\\](?::(?<port>[0-9]+))?(?:/(?<subnet>[0-9]+))?");
 
     private final InetSocketAddress address;
     private final int subnetPrefix;
 
-    public InterfaceSearchAddress(InetSocketAddress address, int subnetPrefix)
-    {
+    public InterfaceSearchAddress(InetSocketAddress address, int subnetPrefix) {
         this.address = address;
         this.subnetPrefix = subnetPrefix;
     }
 
-    public InetSocketAddress getAddress()
-    {
+    public InetSocketAddress getAddress() {
         return address;
     }
 
-    public InetAddress getInetAddress()
-    {
+    public InetAddress getInetAddress() {
         return address.getAddress();
     }
 
-    public int getSubnetPrefix()
-    {
+    public int getSubnetPrefix() {
         return subnetPrefix;
     }
 
-    public int getPort()
-    {
+    public int getPort() {
         return address.getPort();
     }
 
-    public static InterfaceSearchAddress parse(String s) throws UnknownHostException
-    {
-        if (Strings.isEmpty(s))
-        {
+    public static InterfaceSearchAddress parse(String s) throws UnknownHostException {
+        if (Strings.isEmpty(s)) {
             throw new IllegalArgumentException("Search address string is null or empty");
         }
 
@@ -78,27 +70,23 @@ public class InterfaceSearchAddress
         return new InterfaceSearchAddress(new InetSocketAddress(hostAddress, port), subnetPrefix);
     }
 
-    private static Matcher getMatcher(CharSequence cs)
-    {
+    private static Matcher getMatcher(CharSequence cs) {
         final Matcher ipV4Matcher = IPV4_ADDRESS_PATTERN.matcher(cs);
 
-        if (ipV4Matcher.matches())
-        {
+        if (ipV4Matcher.matches()) {
             return ipV4Matcher;
         }
 
         final Matcher ipV6Matcher = IPV6_ADDRESS_PATTERN.matcher(cs);
 
-        if (ipV6Matcher.matches())
-        {
+        if (ipV6Matcher.matches()) {
             return ipV6Matcher;
         }
 
         throw new IllegalArgumentException("Invalid search address: " + cs);
     }
 
-    public static InterfaceSearchAddress wildcard()
-    {
+    public static InterfaceSearchAddress wildcard() {
         return new InterfaceSearchAddress(new InetSocketAddress(0), 0);
     }
 }

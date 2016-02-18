@@ -23,7 +23,7 @@ import static uk.co.real_logic.agrona.BitUtil.SIZE_OF_LONG;
 /**
  * Control message for adding or removing a publication
  *
- * <p>
+ *
  * 0                   1                   2                   3
  * 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
  * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -35,11 +35,10 @@ import static uk.co.real_logic.agrona.BitUtil.SIZE_OF_LONG;
  * |                        Channel Length                         |
  * +---------------------------------------------------------------+
  * |                           Channel                            ...
- *...                                                              |
+ * ...                                                              |
  * +---------------------------------------------------------------+
  */
-public class PublicationMessageFlyweight extends CorrelatedMessageFlyweight
-{
+public class PublicationMessageFlyweight extends CorrelatedMessageFlyweight {
     private static final int STREAM_ID_FIELD_OFFSET = CORRELATION_ID_FIELD_OFFSET + SIZE_OF_LONG;
     private static final int CHANNEL_OFFSET = STREAM_ID_FIELD_OFFSET + SIZE_OF_INT;
 
@@ -50,8 +49,7 @@ public class PublicationMessageFlyweight extends CorrelatedMessageFlyweight
      *
      * @return stream id field
      */
-    public int streamId()
-    {
+    public int streamId() {
         return buffer.getInt(offset + STREAM_ID_FIELD_OFFSET);
     }
 
@@ -61,8 +59,7 @@ public class PublicationMessageFlyweight extends CorrelatedMessageFlyweight
      * @param streamId field value
      * @return flyweight
      */
-    public PublicationMessageFlyweight streamId(final int streamId)
-    {
+    public PublicationMessageFlyweight streamId(final int streamId) {
         buffer.putInt(offset + STREAM_ID_FIELD_OFFSET, streamId);
 
         return this;
@@ -73,8 +70,7 @@ public class PublicationMessageFlyweight extends CorrelatedMessageFlyweight
      *
      * @return channel field
      */
-    public String channel()
-    {
+    public String channel() {
         return buffer.getStringUtf8(offset + CHANNEL_OFFSET, ByteOrder.nativeOrder());
     }
 
@@ -84,8 +80,7 @@ public class PublicationMessageFlyweight extends CorrelatedMessageFlyweight
      * @param channel field value
      * @return flyweight
      */
-    public PublicationMessageFlyweight channel(final String channel)
-    {
+    public PublicationMessageFlyweight channel(final String channel) {
         lengthOfChannel = buffer.putStringUtf8(offset + CHANNEL_OFFSET, channel, ByteOrder.nativeOrder());
 
         return this;
@@ -98,8 +93,7 @@ public class PublicationMessageFlyweight extends CorrelatedMessageFlyweight
      *
      * @return the length of the current message
      */
-    public int length()
-    {
+    public int length() {
         return CHANNEL_OFFSET + lengthOfChannel;
     }
 }

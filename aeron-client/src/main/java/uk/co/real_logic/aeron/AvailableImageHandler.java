@@ -19,8 +19,7 @@ package uk.co.real_logic.aeron;
  * Interface for delivery of new image events to a {@link Aeron} instance.
  */
 @FunctionalInterface
-public interface AvailableImageHandler
-{
+public interface AvailableImageHandler {
     /**
      * Method called by Aeron to deliver notification of a new {@link Image} being available for polling.
      *

@@ -31,8 +31,7 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
 @RunWith(Theories.class)
-public class AbortedMessageTest
-{
+public class AbortedMessageTest {
     @DataPoint
     public static final String UNICAST_CHANNEL = "aeron:udp?remote=localhost:54325";
 
@@ -47,8 +46,7 @@ public class AbortedMessageTest
 
     @Theory
     @Test(timeout = 10000)
-    public void shouldReceivePublishedMessage(final String channel) throws Exception
-    {
+    public void shouldReceivePublishedMessage(final String channel) throws Exception {
         final BufferClaim bufferClaim = new BufferClaim();
         final UnsafeBuffer srcBuffer = new UnsafeBuffer(new byte[MESSAGE_LENGTH]);
         final MediaDriver.Context ctx = new MediaDriver.Context();
@@ -56,12 +54,10 @@ public class AbortedMessageTest
         try (final MediaDriver ignore = MediaDriver.launch(ctx);
              final Aeron aeron = Aeron.connect();
              final Publication publication = aeron.addPublication(channel, STREAM_ID);
-             final Subscription subscription = aeron.addSubscription(channel, STREAM_ID))
-        {
+             final Subscription subscription = aeron.addSubscription(channel, STREAM_ID)) {
             publishMessage(srcBuffer, publication);
 
-            while (publication.tryClaim(MESSAGE_LENGTH, bufferClaim) < 0L)
-            {
+            while (publication.tryClaim(MESSAGE_LENGTH, bufferClaim) < 0L) {
                 Thread.yield();
             }
 
@@ -71,25 +67,20 @@ public class AbortedMessageTest
 
             final int expectedNumberOfFragments = 2;
             int numFragments = 0;
-            do
-            {
+            do {
                 numFragments += subscription.poll(mockFragmentHandler, FRAGMENT_COUNT_LIMIT);
             }
             while (numFragments < expectedNumberOfFragments);
 
             verify(mockFragmentHandler, times(expectedNumberOfFragments)).onFragment(
-                any(DirectBuffer.class), anyInt(), eq(MESSAGE_LENGTH), any(Header.class));
-        }
-        finally
-        {
+                    any(DirectBuffer.class), anyInt(), eq(MESSAGE_LENGTH), any(Header.class));
+        } finally {
             ctx.deleteAeronDirectory();
         }
     }
 
-    public static void publishMessage(final UnsafeBuffer srcBuffer, final Publication publication)
-    {
-        while (publication.offer(srcBuffer, 0, MESSAGE_LENGTH) < 0L)
-        {
+    public static void publishMessage(final UnsafeBuffer srcBuffer, final Publication publication) {
+        while (publication.offer(srcBuffer, 0, MESSAGE_LENGTH) < 0L) {
             Thread.yield();
         }
     }

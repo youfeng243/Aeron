@@ -29,8 +29,7 @@ import static uk.co.real_logic.agrona.BitUtil.SIZE_OF_LONG;
 /**
  * Dissect encoded log events. The event consumer of the log should be single threaded.
  */
-public class EventDissector
-{
+public class EventDissector {
     private static final DataHeaderFlyweight DATA_HEADER = new DataHeaderFlyweight();
     private static final StatusMessageFlyweight SM_HEADER = new StatusMessageFlyweight();
     private static final NakFlyweight NAK_HEADER = new NakFlyweight();
@@ -43,8 +42,7 @@ public class EventDissector
     private static final ImageMessageFlyweight IMAGE_MSG = new ImageMessageFlyweight();
     private static final RemoveMessageFlyweight REMOVE_MSG = new RemoveMessageFlyweight();
 
-    public static String dissectAsFrame(final EventCode code, final MutableDirectBuffer buffer, final int offset)
-    {
+    public static String dissectAsFrame(final EventCode code, final MutableDirectBuffer buffer, final int offset) {
         final StringBuilder builder = new StringBuilder();
         int relativeOffset = dissectLogHeader(code, buffer, offset, builder);
 
@@ -55,8 +53,7 @@ public class EventDissector
         builder.append(" ");
 
         final int frameOffset = offset + relativeOffset;
-        switch (frameType(buffer, frameOffset))
-        {
+        switch (frameType(buffer, frameOffset)) {
             case HeaderFlyweight.HDR_TYPE_PAD:
             case HeaderFlyweight.HDR_TYPE_DATA:
                 final DataHeaderFlyweight dataFrame = DATA_HEADER;
@@ -66,19 +63,19 @@ public class EventDissector
 
             case HeaderFlyweight.HDR_TYPE_SM:
                 final StatusMessageFlyweight smFrame = SM_HEADER;
-                smFrame.wrap(buffer,  frameOffset, buffer.capacity() - frameOffset);
+                smFrame.wrap(buffer, frameOffset, buffer.capacity() - frameOffset);
                 builder.append(dissect(smFrame));
                 break;
 
             case HeaderFlyweight.HDR_TYPE_NAK:
                 final NakFlyweight nakFrame = NAK_HEADER;
-                nakFrame.wrap(buffer,  frameOffset, buffer.capacity() - frameOffset);
+                nakFrame.wrap(buffer, frameOffset, buffer.capacity() - frameOffset);
                 builder.append(dissect(nakFrame));
                 break;
 
             case HeaderFlyweight.HDR_TYPE_SETUP:
                 final SetupFlyweight setupFrame = SETUP_HEADER;
-                setupFrame.wrap(buffer,  frameOffset, buffer.capacity() - frameOffset);
+                setupFrame.wrap(buffer, frameOffset, buffer.capacity() - frameOffset);
                 builder.append(dissect(setupFrame));
                 break;
 
@@ -90,15 +87,13 @@ public class EventDissector
         return builder.toString();
     }
 
-    public static String dissectAsCommand(final EventCode code, final MutableDirectBuffer buffer, final int offset)
-    {
+    public static String dissectAsCommand(final EventCode code, final MutableDirectBuffer buffer, final int offset) {
         final StringBuilder builder = new StringBuilder();
         final int relativeOffset = dissectLogHeader(code, buffer, offset, builder);
 
         builder.append(": ");
 
-        switch (code)
-        {
+        switch (code) {
             case CMD_IN_ADD_PUBLICATION:
                 final PublicationMessageFlyweight pubCommand = PUB_MESSAGE;
                 pubCommand.wrap(buffer, offset + relativeOffset);
@@ -151,8 +146,7 @@ public class EventDissector
         return builder.toString();
     }
 
-    public static String dissectAsInvocation(final EventCode code, final MutableDirectBuffer buffer, final int initialOffset)
-    {
+    public static String dissectAsInvocation(final EventCode code, final MutableDirectBuffer buffer, final int initialOffset) {
         final StringBuilder builder = new StringBuilder();
         final int relativeOffset = dissectLogHeader(code, buffer, initialOffset, builder);
         builder.append(": ");
@@ -162,8 +156,7 @@ public class EventDissector
         return builder.toString();
     }
 
-    public static String dissectAsException(final EventCode code, final MutableDirectBuffer buffer, final int initialOffset)
-    {
+    public static String dissectAsException(final EventCode code, final MutableDirectBuffer buffer, final int initialOffset) {
         final StringBuilder builder = new StringBuilder();
         int offset = initialOffset + dissectLogHeader(code, buffer, initialOffset, builder);
         builder.append(": ");
@@ -178,8 +171,7 @@ public class EventDissector
         offset += strLength + SIZE_OF_INT;
         builder.append(')');
 
-        for (int i = 0; i < EventEncoder.STACK_DEPTH; i++)
-        {
+        for (int i = 0; i < EventEncoder.STACK_DEPTH; i++) {
             builder.append('\n');
             offset = readStackTraceElement(buffer, offset, builder);
         }
@@ -187,8 +179,7 @@ public class EventDissector
         return builder.toString();
     }
 
-    public static String dissectAsString(final EventCode code, final MutableDirectBuffer buffer, final int offset)
-    {
+    public static String dissectAsString(final EventCode code, final MutableDirectBuffer buffer, final int offset) {
         final StringBuilder builder = new StringBuilder();
         final int relativeOffset = dissectLogHeader(code, buffer, offset, builder);
         builder.append(": ");
@@ -197,8 +188,7 @@ public class EventDissector
         return builder.toString();
     }
 
-    private static int readStackTraceElement(final MutableDirectBuffer buffer, int offset, final StringBuilder builder)
-    {
+    private static int readStackTraceElement(final MutableDirectBuffer buffer, int offset, final StringBuilder builder) {
         final int lineNumber = buffer.getInt(offset, LITTLE_ENDIAN);
         offset += SIZE_OF_INT;
 
@@ -220,8 +210,7 @@ public class EventDissector
     }
 
     private static int dissectLogHeader(
-        final EventCode code, final MutableDirectBuffer buffer, final int offset, final StringBuilder builder)
-    {
+            final EventCode code, final MutableDirectBuffer buffer, final int offset, final StringBuilder builder) {
         int relativeOffset = 0;
 
         final int captureLength = buffer.getInt(offset + relativeOffset, LITTLE_ENDIAN);
@@ -234,14 +223,13 @@ public class EventDissector
         relativeOffset += SIZE_OF_LONG;
 
         builder.append(String.format(
-            "[%1$f] %2$s [%3$d/%4$d]",
-            (double)timestamp / 1000000000.0, code.name(), captureLength, bufferLength));
+                "[%1$f] %2$s [%3$d/%4$d]",
+                (double) timestamp / 1000000000.0, code.name(), captureLength, bufferLength));
 
         return relativeOffset;
     }
 
-    private static int dissectSocketAddress(final MutableDirectBuffer buffer, final int offset, final StringBuilder builder)
-    {
+    private static int dissectSocketAddress(final MutableDirectBuffer buffer, final int offset, final StringBuilder builder) {
         int relativeOffset = 0;
 
         final int port = buffer.getInt(offset + relativeOffset, LITTLE_ENDIAN);
@@ -253,155 +241,139 @@ public class EventDissector
         buffer.getBytes(offset + relativeOffset, addressBuffer);
         relativeOffset += addressBuffer.length;
 
-        try
-        {
+        try {
             builder.append(String.format("%s.%d", InetAddress.getByAddress(addressBuffer).getHostAddress(), port));
-        }
-        catch (final Exception ex)
-        {
+        } catch (final Exception ex) {
             ex.printStackTrace();
         }
 
         return relativeOffset;
     }
 
-    private static String dissect(final DataHeaderFlyweight msg)
-    {
+    private static String dissect(final DataHeaderFlyweight msg) {
         return String.format(
-            "%s 0x%x len %d %d:%d:%d @%x",
-            msg.headerType() == HeaderFlyweight.HDR_TYPE_PAD ? "PAD" : "DATA",
-            msg.flags(),
-            msg.frameLength(),
-            msg.sessionId(),
-            msg.streamId(),
-            msg.termId(),
-            msg.termOffset());
+                "%s 0x%x len %d %d:%d:%d @%x",
+                msg.headerType() == HeaderFlyweight.HDR_TYPE_PAD ? "PAD" : "DATA",
+                msg.flags(),
+                msg.frameLength(),
+                msg.sessionId(),
+                msg.streamId(),
+                msg.termId(),
+                msg.termOffset());
     }
 
-    private static String dissect(final StatusMessageFlyweight msg)
-    {
+    private static String dissect(final StatusMessageFlyweight msg) {
         return String.format(
-            "SM 0x%x len %d %d:%d:%d @%x %d",
-            msg.flags(),
-            msg.frameLength(),
-            msg.sessionId(),
-            msg.streamId(),
-            msg.consumptionTermId(),
-            msg.consumptionTermOffset(),
-            msg.receiverWindowLength());
+                "SM 0x%x len %d %d:%d:%d @%x %d",
+                msg.flags(),
+                msg.frameLength(),
+                msg.sessionId(),
+                msg.streamId(),
+                msg.consumptionTermId(),
+                msg.consumptionTermOffset(),
+                msg.receiverWindowLength());
     }
 
-    private static String dissect(final NakFlyweight msg)
-    {
+    private static String dissect(final NakFlyweight msg) {
         return String.format(
-            "NAK 0x%x len %d %d:%d:%d @%x %d",
-            msg.flags(),
-            msg.frameLength(),
-            msg.sessionId(),
-            msg.streamId(),
-            msg.termId(),
-            msg.termOffset(),
-            msg.length());
+                "NAK 0x%x len %d %d:%d:%d @%x %d",
+                msg.flags(),
+                msg.frameLength(),
+                msg.sessionId(),
+                msg.streamId(),
+                msg.termId(),
+                msg.termOffset(),
+                msg.length());
     }
 
-    private static String dissect(final SetupFlyweight msg)
-    {
+    private static String dissect(final SetupFlyweight msg) {
         return String.format(
-            "SETUP 0x%x len %d %d:%d:%d %d @%x %d MTU %d",
-            msg.flags(),
-            msg.frameLength(),
-            msg.sessionId(),
-            msg.streamId(),
-            msg.activeTermId(),
-            msg.initialTermId(),
-            msg.termOffset(),
-            msg.termLength(),
-            msg.mtuLength());
+                "SETUP 0x%x len %d %d:%d:%d %d @%x %d MTU %d",
+                msg.flags(),
+                msg.frameLength(),
+                msg.sessionId(),
+                msg.streamId(),
+                msg.activeTermId(),
+                msg.initialTermId(),
+                msg.termOffset(),
+                msg.termLength(),
+                msg.mtuLength());
     }
 
-    private static String dissect(final PublicationMessageFlyweight msg)
-    {
+    private static String dissect(final PublicationMessageFlyweight msg) {
         return String.format(
-            "%2$s %1$d [%4$d:%3$d]",
-            msg.streamId(),
-            msg.channel(),
-            msg.correlationId(),
-            msg.clientId());
+                "%2$s %1$d [%4$d:%3$d]",
+                msg.streamId(),
+                msg.channel(),
+                msg.correlationId(),
+                msg.clientId());
     }
 
-    private static String dissect(final SubscriptionMessageFlyweight msg)
-    {
+    private static String dissect(final SubscriptionMessageFlyweight msg) {
         return String.format(
-            "%s %d [%d][%d:%d]",
-            msg.channel(),
-            msg.streamId(),
-            msg.registrationCorrelationId(),
-            msg.clientId(),
-            msg.correlationId());
+                "%s %d [%d][%d:%d]",
+                msg.channel(),
+                msg.streamId(),
+                msg.registrationCorrelationId(),
+                msg.clientId(),
+                msg.correlationId());
     }
 
-    private static String dissect(final PublicationBuffersReadyFlyweight msg)
-    {
+    private static String dissect(final PublicationBuffersReadyFlyweight msg) {
         return String.format(
-            "%d:%d %d [%d]\n    %s",
-            msg.sessionId(),
-            msg.streamId(),
-            msg.publicationLimitCounterId(),
-            msg.correlationId(),
-            msg.logFileName());
+                "%d:%d %d [%d]\n    %s",
+                msg.sessionId(),
+                msg.streamId(),
+                msg.publicationLimitCounterId(),
+                msg.correlationId(),
+                msg.logFileName());
     }
 
-    private static String dissect(final ImageBuffersReadyFlyweight msg)
-    {
+    private static String dissect(final ImageBuffersReadyFlyweight msg) {
         final StringBuilder positions = new StringBuilder();
 
-        for (int i = 0; i < msg.subscriberPositionCount(); i++)
-        {
+        for (int i = 0; i < msg.subscriberPositionCount(); i++) {
             positions.append(String.format(
-                "[%d:%d:%d]",
-                i,
-                msg.subscriberPositionId(i),
-                msg.positionIndicatorRegistrationId(i)));
+                    "[%d:%d:%d]",
+                    i,
+                    msg.subscriberPositionId(i),
+                    msg.positionIndicatorRegistrationId(i)));
         }
 
         return String.format(
-            "%d:%d %s \"%s\" [%d]\n    %s",
-            msg.sessionId(),
-            msg.streamId(),
-            positions.toString(),
-            msg.sourceIdentity(),
-            msg.correlationId(),
-            msg.logFileName());
+                "%d:%d %s \"%s\" [%d]\n    %s",
+                msg.sessionId(),
+                msg.streamId(),
+                positions.toString(),
+                msg.sourceIdentity(),
+                msg.correlationId(),
+                msg.logFileName());
     }
 
-    private static String dissect(final CorrelatedMessageFlyweight msg)
-    {
+    private static String dissect(final CorrelatedMessageFlyweight msg) {
         return String.format(
-            "[%d:%d]",
-            msg.clientId(),
-            msg.correlationId());
+                "[%d:%d]",
+                msg.clientId(),
+                msg.correlationId());
     }
 
-    private static String dissect(final ImageMessageFlyweight msg)
-    {
+    private static String dissect(final ImageMessageFlyweight msg) {
         return String.format(
-            "%s %d [%d]",
-            msg.channel(),
-            msg.streamId(),
-            msg.correlationId());
+                "%s %d [%d]",
+                msg.channel(),
+                msg.streamId(),
+                msg.correlationId());
     }
 
-    private static String dissect(final RemoveMessageFlyweight msg)
-    {
+    private static String dissect(final RemoveMessageFlyweight msg) {
         return String.format(
-            "%d [%d:%d]",
-            msg.registrationId(),
-            msg.clientId(),
-            msg.correlationId());
+                "%d [%d:%d]",
+                msg.registrationId(),
+                msg.clientId(),
+                msg.correlationId());
     }
 
-    public static int frameType(final MutableDirectBuffer buffer, final int termOffset)
-    {
+    public static int frameType(final MutableDirectBuffer buffer, final int termOffset) {
         return buffer.getShort(FrameDescriptor.typeOffset(termOffset), LITTLE_ENDIAN) & 0xFFFF;
     }
 }

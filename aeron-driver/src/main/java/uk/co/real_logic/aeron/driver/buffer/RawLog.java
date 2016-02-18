@@ -25,8 +25,7 @@ import java.util.stream.Stream;
  * Represents the collection of term and associated state buffers for the image between a publisher and subscriber
  * image for the replicated log.
  */
-public interface RawLog extends AutoCloseable
-{
+public interface RawLog extends AutoCloseable {
     /**
      * The length of each term in bytes.
      *

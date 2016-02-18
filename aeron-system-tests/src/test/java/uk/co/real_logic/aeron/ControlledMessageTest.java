@@ -30,8 +30,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
 @RunWith(Theories.class)
-public class ControlledMessageTest
-{
+public class ControlledMessageTest {
     public static final String CHANNEL = CommonContext.IPC_CHANNEL;
     public static final int STREAM_ID = 1;
     public static final int FRAGMENT_COUNT_LIMIT = 10;
@@ -39,80 +38,64 @@ public class ControlledMessageTest
 
     @Theory
     @Test(timeout = 10000)
-    public void shouldReceivePublishedMessage() throws Exception
-    {
+    public void shouldReceivePublishedMessage() throws Exception {
         final MediaDriver.Context ctx = new MediaDriver.Context();
         ctx.threadingMode(ThreadingMode.SHARED);
 
         try (final MediaDriver ignore = MediaDriver.launch(ctx);
              final Aeron aeron = Aeron.connect();
              final Publication publication = aeron.addPublication(CHANNEL, STREAM_ID);
-             final Subscription subscription = aeron.addSubscription(CHANNEL, STREAM_ID))
-        {
+             final Subscription subscription = aeron.addSubscription(CHANNEL, STREAM_ID)) {
             final UnsafeBuffer srcBuffer = new UnsafeBuffer(new byte[PAYLOAD_LENGTH * 4]);
 
-            for (int i = 0; i < 4; i++)
-            {
-                srcBuffer.setMemory(i * PAYLOAD_LENGTH, PAYLOAD_LENGTH, (byte)(65 + i));
+            for (int i = 0; i < 4; i++) {
+                srcBuffer.setMemory(i * PAYLOAD_LENGTH, PAYLOAD_LENGTH, (byte) (65 + i));
             }
 
-            for (int i = 0; i < 4; i++)
-            {
-                while (publication.offer(srcBuffer, i * PAYLOAD_LENGTH, PAYLOAD_LENGTH) < 0L)
-                {
+            for (int i = 0; i < 4; i++) {
+                while (publication.offer(srcBuffer, i * PAYLOAD_LENGTH, PAYLOAD_LENGTH) < 0L) {
                     Thread.yield();
                 }
             }
 
             final FragmentCollector fragmentCollector = new FragmentCollector();
             int numFragments = 0;
-            do
-            {
+            do {
                 numFragments += subscription.controlledPoll(fragmentCollector, FRAGMENT_COUNT_LIMIT);
             }
             while (numFragments < 4);
 
             final UnsafeBuffer collectedBuffer = fragmentCollector.collectedBuffer();
 
-            for (int i = 0; i < srcBuffer.capacity(); i++)
-            {
+            for (int i = 0; i < srcBuffer.capacity(); i++) {
                 assertThat("same at i=" + i, collectedBuffer.getByte(i), is(srcBuffer.getByte(i)));
             }
-        }
-        finally
-        {
+        } finally {
             ctx.deleteAeronDirectory();
         }
     }
 
-    class FragmentCollector implements ControlledFragmentHandler
-    {
+    class FragmentCollector implements ControlledFragmentHandler {
         private final UnsafeBuffer collectedBuffer = new UnsafeBuffer(new byte[PAYLOAD_LENGTH * 4]);
         private int limit = 0;
         private int fragmentCount = 0;
 
-        public UnsafeBuffer collectedBuffer()
-        {
+        public UnsafeBuffer collectedBuffer() {
             return collectedBuffer;
         }
 
-        public Action onFragment(final DirectBuffer buffer, final int offset, final int length, final Header header)
-        {
+        public Action onFragment(final DirectBuffer buffer, final int offset, final int length, final Header header) {
             ++fragmentCount;
 
             Action action = Action.CONTINUE;
 
-            if (fragmentCount == 3)
-            {
+            if (fragmentCount == 3) {
                 action = Action.ABORT;
-            }
-            else if (fragmentCount == 5)
-            {
+            } else if (fragmentCount == 5) {
                 action = Action.BREAK;
             }
 
-            if (Action.ABORT != action)
-            {
+            if (Action.ABORT != action) {
                 collectedBuffer.putBytes(limit, buffer, offset, length);
                 limit += length;
             }

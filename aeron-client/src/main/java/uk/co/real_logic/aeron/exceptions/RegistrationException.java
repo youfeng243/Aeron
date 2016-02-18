@@ -21,12 +21,10 @@ import uk.co.real_logic.aeron.ErrorCode;
  * Caused when a error occurs during addition or release of {@link uk.co.real_logic.aeron.Publication}s
  * or {@link uk.co.real_logic.aeron.Subscription}s
  */
-public class RegistrationException extends RuntimeException
-{
+public class RegistrationException extends RuntimeException {
     private final ErrorCode code;
 
-    public RegistrationException(final ErrorCode code, final String msg)
-    {
+    public RegistrationException(final ErrorCode code, final String msg) {
         super(msg);
         this.code = code;
     }
@@ -36,8 +34,7 @@ public class RegistrationException extends RuntimeException
      *
      * @return the {@link ErrorCode} for the specific exception.
      */
-    public ErrorCode errorCode()
-    {
+    public ErrorCode errorCode() {
         return code;
     }
 }

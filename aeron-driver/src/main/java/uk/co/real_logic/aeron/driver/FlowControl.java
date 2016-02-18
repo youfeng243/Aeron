@@ -20,8 +20,7 @@ import java.net.InetSocketAddress;
 /**
  * Strategy for applying flow control to the {@link Sender}.
  */
-public interface FlowControl
-{
+public interface FlowControl {
     /**
      * Update the sender flow control strategy based on a status message from the receiver.
      *
